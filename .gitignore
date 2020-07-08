@@ -5,3 +5,4 @@ flask/
 __pycache__/
 .flaskenv
 .DS_Store
+*.pyc 
