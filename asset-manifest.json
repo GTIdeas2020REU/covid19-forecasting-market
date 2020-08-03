@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/covid19-forecasting-market/static/css/main.1b0c0556.chunk.css",
+    "main.js": "/covid19-forecasting-market/static/js/main.00fd52ea.chunk.js",
+    "main.js.map": "/covid19-forecasting-market/static/js/main.00fd52ea.chunk.js.map",
+    "runtime-main.js": "/covid19-forecasting-market/static/js/runtime-main.b0297ce9.js",
+    "runtime-main.js.map": "/covid19-forecasting-market/static/js/runtime-main.b0297ce9.js.map",
+    "static/css/2.7c35e809.chunk.css": "/covid19-forecasting-market/static/css/2.7c35e809.chunk.css",
+    "static/js/2.9c4cf3ca.chunk.js": "/covid19-forecasting-market/static/js/2.9c4cf3ca.chunk.js",
+    "static/js/2.9c4cf3ca.chunk.js.map": "/covid19-forecasting-market/static/js/2.9c4cf3ca.chunk.js.map",
+    "index.html": "/covid19-forecasting-market/index.html",
+    "precache-manifest.3a6c11de5f9b1e56efa4398bc37080f6.js": "/covid19-forecasting-market/precache-manifest.3a6c11de5f9b1e56efa4398bc37080f6.js",
+    "service-worker.js": "/covid19-forecasting-market/service-worker.js",
+    "static/css/2.7c35e809.chunk.css.map": "/covid19-forecasting-market/static/css/2.7c35e809.chunk.css.map",
+    "static/css/main.1b0c0556.chunk.css.map": "/covid19-forecasting-market/static/css/main.1b0c0556.chunk.css.map",
+    "static/js/2.9c4cf3ca.chunk.js.LICENSE.txt": "/covid19-forecasting-market/static/js/2.9c4cf3ca.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.b0297ce9.js",
+    "static/css/2.7c35e809.chunk.css",
+    "static/js/2.9c4cf3ca.chunk.js",
+    "static/css/main.1b0c0556.chunk.css",
+    "static/js/main.00fd52ea.chunk.js"
+  ]
+}
