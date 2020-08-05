@@ -1,12 +1,17 @@
 #confirmed{
-    stroke-width: 0.5;
     stroke-width : 1.5;
     stroke-linejoin: round;
     stroke-linecap: round;
     fill: none;
 }
+.context-curve {
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    fill: none;
+}
+
 #aggregate {
-    stroke-width: 0.5;
     stroke-width : 1.5;
     stroke-linejoin: round;
     stroke-linecap: round;
@@ -14,7 +19,6 @@
 }
 
 .forecast {
-    stroke-width: 0.5;
     stroke: green;
     stroke-width : 1.5;
     stroke-linejoin: round;
@@ -23,7 +27,6 @@
 }
 
 #your-line {
-    stroke-width: 0.5;
     stroke-width : 1.5;
     stroke-linejoin: round;
     stroke-linecap: round;

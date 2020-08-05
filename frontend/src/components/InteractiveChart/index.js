@@ -1149,6 +1149,9 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                 .attr('d', predLine)
                                 .style("stroke", color(legendString[2]))
                                 .style("stroke-width", "2px")
+                        // contextPredCurve.datum(predictionData)
+                        //                 .attr("d", focusPredLine);
+
                         });
                     })
                     .on("end", function () {
@@ -1359,6 +1362,11 @@ const forecastPaths = document.querySelectorAll(".forecast");
                             .scaleTime()
                             .domain([confirmedStartDate, predEndDate])
                             .range([0, width]);
+        const focusY = d3
+                        .scaleLinear()
+                        .domain([0, yAxisMax])
+                        .range([focusHeight - margin.bottom, 0])
+                        .nice();
         
         var contextXAxis = context
                                     .append("g")
@@ -1373,11 +1381,44 @@ const forecastPaths = document.querySelectorAll(".forecast");
     
         /*context.append("g")
                 .call(xAxis, x, focusHeight);*/
-    
-        /*svg.append("path")
+        const focusLine = d3.line()
+                            .curve(d3.curveCatmullRom)
+                            .x(function(d) {return x(d.date)})
+                            .y(function (d) {return focusY(d.value)})
+        
+        const focusPredLine = d3.line()
+                                .curve(d3.curveBasis)
+                                .defined(d => d.defined)
+                                .x(function(d) { return x(d.date) })
+                                .y(function(d) { return focusY(d.value) })        
+        context.append("path")
             .datum(confirmedData)
-            .attr("fill", "steelblue")
-            .attr("d", line(x, y.copy().range([focusHeight - margin.bottom, 4])));*/
+            .attr("d", focusLine)
+            .attr("class", "context-curve")
+            .attr("stroke", color(legendString[0]))
+        
+        context.append("path")
+            .datum(aggregateData)
+            .attr("d", focusLine)
+            .attr("class", "context-curve")
+            .attr("stroke", color(legendString[1]))
+
+        var contextPredCurve = context.append("path")
+                                    .datum(predictionData)
+                                    .attr("d", focusPredLine)
+                                    .attr("class", "context-curve")
+                                    .attr("stroke", color(legendString[2]))
+        
+        console.log(forecastData);
+        forecastData.map((f, index) => {
+            context
+                    .append("path")
+                    .datum(f)
+                    .attr("d", focusLine)
+                    .attr("class", "context-curve")
+                    .attr("stroke", color(orgs[index]));
+
+        })
         function brushed() {
             if (d3.event.selection) {
                 var extent = d3.event.selection;
