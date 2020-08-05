@@ -72,10 +72,13 @@ class InteractiveChart extends Component {
         signinBtn.id = "signin-btn";
         signinBtn.innerText = "Sign In";
         signinBtn.onclick= signinRedirect;
+        signinBtn.className = "btn primary-btn";
         var signupBtn = document.createElement("button");
         signupBtn.id = "signup-btn";
         signupBtn.onclick= signupRedirect;
         signupBtn.innerText = "Sign Up";
+        signupBtn.className = "btn primary-btn";
+
         modalContent.appendChild(text);
         modalContent.appendChild(signinBtn);
         modalContent.appendChild(signupBtn);

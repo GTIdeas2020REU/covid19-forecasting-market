@@ -31,7 +31,19 @@ class App extends React.Component {
         <div className="App">
           <Navbar />
           <Switch>
-            <Route exact path={ROUTES.LANDING} component={InteractiveChartContainer} />
+            <Route exact path={ROUTES.LANDING} >
+              <br></br>
+            <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Country
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" href="/">USA</a>
+              
+            </div>
+          </div><br></br>
+              <InteractiveChartContainer/>
+              </Route>
             <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />
             <Route exact path={ROUTES.US_NATIONAL_INC} component={newDeathsContainer} />
             <Route exact path={ROUTES.MAP_PORTAL} component={Mapportal} />

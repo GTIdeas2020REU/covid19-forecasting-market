@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Redirect } from "react-router";
-
+import '../LogIn/Login.css';
 
 class SignUp extends React.Component{
     constructor(props) {
@@ -67,34 +67,42 @@ class SignUp extends React.Component{
         return (
           <form onSubmit={this.handleSubmit.bind(this)}>
             <h1>Sign Up</h1>
-            <span>Name</span>
-            <input
+            <span className='signupSpan'><b>Name</b></span>
+            <br></br>
+            <input 
               type="text"
               value={this.state.nam}
               onChange={this.handleChange.bind(this)}
               name='nam'
             />
-            <span>Email</span>
-            <input
+            <br></br>
+            <span className='signupSpan'><b>Email</b></span>
+            <br></br>
+            <input 
               type="text"
               value={this.state.email}
               onChange={this.handleChange.bind(this)}
               name='email'
             />
-            <span>Username</span>
-            <input
+            <br></br>
+            <span style={{paddingRight:'280px'}}><b>Username</b></span>
+            <br></br>
+            <input 
               type="text"
               value={this.state.username}
               onChange={this.handleChange.bind(this)}
               name='username'
             />
-            <span>Password</span>
-            <input
-              type="text"
+            <br></br>
+            <span style={{paddingRight:'285px'}}><b>Password</b></span>
+            <br></br>
+            <input 
+              type="password"
               value={this.state.password}
               onChange={this.handleChange.bind(this)}
               name='password'
             />
+            <br></br>
             <input type="submit" value="Submit" />
           </form>
         )

@@ -1,5 +1,5 @@
 input[type=text], select {
-  width: 100%;
+  width: 30%;
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
@@ -9,7 +9,7 @@ input[type=text], select {
 }
 
 input[type=password], select {
-  width: 100%;
+  width: 30%;
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
@@ -19,7 +19,7 @@ input[type=password], select {
 }
 
 input[type=submit] {
-  width: 100%;
+  width: 30%;
   background-color: #4CAF50;
   color: white;
   padding: 14px 20px;
@@ -37,3 +37,14 @@ form{
   border-radius: 5px;
   padding: 20px;
 }
+
+.spanStyle{
+  
+  padding-right: 290px;
+  
+}
+
+.signupSpan{
+  padding-right: 320px;
+}
+

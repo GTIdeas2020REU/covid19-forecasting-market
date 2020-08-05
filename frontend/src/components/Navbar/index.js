@@ -40,14 +40,14 @@ renderDropdown(){
 	if(this.state.loggedinstate['logged in']){
 		
 		return(
-			<div className='navbar-nav ml-auto'>
+			<div className='navbar-nav ml-auto dropleft'>
 
 <ul className="navbar-nav ml-auto">
 				 <li className="nav-item dropdown ml-auto">
 				<a className="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
 					Hello {this.state.loggedinstate['name']}!</a>
-			<div className="dropdown-menu">
-				<a className="dropdown-item" href={ROUTES.PROFILE}>Profile</a>
+			<div className="dropdown-menu dropdown-menu-left">
+				<a className="dropdown-item" href={ROUTES.PROFILE}>My Predictions</a>
 				<a className="dropdown-item" onClick={() => this.saveLogout()} href={ROUTES.LANDING}>Sign Out</a>
 			</div>
 		</li>
@@ -58,7 +58,7 @@ renderDropdown(){
 	}
 	else{
 		return(
-			<div className='navbar-nav ml-auto'>
+			<div className='navbar-nav ml-auto dropleft'>
 				<ul className="navbar-nav ml-auto">
 				 <li className="nav-item dropdown">
 				<a className="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">

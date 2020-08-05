@@ -31,7 +31,8 @@ class AboutPage extends Component {
 
         
         Our mission is to deliver future projections and collected data by providing the best information on the COVID-19 pandemic.</p>
-        <h3>How we Score</h3>
+        <br></br>
+        <h3 style={h1style}>How we Score</h3>
         <p></p>
         </div>
             );

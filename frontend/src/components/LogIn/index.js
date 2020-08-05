@@ -90,14 +90,16 @@ class Login extends React.Component{
         return (
           <form onSubmit={this.handleSubmit.bind(this)} className='form-group'>
             <h1>Sign In</h1>
-            <label>Username</label>
+            <label className='spanStyle'><b>Username</b></label>
+            <br></br>
             <input
               type="text"
               value={this.state.username}
               onChange={this.handleChange.bind(this)}
               name='username'
             /><br></br>
-            <span>Password</span>
+            <span className='spanStyle'><b>Password</b></span>
+            <br></br>
             <input
               type="password"
               value={this.state.password}
@@ -105,6 +107,7 @@ class Login extends React.Component{
               name='password'
               required
             />
+            <br></br>
             
             <input type="submit" value="Submit" />
           </form>
