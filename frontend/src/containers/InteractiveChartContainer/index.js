@@ -41,16 +41,14 @@ class InteractiveChartContainer extends Component {
         });
         fetch('/us-mse').then(res => res.json()).then(data => {
             this.setState({ mse: data });
-            console.log("MSE:");
-            console.log(data);
         });
         fetch('/login-status/').then(res => res.json()).then(data => {
             this.setState({ loginStatus: data });
         });
     }
     render() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate, loginStatus } = this.state;
-        if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !loginStatus) return 'Loading...';
+        const { forecast, orgs, userPrediction, confirmed, aggregate, mse, loginStatus } = this.state;
+        if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !mse || !loginStatus) return 'Loading...';
 
         return (
             <div className="chartContainer">
@@ -60,6 +58,7 @@ class InteractiveChartContainer extends Component {
                     userPrediction={userPrediction}
                     confirmed={confirmed}
                     aggregate={aggregate}
+                    mse={mse}
                     loginStatus={loginStatus}
                     //userStatus={userStatus}
                 />
