@@ -18,10 +18,15 @@ class Leaderboard extends React.Component {
 
   renderTable() {
     return this.state.users.map((user, index) => {
+      // ignore null values
+      if (user.mse_score == null) {
+        return;
+      }
       return (
          <tr>
-            <td>{user['name']}</td>
-            <td>{user['score']}</td>
+            <td>{user.username}</td>
+            <td>{user.date}</td>
+            <td>{user.mse_score.toFixed(2)}</td>
          </tr>
       );
    });
@@ -44,7 +49,8 @@ class Leaderboard extends React.Component {
           <thead className="thead-dark">
             <tr>
               <th>User</th>
-              <th>Score</th>
+              <th>Prediction Date</th>
+              <th>Mean Squared Error (MSE)</th>
             </tr>
           </thead>
           <tbody>
