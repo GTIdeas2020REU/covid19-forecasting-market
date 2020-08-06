@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3'
 import './InteractiveChart.css';
-import { clamp, findYatX, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction } from '../../utils/data';
+import { clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction } from '../../utils/data';
 import { elementType } from 'prop-types';
 import { addDays, formatDate } from '../../utils/date';
-import { rectangle } from 'leaflet';
 
 
 class InteractiveChart extends Component {
@@ -654,7 +653,27 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                 
                         });
                     })
-
+        ////ADD TODAY LINE/////////////////////////////////////////////////////
+        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
+        var todayMarker = svg
+                            .append("g")
+                            .attr("id", "today-marker")
+        todayMarker
+                    .append("line")
+                    .attr("id", "today-line")
+                    .attr("x1", x(today))
+                    .attr("x2", x(today))
+                    .attr("y1", 0)
+                    .attr("y2", height)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "8, 8")
+        todayMarker
+                    .append("text")
+                    .attr("id", "today-text")
+                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+                    .text("Today")
+                    .style("text-anchor", "end")
         /////////////////////////////////////////////////////////////////////////////////////////////
         const focusHeight = 100;
         const contextMargin = 50;
@@ -676,6 +695,11 @@ const forecastPaths = document.querySelectorAll(".forecast");
                             .scaleTime()
                             .domain([confirmedStartDate, predEndDate])
                             .range([0, width]);
+        const focusY = d3
+                        .scaleLinear()
+                        .domain([0, yAxisMax])
+                        .range([focusHeight - margin.bottom, 0])
+                        .nice();
         
         var contextXAxis = context
                                     .append("g")
@@ -690,11 +714,44 @@ const forecastPaths = document.querySelectorAll(".forecast");
     
         /*context.append("g")
                 .call(xAxis, x, focusHeight);*/
-    
-        /*svg.append("path")
+        const focusLine = d3.line()
+                            .curve(d3.curveCatmullRom)
+                            .x(function(d) {return x(d.date)})
+                            .y(function (d) {return focusY(d.value)})
+        
+        const focusPredLine = d3.line()
+                                .curve(d3.curveBasis)
+                                .defined(d => d.defined)
+                                .x(function(d) { return x(d.date) })
+                                .y(function(d) { return focusY(d.value) })        
+        context.append("path")
             .datum(confirmedData)
-            .attr("fill", "steelblue")
-            .attr("d", line(x, y.copy().range([focusHeight - margin.bottom, 4])));*/
+            .attr("d", focusLine)
+            .attr("class", "context-curve")
+            .attr("stroke", color(legendString[0]))
+        
+        context.append("path")
+            .datum(aggregateData)
+            .attr("d", focusLine)
+            .attr("class", "context-curve")
+            .attr("stroke", color(legendString[1]))
+
+        var contextPredCurve = context.append("path")
+                                    .datum(predictionData)
+                                    .attr("d", focusPredLine)
+                                    .attr("class", "context-curve")
+                                    .attr("stroke", color(legendString[2]))
+        
+        console.log(forecastData);
+        forecastData.map((f, index) => {
+            context
+                    .append("path")
+                    .datum(f)
+                    .attr("d", focusLine)
+                    .attr("class", "context-curve")
+                    .attr("stroke", color(orgs[index]));
+
+        })
         function brushed() {
             if (d3.event.selection) {
                 var extent = d3.event.selection;
@@ -730,6 +787,11 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .select("#pointer")
                     .selectAll("circle")
                         .attr("cx", newX);
+                todayMarker.select("line")
+                        .attr("x1", x(today))
+                        .attr("x2", x(today))
+                todayMarker.select("text")
+                        .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
             }
         }
         
@@ -763,27 +825,6 @@ const forecastPaths = document.querySelectorAll(".forecast");
                 .style("opacity", "1");
         };
         document.querySelector("body").appendChild(deleteButton);
-        ////ADD TODAY LINE/////////////////////////////////////////////////////
-        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
-        var todayMarker = svg
-                            .append("g")
-                            .attr("id", "today-marker")
-        todayMarker
-                    .append("line")
-                    .attr("id", "today-line")
-                    .attr("x1", x(today))
-                    .attr("x2", x(today))
-                    .attr("y1", 0)
-                    .attr("y2", height)
-                    .attr("stroke", "black")
-                    .attr("stroke-width", 1)
-                    .attr("stroke-dasharray", "8, 8")
-        todayMarker
-                    .append("text")
-                    .attr("id", "today-text")
-                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
-                    .text("Today")
-                    .style("text-anchor", "end")
     }
 
     renderChart() {
@@ -1123,6 +1164,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
             name: "User Prediction",
             data: predictionData
         })
+        console.log(compiledData);
         //join data to yourLine
         filteredData = predictionData.filter(predLine.defined())
         yourLine.datum(filteredData)
@@ -1343,66 +1385,27 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                         
                                 });
                             })
-                            // .on('mousemove', function() { // mouse moving over canvas
-                            //     var mouse = d3.mouse(this);
-                            //     var xCoord = mouse[0];
-                            //     var yCoord = mouse[1];
-                            //     const xLowerBoundary = x(confirmedData[confirmedData.length - 1].date)
-                            //     if (xCoord > xLowerBoundary && xCoord < width && yCoord > 0 && yCoord < height) {
-                            //         chart.attr("cursor", "pointer");
-                            //     }
-                            //     else {
-                            //         chart.attr("cursor", "default");
-                            //     }
-                            //     d3
-                            //         .select("#tooltip-line")
-                            //         .attr("d", function() {
-                            //             var d = "M" + xCoord + "," + height;
-                            //             d += " " + xCoord + "," + 0;
-                            //             return d;
-                            //         });
-                            //     d3
-                            //         .selectAll(".mouse-per-line")
-                            //         .attr("transform", function(d, i) {
-                            //             if (d.data.length == 0) {return;}
-                            //             var date = x.invert(xCoord);
-                            //             const index = d3.bisector(f => f.date).left(compiledData[i].data, date);
-                            //             var a = null;
-                            //             if (index > 0) {
-                            //                 a = d.data[index - 1];
-                            //             }
-                            //             const b = d.data[index];
-                            //             //d = the data object corresponding to date and value pointed by the cursors
-                            //             var data = null;
-                            //             if (!a) {
-                            //                 data = b;
-                            //             }
-                            //             else if (!b) {
-                            //                 data = a;
-                            //             }
-                            //             else {
-                            //                 data = b && (date - a.date > b.date - date) ? b : a;
-                            //             }
-                            //             if (+d3.timeDay.floor(date) == +data.date || +d3.timeDay.ceil(date) == +data.date) {
-                            //                 if (data.defined != 0) {
-                            //                     var element = d3.select(this)
-                            //                                     .select('text')
-                            //                                         .style("opacity", "1")
-                            //                                         .text(Math.round(data.value));
-                            //                     element.select("circle")
-                            //                             .style("opacity", "1");
-                            //                     return "translate(" + mouse[0] + "," + y(data.value)+")";
-                            //                 }
-                            //             }
-                            //             var element = d3.select(this)
-                            //                             .select("text")
-                            //                             .style("opacity", "0")
-                            //             element
-                            //                     .select("circle")
-                            //                     .style("opacity", "0");
-                                        
-                            //     });
-                            // })
+        ////ADD TODAY LINE/////////////////////////////////////////////////////
+        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
+        var todayMarker = svg
+                            .append("g")
+                            .attr("id", "today-marker")
+        todayMarker
+                    .append("line")
+                    .attr("id", "today-line")
+                    .attr("x1", x(today))
+                    .attr("x2", x(today))
+                    .attr("y1", 0)
+                    .attr("y2", height)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "8, 8")
+        todayMarker
+                    .append("text")
+                    .attr("id", "today-text")
+                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+                    .text("Today")
+                    .style("text-anchor", "end")
 
         /////////////////////////////////////////////////////////////////////////////////////////////
         const focusHeight = 100;
@@ -1517,6 +1520,12 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .select("#pointer")
                     .selectAll("circle")
                         .attr("cx", newX);
+                todayMarker.select("line")
+                        .attr("x1", x(today))
+                        .attr("x2", x(today))
+                todayMarker.select("text")
+                        .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+
             }
         }
         
@@ -1550,28 +1559,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                 .style("opacity", "1");
         };
         document.querySelector("body").appendChild(deleteButton);
-        ////ADD TODAY LINE/////////////////////////////////////////////////////
-        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
-        var todayMarker = svg
-                            .append("g")
-                            .attr("id", "today-marker")
-        todayMarker
-                    .append("line")
-                    .attr("id", "today-line")
-                    .attr("x1", x(today))
-                    .attr("x2", x(today))
-                    .attr("y1", 0)
-                    .attr("y2", height)
-                    .attr("stroke", "black")
-                    .attr("stroke-width", 1)
-                    .attr("stroke-dasharray", "8, 8")
-        todayMarker
-                    .append("text")
-                    .attr("id", "today-text")
-                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
-                    .text("Today")
-                    .style("text-anchor", "end")
-
+    
     }
         
     render() {

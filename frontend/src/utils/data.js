@@ -102,6 +102,7 @@ export const sortStringDates = (data) => {
 }
 
 export const getMostRecentPrediction = (data) => {
+  if (Object.keys(data).length === 0) return null;
   const sortedDates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
   const mostRecentDate = sortedDates[0];
   return data[mostRecentDate]
@@ -217,4 +218,184 @@ export const getDataPointsFromPath = (predictionData, pathNode, xAxis, yAxis, la
     }
   }
   return predictionData;
+}
+
+export const cleanData = (data, predStartDate, value) => {
+  var idxOfStartDate = d3.bisector(f => f.date).left(data, predStartDate);
+  if (data.length > 0 && +data[idxOfStartDate].date == +predStartDate) {
+    data[idxOfStartDate].value = value;
+  }
+  else {
+    data.splice(idxOfStartDate, 0, {
+        date: predStartDate,
+        value: value
+    });
+  } 
+  return data.splice(idxOfStartDate, data.length);
+}
+
+export const getLastValue = (data) => {
+  return data[data.length - 1].value;
+}
+
+export const getLastDate = (data) => {
+  return data[data.length - 1].date;
+}
+
+export const color = (names) => {
+  d3
+    .scaleOrdinal()
+    .domain(names)
+    .range(d3.schemeTableau10);
+}
+
+export const createDefaultPrediction = (predStartDate, predEndDate) => {
+  var defaultData = [];
+  var currDate = predStartDate;
+  //var defined = true;
+  //var value = confirmedData[confirmedData.length - 1].value;
+  
+  //create defaultPredictionData
+  while(+currDate <= +predEndDate) {
+      defaultData.push({date: currDate, value: 0, defined: 0});
+      currDate = d3.timeDay.offset(currDate, 1);
+  }
+  return defaultData;
+}
+
+export const cleanPrediction = (data, predStartDate, predEndDate, confirmedLastVal) => {
+  if (+data[0].date != +predStartDate) {
+    console.log("needs to be reformatted")
+    data = reformatPredData(data);
+    var currDate = d3.timeDay.offset(getLastDate(data), 1);
+    data = data.concat(createDefaultPrediction(currDate, predEndDate));
+  }
+  data = data.filter(d => (+d.date >= +predStartDate) && (+d.date <= +predEndDate));
+  data[0].value = confirmedLastVal;
+  data[0].defined = true;
+  return data;
+}
+
+
+export const savePrediction = (data, category) => {
+  fetch('/update/',{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({"data": data, "category": category}),
+  });
+}
+
+export const createFocusContext = (svg, width, height, marginBottom, confirmedData, aggregateData, forecastData, predictionData, labels, x, y, xAxis, line, predLine, color) => {
+  const focusHeight = 100;
+  const focusMargin = 50;
+  var focus = svg
+                  .append("g")
+                      .attr("viewBox", [0, 0, width, focusHeight])
+                      .attr("transform", `translate(0,${height + 80} )`)
+                      //.attr("width", width + 100)
+                      //.attr("height", height)
+                      .style("display", "block")
+
+  var focusX = d3
+                  .scaleTime()
+                  .domain(x.domain())
+                  .range([0, width]);
+  const focusY = d3
+                  .scaleLinear()
+                  .domain(y.domain())
+                  .range([focusHeight - marginBottom, 0])
+                  .nice();
+  
+  var focusXAxis = focus
+                        .append("g")
+                        .attr("transform", `translate(0,${focusHeight - marginBottom})`)
+                        .call(d3.axisBottom(focusX));
+  const brush = d3.brushX()
+                  .extent([[0, 0], [width, focusHeight - marginBottom]])
+                  .on("brush", brushed)
+                  .on("end", brushended);
+
+  const defaultSelection = [x(d3.timeMonth.offset(x.domain()[1], -8)), x.range()[1]];
+
+  const focusLine = d3.line()
+                      .curve(d3.curveCatmullRom)
+                      .x(function(d) {return x(d.date)})
+                      .y(function (d) {return focusY(d.value)})
+  
+  const focusPredLine = d3.line()
+                          .curve(d3.curveBasis)
+                          .defined(d => d.defined)
+                          .x(function(d) { return x(d.date) })
+                          .y(function(d) { return focusY(d.value) })        
+  focus.append("path")
+      .datum(confirmedData)
+      .attr("d", focusLine)
+      .attr("class", "context-curve")
+      .attr("stroke", color(labels[1]))
+  
+  focus.append("path")
+      .datum(aggregateData)
+      .attr("d", focusLine)
+      .attr("class", "context-curve")
+      .attr("stroke", color(labels[2]))
+
+  var contextPredCurve = focus.append("path")
+                              .datum(predictionData)
+                              .attr("d", focusPredLine)
+                              .attr("class", "context-curve")
+                              .attr("stroke", color(labels[0]))
+    focus.selectAll(".forecast")
+          .data(forecastData)
+          .enter()
+          .append("path")
+              .attr("d", line)
+              .attr("id", (f, index) => labels[3 + index])
+              .attr("class", "forecast line")
+              .style("stroke", (f, index) => color(labels[3 + index]))
+              .style("stroke-width", "2px");
+
+  function brushed() {
+      if (d3.event.selection) {
+          var extent = d3.event.selection;
+          x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
+          xAxis
+                  .call(d3.axisBottom(x))
+          var newX = x(getLastDate(confirmedData));
+          newX = newX < 0 ? 0 : newX;
+          console.log(newX)
+          d3
+              .select("#prediction-clip")
+              .select("rect")
+                  .attr("width", width - newX)
+                  .attr("x", newX);
+
+          svg
+              .selectAll(".line")
+              .attr('d', line)
+
+          svg
+              .select("#your-line")
+              .attr("d", predLine)
+          
+          svg
+              .select("#draw-guess")
+              .attr("x", newX + (width - newX) / 2);
+          svg
+              .select("#pointer")
+              .selectAll("circle")
+                  .attr("cx", newX);
+      }
+  }
+  
+  function brushended() {
+      if (!d3.event.selection) {
+          gb.call(brush.move, defaultSelection);
+      }
+
+  }
+  const gb = focus
+                  .call(brush)
+                  .call(brush.move, defaultSelection);  
 }
