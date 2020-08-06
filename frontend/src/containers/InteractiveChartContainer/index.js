@@ -19,6 +19,7 @@ class InteractiveChartContainer extends Component {
             confirmed: null,
             userPrediction: null,
             aggregate: null,
+            mse: null,
             loginStatus: null
         };
     }
@@ -36,6 +37,11 @@ class InteractiveChartContainer extends Component {
         });
         fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
             this.setState({ aggregate: data });
+            //console.log(data);
+        });
+        fetch('/us-mse').then(res => res.json()).then(data => {
+            this.setState({ mse: data });
+            console.log("MSE:");
             console.log(data);
         });
         fetch('/login-status/').then(res => res.json()).then(data => {
