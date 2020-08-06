@@ -329,7 +329,7 @@ def user_status():
 
 @app.route('/user-data')
 def leaderboard():
-    all_users = list(mongo.db.predictions.find({},{'name': 1, 'score': 1}).sort('score',-1))
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score': 1, 'date': 1, 'prediction': 1}).sort('mse_score',1))
     return dumps(all_users)
 
 @app.route('/user')
