@@ -7,7 +7,7 @@ from bson.json_util import dumps, loads
 import json
 from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
-from evaluate import get_mse
+from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
 
 app = Flask(__name__)
@@ -219,6 +219,14 @@ def us_mse():
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
     us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts)
     return us_mse
+
+@app.route('/user-mse')
+def user_mse():
+    user_prediction = {}
+    if 'id' in session:
+        user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
+    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction)
+    return json.dumps(mse)
 
 
 @app.route('/update/', methods=['GET', 'POST'])

@@ -24,21 +24,16 @@ def get_us_new_deaths_weekly_avg(data):
     tempDate = ""
     tempSum = 0
     for d in dates:
-        #if n == 1:
-        #format_str = '%Y-%m/%Y' # The format
         tempSum += daily_deaths[d]
         datetime_obj = date(*(int(s) for s in d.split('-')))
         if datetime_obj.weekday() == 5:
             tempDate = d
-            #result[tempDate] = daily_deaths[date]
-        else:
-            #result[tempDate] += daily_deaths[date]
-            if n == 7:
-                #result[tempDate] //= 7 
-                result[tempDate] = tempSum/7
-                n = 0
-                tempSum = 0
+        if n == 7:
+            result[tempDate] = tempSum/7
+            n = 0
+            tempSum = 0
         n += 1
+
     result = dict(sorted(result.items()))
     return json.dumps(result)
         

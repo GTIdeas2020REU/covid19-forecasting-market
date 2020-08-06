@@ -20,6 +20,7 @@ class InteractiveChartContainer extends Component {
             userPrediction: null,
             aggregate: null,
             mse: null,
+            user_mse: null,
             loginStatus: null
         };
     }
@@ -31,6 +32,8 @@ class InteractiveChartContainer extends Component {
         });
         fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
             this.setState({ userPrediction: data });
+            console.log("USER PREDICTION");
+            console.log(data);
         });
         fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
             this.setState({ confirmed: data });
@@ -41,6 +44,11 @@ class InteractiveChartContainer extends Component {
         });
         fetch('/us-mse').then(res => res.json()).then(data => {
             this.setState({ mse: data });
+        });
+        fetch('/user-mse').then(res => res.json()).then(data => {
+            this.setState({ user_mse: data });
+            console.log("USER MSE");
+            console.log(data);
         });
         fetch('/login-status/').then(res => res.json()).then(data => {
             this.setState({ loginStatus: data });
