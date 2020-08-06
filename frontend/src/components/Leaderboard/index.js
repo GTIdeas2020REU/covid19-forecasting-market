@@ -11,6 +11,7 @@ class Leaderboard extends React.Component {
   componentDidMount() {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
+      console.log(data);
     });
   }
 

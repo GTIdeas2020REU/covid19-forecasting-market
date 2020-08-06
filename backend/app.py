@@ -87,17 +87,20 @@ def delete_user_prediction(username, category):
 
 def update_user_prediction(username, data, category, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
-    print(curr_date)
+    '''print(curr_date)
+    print('DATA:')
+    print(data)'''
+    score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
     pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
     #print(pred)
     if pred:
         #print("already exists")
         mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
         {'$set': 
-            { "prediction": data }
+            { "prediction": data, "mse_score": score }
         })
     else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data})
+        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, data, "mse_score": score })
 
 def get_user_prediction(username, category):
     user_prediction = {}

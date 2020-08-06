@@ -2,6 +2,7 @@ from confirmed import get_us_new_deaths_weekly_avg, get_us_new_deaths
 from get_estimates import get_daily_forecasts
 
 import json
+import pymongo
 from sklearn.metrics import mean_squared_error 
 
 def get_mse(confirmed, forecasts):
@@ -57,5 +58,39 @@ def get_user_mse(confirmed, user_prediction):
 
         mse = mean_squared_error(confirmed_values, prediction_values)
         result[date] = mse
+
+    if result == {}:
+        return None
     
     return result
+
+
+
+'''
+myClient = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
+client = pymongo.MongoClient(myClient)
+mydb = client['covid19-forecast']
+mycol = mydb['predictions']
+
+user_prediction = {}
+#prediction = mycol.find({})
+prediction = mycol.find({"category": "us_daily_deaths"})
+for p in prediction:
+    #print("inside")
+    #(date, prediction)
+    #print(p)
+    #print(p['prediction'])
+    #user_prediction[p['date']] = p['prediction']
+    temp = dict()
+    temp[p['date']] = p['prediction']
+    mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
+    if mse == None:
+        continue
+    mycol.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
+        {'$set': 
+            { "mse_score": list(mse.values())[0] }
+        })
+
+#print(user_prediction)
+#print(get_user_mse(get_us_new_deaths_weekly_avg(get_us_new_deaths()), user_prediction))
+'''
