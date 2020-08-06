@@ -866,7 +866,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
         const category = this.state.category;
         var compiledData = [];
         //set up margin, width, height of chart
-        const legendWidth = 180;
+        const legendWidth = 230;
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
         const contextHeight = 100;
         const titleHeight = 20;
