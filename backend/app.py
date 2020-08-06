@@ -100,7 +100,7 @@ def update_user_prediction(username, data, category, a=None, higher=False, index
             { "prediction": data, "mse_score": score }
         })
     else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, data, "mse_score": score })
+        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score": score })
 
 def get_user_prediction(username, category):
     user_prediction = {}
@@ -329,7 +329,7 @@ def user_status():
 
 @app.route('/user-data')
 def leaderboard():
-    all_users = list(mongo.db.users.find({},{'name': 1, 'score': 1}).sort('score',-1))
+    all_users = list(mongo.db.predictions.find({},{'name': 1, 'score': 1}).sort('score',-1))
     return dumps(all_users)
 
 @app.route('/user')
