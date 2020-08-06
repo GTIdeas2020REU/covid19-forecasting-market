@@ -19,6 +19,8 @@ class InteractiveChartContainer extends Component {
             confirmed: null,
             userPrediction: null,
             aggregate: null,
+            mse: null,
+            user_mse: null,
             loginStatus: null
         };
     }
@@ -30,12 +32,22 @@ class InteractiveChartContainer extends Component {
         });
         fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
             this.setState({ userPrediction: data });
+            console.log("USER PREDICTION");
+            console.log(data);
         });
         fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
             this.setState({ confirmed: data });
         });
         fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
             this.setState({ aggregate: data });
+            //console.log(data);
+        });
+        fetch('/us-mse').then(res => res.json()).then(data => {
+            this.setState({ mse: data });
+        });
+        fetch('/user-mse').then(res => res.json()).then(data => {
+            this.setState({ user_mse: data });
+            console.log("USER MSE");
             console.log(data);
         });
         fetch('/login-status/').then(res => res.json()).then(data => {
@@ -43,8 +55,8 @@ class InteractiveChartContainer extends Component {
         });
     }
     render() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate, loginStatus } = this.state;
-        if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !loginStatus) return 'Loading...';
+        const { forecast, orgs, userPrediction, confirmed, aggregate, mse, loginStatus } = this.state;
+        if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !mse || !loginStatus) return 'Loading...';
 
         return (
             <div className="chartContainer">
@@ -54,6 +66,7 @@ class InteractiveChartContainer extends Component {
                     userPrediction={userPrediction}
                     confirmed={confirmed}
                     aggregate={aggregate}
+                    mse={mse}
                     loginStatus={loginStatus}
                     //userStatus={userStatus}
                 />

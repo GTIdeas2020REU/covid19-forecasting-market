@@ -7,6 +7,7 @@ from bson.json_util import dumps, loads
 import json
 from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
+from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
 
 app = Flask(__name__)
@@ -28,6 +29,7 @@ us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 #us_aggregates_daily = get_aggregates(us_inc_forecasts)
 us_aggregates = None
 us_aggregates_daily = None
+us_mse = None
 
 # set up pymongo
 #app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
@@ -85,17 +87,20 @@ def delete_user_prediction(username, category):
 
 def update_user_prediction(username, data, category, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
-    print(curr_date)
+    '''print(curr_date)
+    print('DATA:')
+    print(data)'''
+    score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
     pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
     #print(pred)
     if pred:
         #print("already exists")
         mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
         {'$set': 
-            { "prediction": data }
+            { "prediction": data, "mse_score": score }
         })
     else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data})
+        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score": score })
 
 def get_user_prediction(username, category):
     user_prediction = {}
@@ -210,6 +215,22 @@ def us_agg_inc_deaths():
     us_aggregates_daily = get_aggregates(us_inc_forecasts, user_prediction)
     return us_aggregates_daily
 
+@app.route('/us-mse')
+def us_mse():
+    user_prediction = {}
+    if 'id' in session:
+        user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts)
+    return us_mse
+
+@app.route('/user-mse')
+def user_mse():
+    user_prediction = {}
+    if 'id' in session:
+        user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
+    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction)
+    return json.dumps(mse)
+
 
 @app.route('/update/', methods=['GET', 'POST'])
 def update():
@@ -308,7 +329,7 @@ def user_status():
 
 @app.route('/user-data')
 def leaderboard():
-    all_users = list(mongo.db.users.find({},{'name': 1, 'score': 1}).sort('score',-1))
+    all_users = list(mongo.db.predictions.find({},{'name': 1, 'score': 1}).sort('score',-1))
     return dumps(all_users)
 
 @app.route('/user')

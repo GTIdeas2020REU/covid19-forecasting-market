@@ -86,7 +86,38 @@ class InteractiveChart extends Component {
     }
 
     renderChartUnregistered() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate } = this.props;
+        var { forecast, orgs, userPrediction, confirmed, aggregate, mse } = this.props;
+
+        // sort models by increasing error
+        var orgIndices = {};
+        for (var i = 0; i < orgs.length; i++) {
+            orgIndices[orgs[i]] = [i];
+        }
+        var sortable = [];
+        for (var err in mse) {
+            sortable.push([err, mse[err]]);
+        }
+        sortable.sort(function(a, b) {
+            return a[1] - b[1];
+        });
+        var sortedOrgs = [];
+        for (var i = 0; i < sortable.length; i++) {
+            sortedOrgs.push(sortable[i][0] + " (MSE=" + sortable[i][1].toFixed(2).toString() + ")")
+            orgIndices[sortable[i][0]].push(i);
+        }
+
+        // correct order of forecasts
+        orgIndices = Object.values(orgIndices);
+        var tempForecast = new Array(forecast.length);
+        for (var i = 0; i < orgIndices.length; i++) {
+            tempForecast[orgIndices[i][1]] = forecast[orgIndices[i][0]];
+        }
+
+        // replace orgs and forecasts with new orders
+        orgs = sortedOrgs;
+        forecast = tempForecast;
+
+
         var predictionData = [];//where we will store formatted userPrediction
         var defaultPredictionData = []
         const savePrediction = this.savePrediction;
@@ -215,6 +246,8 @@ class InteractiveChart extends Component {
                 //.attr("width", size)
                 //.attr("height", size)
                 .style("fill", function(d){ return color(d)})
+
+        
         legend.selectAll("labels")
             .data(legendString)
             .enter()
@@ -222,7 +255,7 @@ class InteractiveChart extends Component {
                 .attr("x", width + 45)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                 .style("fill", function(d){ return color(d)})
-                .text(function(d){ return d})
+                .text(function(d){console.log("D TEXT"); console.log(d); return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
 
@@ -795,7 +828,37 @@ const forecastPaths = document.querySelectorAll(".forecast");
     }
 
     renderChart() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate } = this.props;
+        var { forecast, orgs, userPrediction, confirmed, aggregate, mse } = this.props;
+
+        // sort models by increasing error
+        var orgIndices = {};
+        for (var i = 0; i < orgs.length; i++) {
+            orgIndices[orgs[i]] = [i];
+        }
+        var sortable = [];
+        for (var err in mse) {
+            sortable.push([err, mse[err]]);
+        }
+        sortable.sort(function(a, b) {
+            return a[1] - b[1];
+        });
+        var sortedOrgs = [];
+        for (var i = 0; i < sortable.length; i++) {
+            sortedOrgs.push(sortable[i][0] + " (MSE=" + sortable[i][1].toFixed(2).toString() + ")")
+            orgIndices[sortable[i][0]].push(i);
+        }
+
+        // correct order of forecasts
+        orgIndices = Object.values(orgIndices);
+        var tempForecast = new Array(forecast.length);
+        for (var i = 0; i < orgIndices.length; i++) {
+            tempForecast[orgIndices[i][1]] = forecast[orgIndices[i][0]];
+        }
+
+        // replace orgs and forecasts with new orders
+        orgs = sortedOrgs;
+        forecast = tempForecast;
+
         var predictionData = [];//where we will store formatted userPrediction
         var defaultPredictionData = []
         const savePrediction = this.savePrediction;
