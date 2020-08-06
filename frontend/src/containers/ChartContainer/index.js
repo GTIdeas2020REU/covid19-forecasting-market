@@ -1,64 +1,56 @@
 import React from 'react';
-import LineChart from '../../components/LineChart';
-import ModelsChart from '../../components/ModelsChart';
-import { cleanConfirmedData, organizeData } from '../../utils/data';
+import ParentChart from '../../components/ParentChart';
 
-function LineCharts({ dataSet, orgs, userPrediction, confirmed }) {
-  return dataSet.map((data, index) => {
-    return (
-      <LineChart data={data} org={orgs[index]} userPrediction={userPrediction} confirmed={confirmed} />
-     );
-  })
-}
+import { cleanConfirmedData, organizeData } from '../../utils/data';
 
 class ChartContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: null,
+      forecast: null,
       orgs: null,
       confirmed: null,
       userPrediction: null,
-      aggregate: null
+      aggregate: null,
+      loggedIn: false
     };
   }
 
   componentDidMount() {
-    fetch('/us-cum-deaths-forecasts').then(res => res.json()).then(data => {
+    fetch('/us-inc-deaths-forecasts').then(res => res.json()).then(data => {
       const [results, orgs] = organizeData(data);
-      this.setState({ data: results, orgs });
+      this.setState({ forecast: results, orgs });
     });
-    fetch('/user-prediction').then(res => res.json()).then(data => {
-      this.setState({ userPrediction: data });
+    fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
+        this.setState({ userPrediction: data });
     });
-    fetch('/us-cum-deaths-confirmed').then(res => res.json()).then(data => {
-      this.setState({ confirmed: data });
+    fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
+        this.setState({ confirmed: data });
     });
-    fetch('/us-agg-cum-deaths').then(res => res.json()).then(data => {
-      this.setState({ aggregate: data });
+    fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
+        this.setState({ aggregate: data });
+    });
+    fetch('/login-status/').then(res => res.json()).then(data => {
+        this.setState({ loggedIn: data['logged in'] });
     });
   }
 
   render() {
-    //const { data, orgs, userPrediction, confirmed } = this.state;
-    const { data, orgs, confirmed, userPrediction, aggregate } = this.state;
-
-    //if (!data || !orgs || !userPrediction || !confirmed) return 'Loading...';
-    if (!data || !orgs || !confirmed || !userPrediction || !aggregate) return 'Loading...';
+    const { forecast, orgs, userPrediction, confirmed, aggregate, loggedIn } = this.state;
+    if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !loggedIn) return 'Loading...';
+    const isProfile = this.props.isProfile;
 
     return (
-      <div className="chartContainer">
-        <LineCharts
-          dataSet={data}
+      <div className="chart-container">
+        <ParentChart
+          forecast={forecast}
           orgs={orgs}
           userPrediction={userPrediction}
           confirmed={confirmed}
-        />
-        <ModelsChart 
-          data={data} 
-          orgs={orgs}
-          confirmed={confirmed}
-          aggregate={aggregate} 
+          aggregate={aggregate}
+          loggedIn={loggedIn}
+          isProfile={isProfile}
+          //category={"us_daily"}
         />
       </div>
     );
