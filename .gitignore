@@ -6,3 +6,4 @@ __pycache__/
 .flaskenv
 .DS_Store
 *.pyc 
+node_modules/
