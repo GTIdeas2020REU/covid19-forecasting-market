@@ -1,5 +1,6 @@
 import React from 'react';
 import * as ROUTES from '../../constants/routes';
+import covidforecastslogo from './COVIDforecasts-logo-white.png'
 
 class Navbar extends React.Component {
   constructor(props){
@@ -79,7 +80,8 @@ renderDropdown(){
   render() {
     return (
      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-       <a className="navbar-brand" href="#">Aggregate COVID-19 Forecasting</a>
+       
+	   <a className="navbar-brand" href='/'><img id='logo' src={covidforecastslogo} style={{width:450, marginTop: -10}}></img></a>
        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
          <span className="navbar-toggler-icon"></span>
        </button>
