@@ -36,7 +36,14 @@ class Leaderboard extends React.Component {
     const tableStyle = {
       width: "50%",
       textAlign: "center",
-      margin: "0 25%"
+      "overflow-y": "scroll"
+    };
+
+    
+    const chartStyle = {
+      position: "fixed",
+      width: "50%",
+      left: "50%"
     };
 
     const { users } = this.state;
@@ -45,18 +52,129 @@ class Leaderboard extends React.Component {
     return (
       <div>
         <h2>Leaderboard</h2>
-        <table style={tableStyle} className="table table-bordered table-hover table-sm">
-          <thead className="thead-dark">
-            <tr>
-              <th>User</th>
-              <th>Prediction Date</th>
-              <th>Mean Squared Error (MSE)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.renderTable()}
-          </tbody>
-        </table>
+        <div class="d-flex flex-row">>
+          <div style={tableStyle}>
+            <table className="table table-bordered table-hover table-sm">
+              <thead className="thead-dark">
+                <tr>
+                  <th>User</th>
+                  <th>Prediction Date</th>
+                  <th>Mean Squared Error (MSE)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.renderTable()}
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="text-center" style={chartStyle}>Hello</div>
+        </div>
       </div>
     );
   }
