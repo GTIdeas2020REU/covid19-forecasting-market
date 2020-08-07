@@ -44,13 +44,19 @@ class InteractiveChartTemp extends Component {
         this.renderChart();
     }
     renderChart() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate, loggedIn, x, y, width, height, predStartDate, xAxis, marginBottom, appendModal} = this.props;
+        const { forecast, orgs, userPrediction, confirmed, confirmedAvg, aggregate, loggedIn, x, y, width, height, predStartDate, xAxis, marginBottom, appendModal} = this.props;
         console.log(marginBottom);
         this.appendModal();
         const predEndDate = x.domain()[1];
         var svg = this.props.chart;
-        var confirmedData = reformatData(confirmed);
-        const confirmedLastVal = getLastValue(confirmedData);
+        var confirmedData = reformatData(confirmedAvg);
+        const confirmedTemp = reformatData(confirmed);
+        const confirmedLastVal = getLastValue(confirmedTemp);
+        confirmedData.push({
+            date: getLastDate(confirmedTemp),
+            value: confirmedLastVal
+        })
+        console.log(confirmedData)
         var aggregateData = reformatData(aggregate);
         var forecastData = forecast.map((f)=> {
             return cleanData(reformatData(f), predStartDate, confirmedLastVal);
@@ -64,7 +70,7 @@ class InteractiveChartTemp extends Component {
             .defined(d => d.defined)
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
-        const labels = ['User Prediction', 'Confirmed Data', 'Aggregate Data', orgs]
+        const labels = ['User Prediction', 'Confirmed Data', 'Aggregate Data'].concat(orgs);
         const color = d3
             .scaleOrdinal()
             .domain(labels)

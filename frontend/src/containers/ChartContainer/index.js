@@ -10,6 +10,7 @@ class ChartContainer extends React.Component {
       forecast: null,
       orgs: null,
       confirmed: null,
+      confirmedAvg: null,
       userPrediction: null,
       aggregate: null,
       loggedIn: false
@@ -24,8 +25,11 @@ class ChartContainer extends React.Component {
     fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
         this.setState({ userPrediction: data });
     });
-    fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
+    fetch('/us-inc-deaths-confirmed').then(res => res.json()).then(data => {
         this.setState({ confirmed: data });
+    });
+    fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
+      this.setState({ confirmedAvg: data });
     });
     fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
         this.setState({ aggregate: data });
@@ -36,7 +40,7 @@ class ChartContainer extends React.Component {
   }
 
   render() {
-    const { forecast, orgs, userPrediction, confirmed, aggregate, loggedIn } = this.state;
+    const { forecast, orgs, userPrediction, confirmed, confirmedAvg, aggregate, loggedIn } = this.state;
     if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !loggedIn) return 'Loading...';
     const isProfile = this.props.isProfile;
 
@@ -47,6 +51,7 @@ class ChartContainer extends React.Component {
           orgs={orgs}
           userPrediction={userPrediction}
           confirmed={confirmed}
+          confirmedAvg={confirmedAvg}
           aggregate={aggregate}
           loggedIn={loggedIn}
           isProfile={isProfile}

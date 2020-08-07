@@ -57,7 +57,7 @@ class ParentChart extends Component {
         const { forecast, orgs, userPrediction, confirmed, aggregate, loggedIn, isProfile} = this.props;
         const legendWidth = 380;
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
-        const contextHeight = 100;
+        const focusHeight = 100;
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")(Object.keys(confirmed)[0]);
         const predStartDate = d3.timeParse("%Y-%m-%d")(Object.keys(confirmed)[Object.keys(confirmed).length - 1]);
         const predLength = 155;
@@ -67,11 +67,12 @@ class ParentChart extends Component {
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
         this.setState({marginBottom: margin.bottom});
+        console.log(margin.bottom, this.state.marginBottom)
         this.setState({width: width, height: height})
         var svg = d3.select(".chart-container")
                     .append("svg")
                         .attr("width", width + margin.left + margin.right + legendWidth)
-                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + contextHeight)
+                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + focusHeight)
                     .append("g")
                     .attr("ref", `${this.chartRef.current}`)
                     .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
@@ -105,9 +106,9 @@ class ParentChart extends Component {
     }
 
     render() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate, loggedIn } = this.props;
+        const { forecast, orgs, userPrediction, confirmed, confirmedAvg, aggregate, loggedIn } = this.props;
         console.log(forecast)
-        if(!this.state.chart) return "Loading"
+        if(!this.state.chart || !this.state.marginBottom) return "Loading"
         return(
             <Fragment>
                 {!this.props.isProfile ? 
@@ -118,6 +119,7 @@ class ParentChart extends Component {
                     orgs={orgs}
                     userPrediction={userPrediction}
                     confirmed={confirmed}
+                    confirmedAvg={confirmedAvg}
                     aggregate={aggregate}
                     loggedIn={loggedIn}
                     x={this.state.x}
@@ -126,7 +128,7 @@ class ParentChart extends Component {
                     height={this.state.height}
                     predStartDate={this.state.predStartDate}
                     xAxis={this.state.xAxis}
-                    margBottom = {this.state.marginBottom}
+                    marginBottom = {this.state.marginBottom}
                     appendModal={this.appendModal()}
                 />}
             </Fragment>

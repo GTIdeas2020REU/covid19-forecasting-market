@@ -293,7 +293,7 @@ export const createFocusContext = (svg, width, height, marginBottom, confirmedDa
   var focus = svg
                   .append("g")
                       .attr("viewBox", [0, 0, width, focusHeight])
-                      .attr("transform", `translate(0,${height + 80} )`)
+                      .attr("transform", `translate(0,${height + focusMargin} )`)
                       //.attr("width", width + 100)
                       //.attr("height", height)
                       .style("display", "block")
@@ -305,7 +305,7 @@ export const createFocusContext = (svg, width, height, marginBottom, confirmedDa
   const focusY = d3
                   .scaleLinear()
                   .domain(y.domain())
-                  .range([focusHeight - marginBottom, 0])
+                  .range([focusHeight - focusMargin, 0])
                   .nice();
   
   var focusXAxis = focus
@@ -346,30 +346,32 @@ export const createFocusContext = (svg, width, height, marginBottom, confirmedDa
                               .attr("d", focusPredLine)
                               .attr("class", "context-curve")
                               .attr("stroke", color(labels[0]))
-    focus.selectAll(".forecast")
-          .data(forecastData)
-          .enter()
-          .append("path")
-              .attr("d", line)
-              .attr("id", (f, index) => labels[3 + index])
-              .attr("class", "forecast line")
-              .style("stroke", (f, index) => color(labels[3 + index]))
-              .style("stroke-width", "2px");
+  console.log(labels);
+  focus.selectAll(".forecast-small")
+        .data(forecastData)
+        .enter()
+        .append("path")
+            .attr("d", line)
+            .attr("class", "context-curve")
+            .style("stroke", (f, index) => color(labels[3 + index]))
+            .style("stroke-width", "2px");
 
   function brushed() {
       if (d3.event.selection) {
           var extent = d3.event.selection;
           x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
-          xAxis
-                  .call(d3.axisBottom(x))
+          xAxis.call(d3.axisBottom(x))
           var newX = x(getLastDate(confirmedData));
           newX = newX < 0 ? 0 : newX;
-          console.log(newX)
           d3
               .select("#prediction-clip")
               .select("rect")
                   .attr("width", width - newX)
                   .attr("x", newX);
+          d3
+                  .select("#confirmed-clip")
+                  .select("rect")
+                      .attr("width", newX)
 
           svg
               .selectAll(".line")
