@@ -44,8 +44,8 @@ class App extends React.Component {
           </div><br></br>
               <InteractiveChartContainer/>
               </Route>
-            <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />
-            <Route exact path={ROUTES.US_NATIONAL_INC} component={newDeathsContainer} />
+            {/* <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />
+            <Route exact path={ROUTES.US_NATIONAL_INC} component={newDeathsContainer} /> */}
             <Route exact path={ROUTES.MAP_PORTAL} component={Mapportal} />
             <Route exact path={ROUTES.LEADERBOARD} component={Leaderboard} />
             <Route exact path={ROUTES.MARKET} component={MarketChart} />
