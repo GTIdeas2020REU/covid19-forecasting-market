@@ -1,7 +1,5 @@
 import React from 'react';
 import Chart from 'chart.js';
-import 'chartjs-plugin-dragdata';
-import 'chartjs-plugin-zoom';
 import PropTypes from 'prop-types';
 import { cleanConfirmedData } from '../../utils/data';
 

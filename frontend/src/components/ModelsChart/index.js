@@ -1,7 +1,5 @@
 import React from 'react';
 import Chart from 'chart.js';
-import 'chartjs-plugin-dragdata';
-import 'chartjs-plugin-zoom';
 import { getDates, cleanConfirmedData } from '../../utils/data'
 
 
