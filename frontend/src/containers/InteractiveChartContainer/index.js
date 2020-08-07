@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import InteractiveChart from '../../components/InteractiveChart';
-import { cleanConfirmedData, organizeData } from '../../utils/data';
+import { cleanConfirmedData, getLastValue, organizeData } from '../../utils/data';
 
 /*function InteractiveCharts({ dataSet, orgs, userPrediction, confirmed }) {
     return dataSet.map((data, index) => {
@@ -17,6 +17,8 @@ class InteractiveChartContainer extends Component {
             forecast: null,
             orgs: null,
             confirmed: null,
+            confirmedLastVal: null,
+            confirmedLastDate: null,
             userPrediction: null,
             aggregate: null,
             mse: null,
@@ -38,6 +40,12 @@ class InteractiveChartContainer extends Component {
         fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
             this.setState({ confirmed: data });
         });
+        fetch('/us-inc-deaths-confirmed').then(res => res.json()).then(data => {
+            this.setState({ 
+                confirmedLastVal: Object.values(data)[Object.values(data).length - 1],
+                confirmedLastDate: Object.keys(data)[Object.values(data).length - 1]
+             });
+        });
         fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
             this.setState({ aggregate: data });
             //console.log(data);
@@ -55,8 +63,8 @@ class InteractiveChartContainer extends Component {
         });
     }
     render() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate, mse, loginStatus } = this.state;
-        if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !mse || !loginStatus) return 'Loading...';
+        const { forecast, orgs, userPrediction, confirmed, confirmedLastVal, confirmedLastDate, aggregate, mse, loginStatus } = this.state;
+        if (!forecast || !orgs || !userPrediction || !confirmed || !confirmedLastVal|| !confirmedLastDate || !aggregate || !mse || !loginStatus) return 'Loading...';
 
         return (
             <div className="chartContainer">
@@ -65,6 +73,8 @@ class InteractiveChartContainer extends Component {
                     orgs={orgs}
                     userPrediction={userPrediction}
                     confirmed={confirmed}
+                    confirmedLastVal={confirmedLastVal}
+                    confirmedLastDate={confirmedLastDate}
                     aggregate={aggregate}
                     mse={mse}
                     loginStatus={loginStatus}

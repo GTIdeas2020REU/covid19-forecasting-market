@@ -86,8 +86,8 @@ class InteractiveChart extends Component {
     }
 
     renderChartUnregistered() {
-        var { forecast, orgs, userPrediction, confirmed, aggregate, mse } = this.props;
-
+        var { forecast, orgs, userPrediction, confirmed, confirmedLastVal, confirmedLastDate, aggregate, mse } = this.props;
+        confirmedLastDate = d3.timeParse("%Y-%m-%d")(confirmedLastDate);
         // sort models by increasing error
         var orgIndices = {};
         for (var i = 0; i < orgs.length; i++) {
@@ -119,8 +119,6 @@ class InteractiveChart extends Component {
 
 
         var predictionData = [];//where we will store formatted userPrediction
-        var defaultPredictionData = []
-        const savePrediction = this.savePrediction;
         const createDefaultPrediction = this.createDefaultPrediction;
         this.appendModal();
         const category = this.state.category;
@@ -128,14 +126,14 @@ class InteractiveChart extends Component {
         //set up margin, width, height of chart
         const legendWidth = 380;
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
-        const contextHeight = 100;
+        const focusHeight = 100;
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
         var svg = d3.select(this.chartRef.current)
                     .append("svg")
                         .attr("width", width + margin.left + margin.right + legendWidth)
-                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + contextHeight)
+                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + focusHeight)
                     .append("g")
                     .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
         
@@ -169,23 +167,16 @@ class InteractiveChart extends Component {
             .text("Daily Deaths");
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
-        var confirmedData = Object.keys(confirmed).map(key => ({
-            date: d3.timeParse("%Y-%m-%d")(key),
-            value: confirmed[key]
-        }));
-        
+        var confirmedData = reformatData(confirmed)
+        confirmedData.push({
+            date: confirmedLastDate,
+            value: confirmedLastVal
+        })
         var forecastData = forecast.map(f => {
-            return Object.keys(f).map(key => ({
-                date: d3.timeParse("%Y-%m-%d")(key),
-                value: f[key]
-            }))
+            return reformatData(f);
         });
 
-        var aggregateData = Object.keys(aggregate).map(key => ({
-            date: d3.timeParse("%Y-%m-%d")(key),
-            value: aggregate[key]
-        }));
-  
+        var aggregateData = reformatData(aggregate);
         //set other dates
         const confirmedStartDate = confirmedData[4].date;
         const predStartDate = confirmedData[confirmedData.length - 1].date; //last date of confirmedData
@@ -379,7 +370,7 @@ class InteractiveChart extends Component {
         var currDate = predStartDate;
         var defined = true;
         var value = confirmedData[confirmedData.length - 1].value;
-        const confirmedLastVal = value; //used to make sure the first data point of prediction stays the same
+        //const confirmedLastVal = value; //used to make sure the first data point of prediction stays the same
         
 
         predictionData = createDefaultPrediction(predStartDate, predEndDate);
@@ -505,6 +496,9 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                 .attr('d', predLine)
                                 .style("stroke", color(legendString[2]))
                                 .style("stroke-width", "2px")
+                        focusPredCurve.datum(filteredData)
+                                        .attr("d", focusPredLine);
+
                         });
                     })
                     .on("end", function () {
@@ -675,12 +669,11 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .text("Today")
                     .style("text-anchor", "end")
         /////////////////////////////////////////////////////////////////////////////////////////////
-        const focusHeight = 100;
-        const contextMargin = 50;
-        var context = svg
+        const focusMargin = 50;
+        var focus = svg
                             .append("g")
                                 .attr("viewBox", [0, 0, width, focusHeight])
-                                .attr("transform", `translate(0,${height + contextMargin} )`)
+                                .attr("transform", `translate(0,${height + focusMargin} )`)
                                 //.attr("width", width + 100)
                                 //.attr("height", height)
                                 .style("display", "block")
@@ -691,7 +684,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                             .attr("transform", `translate(0,${height - margin.bottom})`)
                                             .call(d3.axisBottom(x))*/
 
-        var contextX = d3
+        var focusX = d3
                             .scaleTime()
                             .domain([confirmedStartDate, predEndDate])
                             .range([0, width]);
@@ -701,10 +694,10 @@ const forecastPaths = document.querySelectorAll(".forecast");
                         .range([focusHeight - margin.bottom, 0])
                         .nice();
         
-        var contextXAxis = context
+        var focusXAxis = focus
                                     .append("g")
                                     .attr("transform", `translate(0,${focusHeight - margin.bottom})`)
-                                    .call(d3.axisBottom(contextX));
+                                    .call(d3.axisBottom(focusX));
         const brush = d3.brushX()
                         .extent([[0, 0], [width, focusHeight - margin.bottom]])
                         .on("brush", brushed)
@@ -722,29 +715,28 @@ const forecastPaths = document.querySelectorAll(".forecast");
         const focusPredLine = d3.line()
                                 .curve(d3.curveBasis)
                                 .defined(d => d.defined)
-                                .x(function(d) { return x(d.date) })
+                                .x(function(d) { return focusX(d.date) })
                                 .y(function(d) { return focusY(d.value) })        
-        context.append("path")
+        focus.append("path")
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
             .attr("stroke", color(legendString[0]))
         
-        context.append("path")
+        focus.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
             .attr("stroke", color(legendString[1]))
 
-        var contextPredCurve = context.append("path")
+        var focusPredCurve = focus.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
                                     .attr("class", "context-curve")
                                     .attr("stroke", color(legendString[2]))
         
-        console.log(forecastData);
         forecastData.map((f, index) => {
-            context
+            focus
                     .append("path")
                     .datum(f)
                     .attr("d", focusLine)
@@ -756,7 +748,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
             if (d3.event.selection) {
                 var extent = d3.event.selection;
                 //console.log([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
-                x.domain([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
+                x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
                 xAxis
                         //.transition()
                         //.duration(1000)
@@ -792,6 +784,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                         .attr("x2", x(today))
                 todayMarker.select("text")
                         .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+
             }
         }
         
@@ -801,9 +794,9 @@ const forecastPaths = document.querySelectorAll(".forecast");
             }
 
         }
-        const gb = context
+        const gb = focus
                         .call(brush)
-                        .call(brush.move, defaultSelection);   
+                        .call(brush.move, defaultSelection); 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         var deleteButton = document.createElement("button")
         deleteButton.className = 'btn primary-btn'
@@ -828,8 +821,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
     }
 
     renderChart() {
-        var { forecast, orgs, userPrediction, confirmed, aggregate, mse } = this.props;
-
+        var { forecast, orgs, userPrediction, confirmed, confirmedLastVal, confirmedLastDate, aggregate, mse } = this.props;
+        confirmedLastDate = d3.timeParse("%Y-%m-%d")(confirmedLastDate);
         // sort models by increasing error
         var orgIndices = {};
         for (var i = 0; i < orgs.length; i++) {
@@ -868,7 +861,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
         //set up margin, width, height of chart
         const legendWidth = 230;
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
-        const contextHeight = 100;
+        const focusHeight = 100;
         const titleHeight = 20;
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 800 - margin.left - margin.right,
@@ -876,7 +869,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
         var svg = d3.select(this.chartRef.current)
                     .append("svg")
                         .attr("width", width + margin.left + margin.right + legendWidth)
-                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + contextHeight)
+                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + focusHeight)
                     .append("g")
                         .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
         
@@ -911,6 +904,10 @@ const forecastPaths = document.querySelectorAll(".forecast");
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         var confirmedData = reformatData(confirmed);
+        confirmedData.push({
+            date: confirmedLastDate,
+            value: confirmedLastVal
+        })
         var forecastData = forecast.map(f => {
             return reformatData(f);
         });
@@ -924,7 +921,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
   
         //set other dates
         const confirmedStartDate = confirmedData[4].date;
-        const predStartDate = confirmedData[confirmedData.length - 1].date; //last date of confirmedData
+        const predStartDate = confirmedLastDate; //last date of confirmedData
         const predLength = 155;
         const predEndDate = d3.timeDay.offset(predStartDate, predLength)
         
@@ -1113,7 +1110,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
         var currDate = predStartDate;
         var defined = true;
         var value = confirmedData[confirmedData.length - 1].value;
-        const confirmedLastVal = value; //used to make sure the first data point of prediction stays the same
+        //const confirmedLastVal = value; //used to make sure the first data point of prediction stays the same
         
         //check if userPrediction already exists in db
         if (Object.keys(userPrediction).length > 0) {
@@ -1254,12 +1251,14 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                 .attr('d', predLine)
                                 .style("stroke", color(legendString[2]))
                                 .style("stroke-width", "2px")
-                        // contextPredCurve.datum(predictionData)
-                        //                 .attr("d", focusPredLine);
+                        focusPredCurve.datum(filteredData)
+                                        .attr("d", focusPredLine);
 
                         });
                     })
                     .on("end", function () {
+                        console.log(predictionData);
+                        console.log(filteredData);
                         d3.select("#tooltip-line")
                             .style("opacity", "1");
                         d3.selectAll(".mouse-per-line circle")
@@ -1408,12 +1407,12 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .style("text-anchor", "end")
 
         /////////////////////////////////////////////////////////////////////////////////////////////
-        const focusHeight = 100;
-        const contextMargin = 50;
-        var context = svg
+        // const focusHeight = 100;
+        const focusMargin = 50;
+        var focus = svg
                             .append("g")
                                 .attr("viewBox", [0, 0, width, focusHeight])
-                                .attr("transform", `translate(0,${height + contextMargin} )`)
+                                .attr("transform", `translate(0,${height + focusMargin} )`)
                                 //.attr("width", width + 100)
                                 //.attr("height", height)
                                 .style("display", "block")
@@ -1424,7 +1423,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                             .attr("transform", `translate(0,${height - margin.bottom})`)
                                             .call(d3.axisBottom(x))*/
 
-        var contextX = d3
+        var focusX = d3
                             .scaleTime()
                             .domain([confirmedStartDate, predEndDate])
                             .range([0, width]);
@@ -1434,10 +1433,10 @@ const forecastPaths = document.querySelectorAll(".forecast");
                         .range([focusHeight - margin.bottom, 0])
                         .nice();
         
-        var contextXAxis = context
+        var focusXAxis = focus
                                     .append("g")
                                     .attr("transform", `translate(0,${focusHeight - margin.bottom})`)
-                                    .call(d3.axisBottom(contextX));
+                                    .call(d3.axisBottom(focusX));
         const brush = d3.brushX()
                         .extent([[0, 0], [width, focusHeight - margin.bottom]])
                         .on("brush", brushed)
@@ -1455,29 +1454,28 @@ const forecastPaths = document.querySelectorAll(".forecast");
         const focusPredLine = d3.line()
                                 .curve(d3.curveBasis)
                                 .defined(d => d.defined)
-                                .x(function(d) { return x(d.date) })
+                                .x(function(d) { return focusX(d.date) })
                                 .y(function(d) { return focusY(d.value) })        
-        context.append("path")
+        focus.append("path")
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
             .attr("stroke", color(legendString[0]))
         
-        context.append("path")
+        focus.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
             .attr("stroke", color(legendString[1]))
 
-        var contextPredCurve = context.append("path")
+        var focusPredCurve = focus.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
                                     .attr("class", "context-curve")
                                     .attr("stroke", color(legendString[2]))
         
-        console.log(forecastData);
         forecastData.map((f, index) => {
-            context
+            focus
                     .append("path")
                     .datum(f)
                     .attr("d", focusLine)
@@ -1489,7 +1487,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
             if (d3.event.selection) {
                 var extent = d3.event.selection;
                 //console.log([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
-                x.domain([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
+                x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
                 xAxis
                         //.transition()
                         //.duration(1000)
@@ -1535,7 +1533,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
             }
 
         }
-        const gb = context
+        const gb = focus
                         .call(brush)
                         .call(brush.move, defaultSelection);   
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1553,6 +1551,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
             var filtered = predictionData.filter(predLine.defined())
             yourLine.datum(filtered)
                     .attr('d', predLine)
+            focusPredCurve.datum(filtered)
+                            .attr("d", focusPredLine)
                     
             svg
                 .select("#drawing-instruction")
