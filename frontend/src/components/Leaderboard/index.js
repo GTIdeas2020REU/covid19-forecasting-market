@@ -19,8 +19,8 @@ function Table({ columns, data, style }) {
 
   // Render the UI for table
   return (
-    <table style={style} {...getTableProps()}>
-      <thead>
+    <table style={style} className="table table-bordered table-hover table-sm" {...getTableProps()}>
+      <thead className="thead-dark">
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
@@ -107,7 +107,7 @@ class Leaderboard extends React.Component {
     const tableStyle = {
       width: "50%",
       textAlign: "center",
-      "overflow-y": "scroll"
+      overflowY: "scroll"
     };
 
     
@@ -123,9 +123,9 @@ class Leaderboard extends React.Component {
     return (
       <div>
         <h2>Leaderboard</h2>
-        <div class="d-flex flex-row">>
+        <div className="d-flex flex-row">>
           <Table columns={columns} data={users} style={tableStyle} />
-          <div class="text-center" style={chartStyle}>Hello</div>
+          <div className="text-center" style={chartStyle}>Hello</div>
         </div>
       </div>
     );
