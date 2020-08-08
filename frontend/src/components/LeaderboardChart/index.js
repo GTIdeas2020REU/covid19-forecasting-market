@@ -12,21 +12,13 @@ class LeaderboardChart extends Component {
 
     componentDidMount() {
         this.renderChart();
-        
-        /*const userStatus = this.props.userStatus;
-        console.log(userStatus)
-        if (userStatus['logged in']) {
-            this.renderChart();
-        }
-        else {
-            this.chartRef.current.innerHTML = "Please log in"
-        }*/
     }
+
+
     renderChart() {
         const { userPrediction, confirmed } = this.props;
         var predictionData = {};//where we will store formatted userPrediction
         const category = this.state.category;
-        var compiledData = [];
 
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         var confirmedData = Object.keys(confirmed).map(key => ({
@@ -34,53 +26,17 @@ class LeaderboardChart extends Component {
             value: confirmed[key]
         }));
 
-        //var predictionData = userPrediction;
-
         predictionData = userPrediction.map(d => ({
             date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
-            value: d.value,
-            defined: d.defined
-        }))
-
-        /*var predictionData = userPrediction.map(item => ({
-            date: d3.timeParse("%Y-%m-%d")(item['date']),
-            value: item['value']
-        }));*/
-
-        console.log("PREDICTION DATA");
-        console.log(predictionData);
-
-        /*
-        //store userPrediction in predictionData if it exists; parse dates and store as d3 date objects
-        if(Object.keys(userPrediction).length > 0) {
-            Object.keys(userPrediction).map(p => {
-                predictionData[p]= userPrediction[p].map(d => ({
-                    date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
-                    value: d.value,
-                    defined: d.defined
-                }))
-            })
-        }*/
-
-        predictionData = sortDictByDate(predictionData);
-        //console.log(predictionData)
-        //get most recent prediction
-        var dates = sortStringDates(Object.keys(userPrediction))
-        const mostRecentPred = predictionData[dates[dates.length - 1]]
-        
-        //push to compiledData
-        compiledData = [confirmedData, mostRecentPred]
-
-        console.log("MOST RECENT PRED");
-        console.log(mostRecentPred);
+            value: d.value
+        }));
 
         //IMPORTANT BOUNDARIES// 
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-02-01");
-        const predEndDate = mostRecentPred.date;
+        const predEndDate = predictionData[predictionData.length - 1].date;
         const valueMax = 5000;
-        
 
-        /////////////////////////////////////////////////DRAW CHART//////////////////////////////
+        /////////////////////////////////DRAW CHART//////////////////////////////
         //set up margin, width, height of chart
         const legendWidth = 180;
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
@@ -182,7 +138,6 @@ class LeaderboardChart extends Component {
                         .x(function(d) { return x(d.date) })
                         .y(function(d) { return y(d.value) })
         const predLine = predLineGenerator
-                            .defined(d => d.defined)
                             .x(function(d) { return x(d.date) })
                             .y(function(d) { return y(d.value) })
 
@@ -198,10 +153,9 @@ class LeaderboardChart extends Component {
                                 .append("path")
                                 .attr("id", "lbPrediction")
                                 .attr("class", "line")
-                                .datum(predEndDate)
+                                .datum(predictionData)
                                 .attr("d", predLine)
-                                .attr("stroke",  color(legendString[1]))
-                
+                                .attr("stroke",  color(legendString[1]))    
     }
 
     render() {
