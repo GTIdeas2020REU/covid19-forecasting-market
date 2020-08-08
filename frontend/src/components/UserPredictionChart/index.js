@@ -259,14 +259,10 @@ class UserPredictionChart extends Component {
                         d3.selectAll(".mouse-per-line text")
                             .style("display", "none")
                     })
-                    /*.on('mouseover', function() { // on mouse in show line, circles and text
+                    .on('mouseover', function() { // on mouse in show line, circles and text
                         d3.select("#tooltip-line")
-                            .style("opacity", "1");
-                        d3.selectAll(".mouse-per-line circle")
-                            .style("opacity", "1");
-                        d3.selectAll(".mouse-per-line text")
-                            .style("opacity", "1")
-                    })*/
+                            .style("display", "block");
+                    })
                     .on('mousemove', function() { // mouse moving over canvas
                         var todayDate = new Date();
                         todayDate = d3.timeParse("%Y-%m-%d")(todayDate.toISOString().substring(0,10));

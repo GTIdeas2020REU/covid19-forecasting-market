@@ -4,6 +4,7 @@ import './InteractiveChart.css';
 import { clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction } from '../../utils/data';
 import { elementType } from 'prop-types';
 import { addDays, formatDate } from '../../utils/date';
+import { timeDay } from 'd3';
 
 
 class InteractiveChart extends Component {
@@ -363,7 +364,9 @@ class InteractiveChart extends Component {
         //append path for prediction data
         var yourLine = predictionArea
                                         .append("path")
-                                        .attr("id", "your-line");
+                                        .attr("id", "your-line")
+                                        .attr("class", "prediction line");
+
         
         
         //variables used to initialize user prediction data if it doesn't exist in the db
@@ -395,7 +398,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                 data: forecastData[index]
             })
         })
-        //confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
+        confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
         compiledData.push({
             name: "Daily Confirmed Deaths",
             data: confirmedData
@@ -562,91 +565,76 @@ const forecastPaths = document.querySelectorAll(".forecast");
                         .style("opacity", "0");
         mousePerLine.append("text")
                     .attr("transform", "translate(10,3)"); 
-                    
         var chart = tooltipArea
-                    .append("svg:rect")
-                    .attr('width', width)
-                    .attr('height', height)
-                    .attr('fill', 'none')
-                    .attr('pointer-events', 'all')
-                    //.style("cursor", "pointer")
-                    .on('mouseout', function() { // on mouse out hide line, circles and text
-                        d3.select("#tooltip-line")
-                        .style("opacity", "0");
-                        d3.selectAll(".mouse-per-line circle")
-                        .style("opacity", "0");
-                        d3.selectAll(".mouse-per-line text")
-                        .style("opacity", "0")
-                    })
-                    .on('mouseover', function() { // on mouse in show line, circles and text
-                        d3.select("#tooltip-line")
-                        .style("opacity", "1");
-                        d3.selectAll(".mouse-per-line circle")
-                        .style("opacity", "1");
-                        d3.selectAll(".mouse-per-line text")
-                        .style("opacity", "1")
-
-                    })
-                    .on('mousemove', function() { // mouse moving over canvas
-                        var mouse = d3.mouse(this);
-                        var xCoord = mouse[0];
-                        var yCoord = mouse[1];
-                        const xLowerBoundary = x(confirmedData[confirmedData.length - 1].date)
-                        if (xCoord > xLowerBoundary && xCoord < width && yCoord > 0 && yCoord < height) {
-                            chart.attr("cursor", "pointer");
-                        }
-                        else {
-                            chart.attr("cursor", "default");
-                        }
-                        d3
-                            .select("#tooltip-line")
-                            .attr("d", function() {
-                                var d = "M" + xCoord + "," + height;
-                                d += " " + xCoord + "," + 0;
-                                return d;
-                            });
-                        d3
-                            .selectAll(".mouse-per-line")
-                            .attr("transform", function(d, i) {
-                                if (d.data.length == 0) {return;}
-                                var date = x.invert(xCoord);
-                                const index = d3.bisector(f => f.date).left(compiledData[i].data, date);
-                                var a = null;
-                                if (index > 0) {
-                                    a = d.data[index - 1];
-                                }
-                                const b = d.data[index];
-                                //d = the data object corresponding to date and value pointed by the cursors
-                                var data = null;
-                                if (!a) {
-                                    data = b;
-                                }
-                                else if (!b) {
-                                    data = a;
+                            .append("svg:rect")
+                            .attr('width', width)
+                            .attr('height', height)
+                            .attr('fill', 'none')
+                            .attr('pointer-events', 'all')
+                            //.style("cursor", "pointer")
+                            .on('mouseout', function() { // on mouse out hide line, circles and text
+                                d3.select("#tooltip-line")
+                                .style("opacity", "0");
+                                d3.selectAll(".mouse-per-line circle")
+                                .style("opacity", "0");
+                                d3.selectAll(".mouse-per-line text")
+                                .style("opacity", "0")
+                            })
+                            .on('mouseover', function() { // on mouse in show line, circles and text
+                                d3.select("#tooltip-line")
+                                .style("opacity", "1");
+                            })
+                            .on('mousemove', function() { // mouse moving over canvas
+                                console.log("in")
+                                var mouse = d3.mouse(this);
+                                var xCoord = mouse[0];
+                                var yCoord = mouse[1];
+                                const xLowerBoundary = x(confirmedData[confirmedData.length - 1].date)
+                                if (xCoord > xLowerBoundary && xCoord < width && yCoord > 0 && yCoord < height) {
+                                    chart.attr("cursor", "pointer");
                                 }
                                 else {
-                                    data = b && (date - a.date > b.date - date) ? b : a;
+                                    chart.attr("cursor", "default");
                                 }
-                                if (+d3.timeDay.floor(date) == +data.date || +d3.timeDay.ceil(date) == +data.date) {
-                                    if (data.defined != 0) {
+                                d3
+                                    .select("#tooltip-line")
+                                    .attr("d", function() {
+                                        var d = "M" + xCoord + "," + height;
+                                        d += " " + xCoord + "," + 0;
+                                        return d;
+                                    });
+                                d3
+                                    .selectAll(".mouse-per-line")
+                                    .attr("transform", function(d, i) {
+                                        if (d.data.length == 0) {return;}
+                                        var date = x.invert(xCoord);
+                                        var value = -1;
+                                        d.data.map(d => {
+                                            if(+d.date == +d3.timeDay.round(date) && d.defined != 0) {
+                                                value = d.value;
+                                            }
+                                        })
                                         var element = d3.select(this)
-                                                        .select('text')
-                                                            .style("opacity", "1")
-                                                            .text(Math.round(data.value));
-                                        element.select("circle")
-                                                .style("opacity", "1");
-                                        return "translate(" + mouse[0] + "," + y(data.value)+")";
-                                    }
-                                }
-                                var element = d3.select(this)
-                                                .select("text")
-                                                .style("opacity", "0")
-                                element
-                                        .select("circle")
-                                        .style("opacity", "0");
-                                
-                        });
-                    })
+                                        if (value >= 0) {
+                                            console.log(d.name)
+                                            element.select('text')
+                                                    .style("opacity", "1")
+                                                    .text(Math.round(value));
+                                            element.select("circle")
+                                                    .style("opacity", "1");
+                                            return "translate(" + mouse[0] + "," + y(value)+")";
+                                        }
+                                        else {
+                                            element
+                                                    .select("text")
+                                                    .style("opacity", "0")
+                                            element
+                                                    .select("circle")
+                                                    .style("opacity", "0");
+                                        }
+                                        
+                                });
+                            })
         ////ADD TODAY LINE/////////////////////////////////////////////////////
         const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
         var todayMarker = svg
@@ -1103,7 +1091,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
         //append path for prediction data
         var yourLine = predictionArea
                                         .append("path")
-                                        .attr("id", "your-line");
+                                        .attr("id", "your-line")
+                                        .attr("class", "prediction line");
         
         
         //variables used to initialize user prediction data if it doesn't exist in the db
@@ -1143,16 +1132,13 @@ const forecastPaths = document.querySelectorAll(".forecast");
                 data: forecastData[index]
             })
         })
-        //confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
+        confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
         compiledData.push({
             name: "Daily Confirmed Deaths",
             data: confirmedData
         })
         var lastDate = aggregateData[aggregateData.length - 1].date;
-        console.log(aggregateData);
-        console.log(lastDate);
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
-        console.log(aggregateData);
         compiledData.push({
             name: "Aggregate Forecast",
             data: aggregateData
@@ -1272,6 +1258,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     });
         
         svg.call(drag)
+        console.log(compiledData);
 
         const tooltipArea = svg
                                 .append("g")
@@ -1318,13 +1305,9 @@ const forecastPaths = document.querySelectorAll(".forecast");
                             .on('mouseover', function() { // on mouse in show line, circles and text
                                 d3.select("#tooltip-line")
                                 .style("opacity", "1");
-                                d3.selectAll(".mouse-per-line circle")
-                                .style("opacity", "1");
-                                d3.selectAll(".mouse-per-line text")
-                                .style("opacity", "1")
-
                             })
                             .on('mousemove', function() { // mouse moving over canvas
+                                console.log("in")
                                 var mouse = d3.mouse(this);
                                 var xCoord = mouse[0];
                                 var yCoord = mouse[1];
@@ -1347,40 +1330,30 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                     .attr("transform", function(d, i) {
                                         if (d.data.length == 0) {return;}
                                         var date = x.invert(xCoord);
-                                        const index = d3.bisector(f => f.date).left(compiledData[i].data, date);
-                                        var a = null;
-                                        if (index > 0) {
-                                            a = d.data[index - 1];
-                                        }
-                                        const b = d.data[index];
-                                        //d = the data object corresponding to date and value pointed by the cursors
-                                        var data = null;
-                                        if (!a) {
-                                            data = b;
-                                        }
-                                        else if (!b) {
-                                            data = a;
+                                        var value = -1;
+                                        d.data.map(d => {
+                                            if(+d.date == +d3.timeDay.round(date) && d.defined != 0) {
+                                                value = d.value;
+                                            }
+                                        })
+                                        var element = d3.select(this)
+                                        if (value >= 0) {
+                                            console.log(d.name)
+                                            element.select('text')
+                                                    .style("opacity", "1")
+                                                    .text(Math.round(value));
+                                            element.select("circle")
+                                                    .style("opacity", "1");
+                                            return "translate(" + mouse[0] + "," + y(value)+")";
                                         }
                                         else {
-                                            data = b && (date - a.date > b.date - date) ? b : a;
+                                            element
+                                                    .select("text")
+                                                    .style("opacity", "0")
+                                            element
+                                                    .select("circle")
+                                                    .style("opacity", "0");
                                         }
-                                        if (+d3.timeDay.floor(date) == +data.date || +d3.timeDay.ceil(date) == +data.date) {
-                                            if (data.defined != 0) {
-                                                var element = d3.select(this)
-                                                                .select('text')
-                                                                    .style("opacity", "1")
-                                                                    .text(Math.round(data.value));
-                                                element.select("circle")
-                                                        .style("opacity", "1");
-                                                return "translate(" + mouse[0] + "," + y(data.value)+")";
-                                            }
-                                        }
-                                        var element = d3.select(this)
-                                                        .select("text")
-                                                        .style("opacity", "0")
-                                        element
-                                                .select("circle")
-                                                .style("opacity", "0");
                                         
                                 });
                             })
@@ -1560,6 +1533,57 @@ const forecastPaths = document.querySelectorAll(".forecast");
         };
         document.querySelector("body").appendChild(deleteButton);
     
+        /*function hover(svg, path) {
+  
+            if ("ontouchstart" in document) svg
+                .style("-webkit-tap-highlight-color", "transparent")
+                .on("touchmove", moved)
+                .on("touchstart", entered)
+                .on("touchend", left)
+            else svg
+                .on("mousemove", moved)
+                .on("mouseenter", entered)
+                .on("mouseleave", left);
+          
+            const dot = svg.append("g")
+                .attr("display", "none");
+          
+            dot.append("circle")
+                .attr("r", 2.5);
+          
+            dot.append("text")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10)
+                .attr("text-anchor", "middle")
+                .attr("y", -8);
+          
+            function moved() {
+              d3.event.preventDefault();
+              const mouse = d3.mouse(this);
+              const xm = x.invert(mouse[0]);
+              const ym = y.invert(mouse[1]);
+              const i1 = d3.bisectLeft(data.dates, xm, 1);
+              const i0 = i1 - 1;
+              const i = xm - data.dates[i0] > data.dates[i1] - xm ? i1 : i0;
+              const s = d3.least(data.series, d => Math.abs(d.values[i] - ym));
+              path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+              dot.attr("transform", `translate(${x(data.dates[i])},${y(s.values[i])})`);
+              dot.select("text").text(s.name);
+            }
+          
+            function entered() {
+              path.style("mix-blend-mode", null).attr("stroke", "#ddd");
+              dot.attr("display", null);
+            }
+          
+            function left() {
+              path.style("mix-blend-mode", "multiply").attr("stroke", null);
+              dot.attr("display", "none");
+            }
+          }*/
+
+
+
     }
         
     render() {
