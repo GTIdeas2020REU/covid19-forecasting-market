@@ -217,10 +217,18 @@ class InteractiveChart extends Component {
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         var legendString = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(orgs);
+        var models = [];
+        orgs.map((o, i) => {
+            var idx = o.indexOf("(");
+            models.push(o.substring(0, idx - 1));
+        })
+        var names = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(models)
+        const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
+        const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
         //color function that assigns random colors to each data
         var color = d3
                         .scaleOrdinal()
-                        .domain(legendString)
+                        .domain(models)
                         .range(d3.schemeTableau10);
 
          //draw legend
@@ -229,7 +237,7 @@ class InteractiveChart extends Component {
         var size = 10;
         const legendMarginL = 30;
         legend.selectAll("rect")
-            .data(legendString)
+            .data(names)
             .enter()
             .append("circle")
                 .attr('cx', width + legendMarginL)
@@ -237,7 +245,7 @@ class InteractiveChart extends Component {
                 .attr("r", 6)
                 //.attr("width", size)
                 //.attr("height", size)
-                .style("fill", function(d){ return color(d)})
+                .style("fill", (function(d){ return color(d)}))
 
         
         legend.selectAll("labels")
@@ -246,7 +254,7 @@ class InteractiveChart extends Component {
             .append("text")
                 .attr("x", width + 45)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                .style("fill", function(d){ return color(d)})
+                .style("fill", function(d, index){ return color(names[index])})
                 .text(function(d){console.log("D TEXT"); console.log(d); return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
@@ -288,7 +296,7 @@ class InteractiveChart extends Component {
                                     .attr("class", "line")    
                                     .datum(confirmedData)    
                                     .attr('d', line)
-                                    .attr("stroke", color(legendString[0]))
+                                    .attr("stroke", color(names[0]))
                                     .style("stroke-width", "3px")
         var confirmedAreaEndX = x(confirmedData[confirmedData.length - 1].date);
         var confirmedAreaEndY = y(confirmedData[confirmedData.length - 1].value);
@@ -325,7 +333,7 @@ class InteractiveChart extends Component {
                                     .attr("class", "line")        
                                     .datum(aggregateData)    
                                     .attr('d', line)
-                                    .attr("stroke", color(legendString[1]))
+                                    .attr("stroke", color(names[1]))
                                     .style("stroke-width", "2px")
         
         //display forecast data
@@ -348,7 +356,7 @@ class InteractiveChart extends Component {
             predictionArea.append("path")
                         .attr("class", "forecast line")
                         .attr("id", orgs[index])
-                        .style("stroke", color(orgs[index]))
+                        .style("stroke", color(models[index]))
                         .datum(f)
                             .attr("d", line);
         })
@@ -390,35 +398,37 @@ const forecastPaths = document.querySelectorAll(".forecast");
         console.log(aggregatePath)
         console.log(forecastPaths);
         console.log(orgs);
-        orgs.map((o, index) => {
-            var lastDate = forecastData[index][forecastData[index].length - 1].date;
-            forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
-            compiledData.push({
-                name: o,
-                data: forecastData[index]
-            })
-        })
+
         confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
         compiledData.push({
-            name: "Daily Confirmed Deaths",
+            name: labels[0],
             data: confirmedData
         })
         var lastDate = aggregateData[aggregateData.length - 1].date;
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
         console.log(aggregateData);
         compiledData.push({
-            name: "Aggregate Forecast",
+            name: labels[1],
             data: aggregateData
         })
         compiledData.push({
-            name: "User Prediction",
+            name: labels[2],
             data: predictionData
         })
+        modelClassNames.map((m, index) => {
+            var lastDate = forecastData[index][forecastData[index].length - 1].date;
+            forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
+            compiledData.push({
+                name: m,
+                data: forecastData[index]
+            })
+        })
+
         //join data to yourLine
         filteredData = predictionData.filter(predLine.defined())
         yourLine.datum(filteredData)
                 .attr('d', predLine)
-                .style("stroke", color(legendString[2]))
+                .style("stroke", color(names[2]))
                 .style("stroke-width", "2px")
 
         //append new rect  
@@ -497,8 +507,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
 
                         yourLine.datum(filteredData)
                                 .attr('d', predLine)
-                                .style("stroke", color(legendString[2]))
-                                .style("stroke-width", "2px")
+                                // .style("stroke", color(legendString[2]))
+                                // .style("stroke-width", "2px")
                         focusPredCurve.datum(filteredData)
                                         .attr("d", focusPredLine);
 
@@ -537,104 +547,142 @@ const forecastPaths = document.querySelectorAll(".forecast");
             };
         }*/
 
-
+        console.log(compiledData);
         const tooltipArea = svg
-                                .append("g")
-                                .attr("class", "tooltip")
+        .append("g")
+        .attr("class", "tooltip")
 
         tooltipArea.append("path") //vertical line
-                    .attr("id", "tooltip-line")
-                    .style("stroke", "black")
-                    .style("stroke-width", "0.5px")
-                    .style("opacity", "0");
+        .attr("id", "tooltip-line")
+        .style("stroke", "black")
+        .style("stroke-width", "0.5px")
+        .style("opacity", "0");
+        //where text will be
+        var tooltipBox = d3.select(".tooltip-box")
+            //  .style("background-color", "white")
+            // .style("border", "solid")
+            // .style("border-width", "2px")
+            // .style("border-radius", "5px")
+            // .style("padding", "5px")
+            .style("position", "absolute")
+            .style("display", "block")
+            .style("left", "10px")
+            .style("top", "10px");
+        // tooltipBox.selectAll("box")
+        //             .data(compiledData)
+        //             .enter()
+        //             .append("div")
+        //             .attr("class", d => d.name);    
+
         //console.log(compiledData)
         var mousePerLine = tooltipArea
-                                        .selectAll(".mouse-per-line")
-                                        .data(compiledData)
-                                        .enter()
-                                        .append("g")
-                                        .attr("class", "mouse-per-line");
-        
+                        .selectAll(".mouse-per-line")
+                        .data(compiledData)
+                        .enter()
+                        .append("g")
+                        .attr("class", "mouse-per-line");
+
         mousePerLine.append("circle")
-                        .attr("r", 2)
-                        .style("stroke", function(d) {
-                            return color(d.name);
-                        })
-                        .style("fill", "none")
-                        .style("stroke-width", "1px")
-                        .style("opacity", "0");
+                    .attr("r", 2)
+                    .style("stroke", function(d, index) {
+                        return color(names[index]);
+                    })
+                    .style("fill", "none")
+                    .style("stroke-width", "1px")
+                    .style("opacity", "0");
         mousePerLine.append("text")
                     .attr("transform", "translate(10,3)"); 
         var chart = tooltipArea
-                            .append("svg:rect")
-                            .attr('width', width)
-                            .attr('height', height)
-                            .attr('fill', 'none')
-                            .attr('pointer-events', 'all')
-                            //.style("cursor", "pointer")
-                            .on('mouseout', function() { // on mouse out hide line, circles and text
-                                d3.select("#tooltip-line")
-                                .style("opacity", "0");
-                                d3.selectAll(".mouse-per-line circle")
-                                .style("opacity", "0");
-                                d3.selectAll(".mouse-per-line text")
-                                .style("opacity", "0")
-                            })
-                            .on('mouseover', function() { // on mouse in show line, circles and text
-                                d3.select("#tooltip-line")
-                                .style("opacity", "1");
-                            })
-                            .on('mousemove', function() { // mouse moving over canvas
-                                console.log("in")
-                                var mouse = d3.mouse(this);
-                                var xCoord = mouse[0];
-                                var yCoord = mouse[1];
-                                const xLowerBoundary = x(confirmedData[confirmedData.length - 1].date)
-                                if (xCoord > xLowerBoundary && xCoord < width && yCoord > 0 && yCoord < height) {
-                                    chart.attr("cursor", "pointer");
-                                }
-                                else {
-                                    chart.attr("cursor", "default");
-                                }
-                                d3
-                                    .select("#tooltip-line")
-                                    .attr("d", function() {
-                                        var d = "M" + xCoord + "," + height;
-                                        d += " " + xCoord + "," + 0;
-                                        return d;
-                                    });
-                                d3
-                                    .selectAll(".mouse-per-line")
-                                    .attr("transform", function(d, i) {
-                                        if (d.data.length == 0) {return;}
-                                        var date = x.invert(xCoord);
-                                        var value = -1;
-                                        d.data.map(d => {
-                                            if(+d.date == +d3.timeDay.round(date) && d.defined != 0) {
-                                                value = d.value;
-                                            }
-                                        })
-                                        var element = d3.select(this)
-                                        if (value >= 0) {
-                                            console.log(d.name)
-                                            element.select('text')
-                                                    .style("opacity", "1")
-                                                    .text(Math.round(value));
-                                            element.select("circle")
-                                                    .style("opacity", "1");
-                                            return "translate(" + mouse[0] + "," + y(value)+")";
-                                        }
-                                        else {
-                                            element
-                                                    .select("text")
-                                                    .style("opacity", "0")
-                                            element
-                                                    .select("circle")
-                                                    .style("opacity", "0");
-                                        }
-                                        
-                                });
-                            })
+            .append("svg:rect")
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'none')
+            .attr('pointer-events', 'all')
+            //.style("cursor", "pointer")
+            .on('mouseout', function() { // on mouse out hide line, circles and text
+                d3.select("#tooltip-line")
+                .style("opacity", "0");
+                d3.selectAll(".mouse-per-line circle")
+                .style("opacity", "0");
+                d3.selectAll(".mouse-per-line text")
+                .style("opacity", "0")
+                tooltipBox.style("display", "none")
+            })
+            .on('mouseover', function() { // on mouse in show line, circles and text
+                d3.select("#tooltip-line")
+                .style("opacity", "1");
+                tooltipBox.style("display", "block")
+            })
+            .on('mousemove', function() { // mouse moving over canvas
+                var mouse = d3.mouse(this);
+                var xCoord = mouse[0];
+                var yCoord = mouse[1];
+                const xLowerBoundary = x(confirmedData[confirmedData.length - 1].date)
+                if (xCoord > xLowerBoundary && xCoord < width && yCoord > 0 && yCoord < height) {
+                    chart.attr("cursor", "pointer");
+                }
+                else {
+                    chart.attr("cursor", "default");
+                }
+                d3
+                    .select("#tooltip-line")
+                    .attr("d", function() {
+                        var d = "M" + xCoord + "," + height;
+                        d += " " + xCoord + "," + 0;
+                        return d;
+                    });
+                tooltipBox
+                    .style('left', `${d3.event.pageX + 20}px`)
+                    .style('top', `${d3.event.pageY + 20}px`)
+                d3
+                    .selectAll(".mouse-per-line")
+                    .attr("transform", function(d, i) {
+                        if (d.data.length == 0) {return;}
+                        var date = x.invert(xCoord);
+                        var value = -1;
+                        d.data.map(d => {
+                            if(+d.date == +d3.timeDay.round(date) && d.defined != 0) {
+                                value = d.value;
+                            }
+                        })
+                        var element = d3.select(this);
+                        var textBox = tooltipBox.select(`.${d.name}`);
+
+                        if (value >= 0) {
+                            if(textBox.empty()) {
+                                textBox = tooltipBox.append("div")
+                                                    .attr("class", d.name)
+                                                    .style("padding-left", "10px")
+                                                    .style("padding-right", "10px")
+                                                    .style("background-color", color(names[i]))
+                                                    .style("color", "white");
+
+                            }
+                            else {
+                                textBox.html(`${names[i]}: ${Math.round(value)}`)
+                            }
+
+                            element.select('text')
+                                    .style("opacity", "1")
+                                    .text(Math.round(value));
+                            element.select("circle")
+                                    .style("opacity", "1");
+                            return "translate(" + mouse[0] + "," + y(value)+")";
+                        }
+                        else {
+                            if(!textBox.empty()) {
+                                textBox.remove();
+                            }
+                            element
+                                    .select("text")
+                                    .style("opacity", "0")
+                            element
+                                    .select("circle")
+                                    .style("opacity", "0");
+                        }
+                        
+                });
+            })
         ////ADD TODAY LINE/////////////////////////////////////////////////////
         const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
         var todayMarker = svg
@@ -709,19 +757,19 @@ const forecastPaths = document.querySelectorAll(".forecast");
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(legendString[0]))
+            .attr("stroke", color(names[0]))
         
         focus.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(legendString[1]))
+            .attr("stroke", color(names[1]))
 
         var focusPredCurve = focus.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
                                     .attr("class", "context-curve")
-                                    .attr("stroke", color(legendString[2]))
+                                    .attr("stroke", color(names[2]))
         
         forecastData.map((f, index) => {
             focus
@@ -729,7 +777,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .datum(f)
                     .attr("d", focusLine)
                     .attr("class", "context-curve")
-                    .attr("stroke", color(orgs[index]));
+                    .attr("stroke", color(models[index]));
 
         })
         function brushed() {
@@ -946,10 +994,19 @@ const forecastPaths = document.querySelectorAll(".forecast");
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         var legendString = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(orgs);
+        var models = [];
+        orgs.map((o, i) => {
+            var idx = o.indexOf("(");
+            models.push(o.substring(0, idx - 1));
+        })
+        var names = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(models)
+        console.log(names);
+        const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
+        const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
         //color function that assigns random colors to each data
         var color = d3
                         .scaleOrdinal()
-                        .domain(legendString)
+                        .domain(models)
                         .range(d3.schemeTableau10);
 
          //draw legend
@@ -957,8 +1014,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
                         .attr("id", "legend")
         var size = 10;
         const legendMarginL = 30;
-        legend.selectAll("rect")
-            .data(legendString)
+        legend.selectAll("circle")
+            .data(names)
             .enter()
             .append("circle")
                 .attr('cx', width + legendMarginL)
@@ -973,7 +1030,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
             .append("text")
                 .attr("x", width + 45)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                .style("fill", function(d){ return color(d)})
+                .style("fill", function(d, i){ return color(names[i])})
                 .text(function(d){ return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
@@ -1015,7 +1072,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                     .attr("class", "line")    
                                     .datum(confirmedData)    
                                     .attr('d', line)
-                                    .attr("stroke", color(legendString[0]))
+                                    .attr("stroke", color(names[0]))
                                     .style("stroke-width", "3px")
         var confirmedAreaEndX = x(confirmedData[confirmedData.length - 1].date);
         var confirmedAreaEndY = y(confirmedData[confirmedData.length - 1].value);
@@ -1052,7 +1109,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                     .attr("class", "line")        
                                     .datum(aggregateData)    
                                     .attr('d', line)
-                                    .attr("stroke", color(legendString[1]))
+                                    .attr("stroke", color(names[1]))
                                     .style("stroke-width", "2px")
         
         //display forecast data
@@ -1074,8 +1131,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
             forecastData[index] = f;
             predictionArea.append("path")
                         .attr("class", "forecast line")
-                        .attr("id", orgs[index])
-                        .style("stroke", color(orgs[index]))
+                        .attr("id", modelClassNames[index])
+                        .style("stroke", color(models[index]))
                         .datum(f)
                             .attr("d", line);
         })
@@ -1121,38 +1178,34 @@ const forecastPaths = document.querySelectorAll(".forecast");
         const forecastPaths = document.querySelectorAll(".forecast");
         const confirmedPath = document.querySelector("#confirmed");
         const aggregatePath = document.querySelector("#aggregate");
-        console.log(aggregatePath)
-        console.log(forecastPaths);
-        console.log(orgs);
-        orgs.map((o, index) => {
-            var lastDate = forecastData[index][forecastData[index].length - 1].date;
-            forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
-            compiledData.push({
-                name: o,
-                data: forecastData[index]
-            })
-        })
         confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
         compiledData.push({
-            name: "Daily Confirmed Deaths",
+            name: labels[0],
             data: confirmedData
         })
         var lastDate = aggregateData[aggregateData.length - 1].date;
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
         compiledData.push({
-            name: "Aggregate Forecast",
+            name: labels[1],
             data: aggregateData
         })
         compiledData.push({
-            name: "User Prediction",
+            name: labels[2],
             data: predictionData
         })
-        console.log(compiledData);
+        modelClassNames.map((m, index) => {
+            var lastDate = forecastData[index][forecastData[index].length - 1].date;
+            forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
+            compiledData.push({
+                name: m,
+                data: forecastData[index]
+            })
+        })
         //join data to yourLine
         filteredData = predictionData.filter(predLine.defined())
         yourLine.datum(filteredData)
                 .attr('d', predLine)
-                .style("stroke", color(legendString[2]))
+                .style("stroke", color(names[2]))
                 .style("stroke-width", "2px")
         //append new rect  
         const mouseArea = svg.append("rect")
@@ -1235,8 +1288,8 @@ const forecastPaths = document.querySelectorAll(".forecast");
                         filteredData = predictionData.filter(predLine.defined())
                         yourLine.datum(filteredData)
                                 .attr('d', predLine)
-                                .style("stroke", color(legendString[2]))
-                                .style("stroke-width", "2px")
+                                // .style("stroke", color(models[2]))
+                                // .style("stroke-width", "2px")
                         focusPredCurve.datum(filteredData)
                                         .attr("d", focusPredLine);
 
@@ -1258,7 +1311,6 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     });
         
         svg.call(drag)
-        console.log(compiledData);
 
         const tooltipArea = svg
                                 .append("g")
@@ -1269,6 +1321,23 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .style("stroke", "black")
                     .style("stroke-width", "0.5px")
                     .style("opacity", "0");
+        //where text will be
+        var tooltipBox = d3.select(".tooltip-box")
+                            //  .style("background-color", "white")
+                            // .style("border", "solid")
+                            // .style("border-width", "2px")
+                            // .style("border-radius", "5px")
+                            // .style("padding", "5px")
+                            .style("position", "absolute")
+                            .style("display", "block")
+                            .style("left", "10px")
+                            .style("top", "10px");
+        // tooltipBox.selectAll("box")
+        //             .data(compiledData)
+        //             .enter()
+        //             .append("div")
+        //             .attr("class", d => d.name);    
+
         //console.log(compiledData)
         var mousePerLine = tooltipArea
                                         .selectAll(".mouse-per-line")
@@ -1301,13 +1370,14 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                 .style("opacity", "0");
                                 d3.selectAll(".mouse-per-line text")
                                 .style("opacity", "0")
+                                tooltipBox.style("display", "none")
                             })
                             .on('mouseover', function() { // on mouse in show line, circles and text
                                 d3.select("#tooltip-line")
                                 .style("opacity", "1");
+                                tooltipBox.style("display", "block")
                             })
                             .on('mousemove', function() { // mouse moving over canvas
-                                console.log("in")
                                 var mouse = d3.mouse(this);
                                 var xCoord = mouse[0];
                                 var yCoord = mouse[1];
@@ -1325,6 +1395,9 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                         d += " " + xCoord + "," + 0;
                                         return d;
                                     });
+                                tooltipBox
+                                    .style('left', `${d3.event.pageX + 20}px`)
+                                    .style('top', `${d3.event.pageY + 20}px`)
                                 d3
                                     .selectAll(".mouse-per-line")
                                     .attr("transform", function(d, i) {
@@ -1336,9 +1409,23 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                                 value = d.value;
                                             }
                                         })
-                                        var element = d3.select(this)
+                                        var element = d3.select(this);
+                                        var textBox = tooltipBox.select(`.${d.name}`);
+
                                         if (value >= 0) {
-                                            console.log(d.name)
+                                            if(textBox.empty()) {
+                                                textBox = tooltipBox.append("div")
+                                                                     .attr("class", d.name)
+                                                                     .style("padding-left", "10px")
+                                                                     .style("padding-right", "10px")
+                                                                     .style("background-color", color(names[i]))
+                                                                     .style("color", "white");
+
+                                            }
+                                            else {
+                                                textBox.html(`${names[i]}: ${Math.round(value)}`)
+                                            }
+
                                             element.select('text')
                                                     .style("opacity", "1")
                                                     .text(Math.round(value));
@@ -1347,6 +1434,9 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                             return "translate(" + mouse[0] + "," + y(value)+")";
                                         }
                                         else {
+                                            if(!textBox.empty()) {
+                                                textBox.remove();
+                                            }
                                             element
                                                     .select("text")
                                                     .style("opacity", "0")
@@ -1433,19 +1523,19 @@ const forecastPaths = document.querySelectorAll(".forecast");
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(legendString[0]))
+            .attr("stroke", color(models[0]))
         
         focus.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(legendString[1]))
+            .attr("stroke", color(models[1]))
 
         var focusPredCurve = focus.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
                                     .attr("class", "context-curve")
-                                    .attr("stroke", color(legendString[2]))
+                                    .attr("stroke", color(models[2]))
         
         forecastData.map((f, index) => {
             focus
@@ -1592,6 +1682,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
             <p>Daily deaths is the best indicator of the progression of the pandemic.</p>
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div ref={this.chartRef}></div>
+            <div class="tooltip-box"></div>
             </div>);
     }
 }
