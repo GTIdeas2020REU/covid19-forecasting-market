@@ -1,7 +1,10 @@
 import React from 'react';
 import { useTable } from 'react-table';
+import $ from 'jquery';
+import ReactDOM from 'react-dom';
+import LeaderboardChart from '../LeaderboardChart';
 
-function Table({ columns, data, style }) {
+function Table({ columns, data, confirmed, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
     getTableProps,
@@ -12,6 +15,7 @@ function Table({ columns, data, style }) {
   } = useTable({
     columns,
     data,
+    confirmed,
     style
   });
 
@@ -30,21 +34,27 @@ function Table({ columns, data, style }) {
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {<RenderTable users={data} />}
+        {<RenderTable users={data} confirmed={confirmed} />}
       </tbody>
     </table>
   )
 }
 
+function createChart(user, confirmed) {
+  console.log(user);
+  console.log(confirmed);
+  //$('#predictionChart').html('IT WORKED');
+  ReactDOM.render(<LeaderboardChart userPrediction={user.prediction} confirmed={confirmed} />, document.getElementById('predictionChart'));
+}
 
-function RenderTable({ users }) {
+function RenderTable({ users, confirmed }) {
   return users.map((user, index) => {
     // ignore null values
     if (user.mse_score == null) {
       return;
     }
     return (
-       <tr>
+       <tr onClick={() => createChart(user, confirmed)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
           <td>{user.mse_score.toFixed(2)}</td>
@@ -59,7 +69,8 @@ class Leaderboard extends React.Component {
     super(props);
     this.state = {
       users: null,
-      columns: null
+      columns: null,
+      confirmed: null
     }
   }
 
@@ -83,6 +94,10 @@ class Leaderboard extends React.Component {
           accesor: 'mse_score',
         }
       ]
+    });
+
+    fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
+      this.setState({ confirmed: data });
     });
   }
 
@@ -117,15 +132,15 @@ class Leaderboard extends React.Component {
       left: "50%"
     };
 
-    const { users, columns } = this.state;
-    if (!users || !columns) return 'Loading...';
+    const { users, columns, confirmed } = this.state;
+    if (!users || !columns || !confirmed) return 'Loading...';
 
     return (
       <div>
         <h2>Leaderboard</h2>
         <div className="d-flex flex-row">>
-          <Table columns={columns} data={users} style={tableStyle} />
-          <div className="text-center" style={chartStyle}>Hello</div>
+          <Table columns={columns} data={users} confirmed={confirmed} style={tableStyle} />
+          <div id="predictionChart" className="text-center" style={chartStyle}>Hello</div>
         </div>
       </div>
     );

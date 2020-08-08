@@ -32,6 +32,9 @@ class UserPredictionChart extends Component {
             value: confirmed[key]
         }));
 
+        console.log("USER PREDICTION");
+        console.log(userPrediction);
+
         //store userPrediction in predictionData if it exists; parse dates and store as d3 date objects
         if(Object.keys(userPrediction).length > 0) {
             Object.keys(userPrediction).map(p => {
@@ -42,11 +45,16 @@ class UserPredictionChart extends Component {
                 }))
             })
         }
+
         predictionData = sortDictByDate(predictionData);
+        console.log("PREDICTION DATA");
+        console.log(predictionData);
+
         console.log(predictionData)
         //get most recent prediction
         var dates = sortStringDates(Object.keys(userPrediction))
         const mostRecentPred = predictionData[dates[dates.length - 1]]
+        console.log("MOST RECENT PRED");
         console.log(mostRecentPred)
         //push to compiledData
         compiledData = [confirmedData, mostRecentPred]
