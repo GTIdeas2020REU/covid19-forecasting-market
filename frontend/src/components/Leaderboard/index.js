@@ -1,17 +1,88 @@
 import React from 'react';
+import { useTable } from 'react-table';
+
+function Table({ columns, data, style }) {
+  // Use the state and functions returned from useTable to build UI
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable({
+    columns,
+    data,
+    style
+  });
+
+  console.log(data);
+
+  // Render the UI for table
+  return (
+    <table style={style} {...getTableProps()}>
+      <thead>
+        {headerGroups.map(headerGroup => (
+          <tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+      <tbody {...getTableBodyProps()}>
+        {<RenderTable users={data} />}
+      </tbody>
+    </table>
+  )
+}
+
+
+function RenderTable({ users }) {
+  return users.map((user, index) => {
+    // ignore null values
+    if (user.mse_score == null) {
+      return;
+    }
+    return (
+       <tr>
+          <td>{user.username}</td>
+          <td>{user.date}</td>
+          <td>{user.mse_score.toFixed(2)}</td>
+       </tr>
+    );
+ });
+}
+
 
 class Leaderboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      users: null
+      users: null,
+      columns: null
     }
   }
 
   componentDidMount() {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
-      console.log(data);
+      //console.log(data);
+    });
+
+    this.setState({ columns: [
+        {
+          Header: 'Username',
+          accesor: 'username',
+        },
+        {
+          Header: 'Prediction Date',
+          accesor: 'date',
+        },
+        {
+          Header: 'MSE',
+          accesor: 'mse_score',
+        }
+      ]
     });
   }
 
@@ -46,133 +117,14 @@ class Leaderboard extends React.Component {
       left: "50%"
     };
 
-    const { users } = this.state;
-    if (!users) return 'Loading...';
+    const { users, columns } = this.state;
+    if (!users || !columns) return 'Loading...';
 
     return (
       <div>
         <h2>Leaderboard</h2>
         <div class="d-flex flex-row">>
-          <div style={tableStyle}>
-            <table className="table table-bordered table-hover table-sm">
-              <thead className="thead-dark">
-                <tr>
-                  <th>User</th>
-                  <th>Prediction Date</th>
-                  <th>Mean Squared Error (MSE)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.renderTable()}
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-                <tr>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
+          <Table columns={columns} data={users} style={tableStyle} />
           <div class="text-center" style={chartStyle}>Hello</div>
         </div>
       </div>
