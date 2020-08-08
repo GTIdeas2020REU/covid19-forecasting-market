@@ -392,12 +392,9 @@ class InteractiveChart extends Component {
         //var totalData = confirmedData.concat(predictionData);
 
 //!!    //add forecast data to compiledData
-const forecastPaths = document.querySelectorAll(".forecast");
+        const forecastPaths = document.querySelectorAll(".forecast");
         const confirmedPath = document.querySelector("#confirmed");
         const aggregatePath = document.querySelector("#aggregate");
-        console.log(aggregatePath)
-        console.log(forecastPaths);
-        console.log(orgs);
 
         confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
         compiledData.push({
