@@ -590,8 +590,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                     .style("fill", "none")
                     .style("stroke-width", "1px")
                     .style("opacity", "0");
-        mousePerLine.append("text")
-                    .attr("transform", "translate(10,3)"); 
+
         var chart = tooltipArea
             .append("svg:rect")
             .attr('width', width)
@@ -661,10 +660,6 @@ const forecastPaths = document.querySelectorAll(".forecast");
                             else {
                                 textBox.html(`${names[i]}: ${Math.round(value)}`)
                             }
-
-                            element.select('text')
-                                    .style("opacity", "1")
-                                    .text(Math.round(value));
                             element.select("circle")
                                     .style("opacity", "1");
                             return "translate(" + mouse[0] + "," + y(value)+")";
@@ -673,9 +668,6 @@ const forecastPaths = document.querySelectorAll(".forecast");
                             if(!textBox.empty()) {
                                 textBox.remove();
                             }
-                            element
-                                    .select("text")
-                                    .style("opacity", "0")
                             element
                                     .select("circle")
                                     .style("opacity", "0");
@@ -1348,14 +1340,13 @@ const forecastPaths = document.querySelectorAll(".forecast");
         
         mousePerLine.append("circle")
                         .attr("r", 2)
-                        .style("stroke", function(d) {
-                            return color(d.name);
+                        .style("stroke", function(d, i) {
+                            return color(names[i]);
                         })
                         .style("fill", "none")
                         .style("stroke-width", "1px")
                         .style("opacity", "0");
-        mousePerLine.append("text")
-                    .attr("transform", "translate(10,3)"); 
+
         var chart = tooltipArea
                             .append("svg:rect")
                             .attr('width', width)
@@ -1425,10 +1416,6 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                             else {
                                                 textBox.html(`${names[i]}: ${Math.round(value)}`)
                                             }
-
-                                            element.select('text')
-                                                    .style("opacity", "1")
-                                                    .text(Math.round(value));
                                             element.select("circle")
                                                     .style("opacity", "1");
                                             return "translate(" + mouse[0] + "," + y(value)+")";
@@ -1437,9 +1424,7 @@ const forecastPaths = document.querySelectorAll(".forecast");
                                             if(!textBox.empty()) {
                                                 textBox.remove();
                                             }
-                                            element
-                                                    .select("text")
-                                                    .style("opacity", "0")
+
                                             element
                                                     .select("circle")
                                                     .style("opacity", "0");
