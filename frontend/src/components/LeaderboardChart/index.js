@@ -1,39 +1,53 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 import './LeaderboardChart.css';
-import { getMostRecentPrediction, getAllDataPoints, sortDictByDate, sortStringDates } from '../../utils/data';
 
 class LeaderboardChart extends Component {
     constructor(props) {
         super(props);
-        this.state = { category: "us_daily_deaths" };
+        this.state = { 
+            userPrediction: null,
+            confirmed: null
+         };
         this.chartRef = React.createRef();
     }
 
     componentDidMount() {
+        this.setState({userPrediction: this.props.userPrediction, confirmed: this.props.confirmed});
+        //this.renderChart(this.props.userPrediction, this.props.confirmed);
         this.renderChart();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        console.log(prevProps);
+        console.log(this.props);
+
+        // only update chart if the data has changed
+        if (prevProps.userPrediction !== this.props.userPrediction) {
+            console.log("HEY");
+            //this.setState({userPrediction: this.props.userPrediction, confirmed: this.props.confirmed})
+            //this.chartRef = React.createRef();
+            this.renderChart();
+        }
     }
 
 
     renderChart() {
-        const { userPrediction, confirmed } = this.props;
-        var predictionData = {};//where we will store formatted userPrediction
-        const category = this.state.category;
+        var { userPrediction, confirmed } = this.props;
 
-        //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
+        //format confirmedData, predictionData
         var confirmedData = Object.keys(confirmed).map(key => ({
             date: d3.timeParse("%Y-%m-%d")(key),
             value: confirmed[key]
         }));
-
-        predictionData = userPrediction.map(d => ({
+        var predictionData = userPrediction.map(d => ({
             date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
             value: d.value
         }));
 
         //IMPORTANT BOUNDARIES// 
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-02-01");
-        const predEndDate = predictionData[predictionData.length - 1].date;
+        var predEndDate = predictionData[predictionData.length - 1].date;
         const valueMax = 5000;
 
         /////////////////////////////////DRAW CHART//////////////////////////////
@@ -43,7 +57,7 @@ class LeaderboardChart extends Component {
         const contextHeight = 100;
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 600 - margin.left - margin.right,
-            height = 400 - margin.top - margin.bottom;
+            height = 300 - margin.top - margin.bottom;
         var svg = d3.select(this.chartRef.current)
                     .append("svg")
                         .attr("width", width + margin.left + margin.right + legendWidth)
@@ -134,10 +148,10 @@ class LeaderboardChart extends Component {
                                 .curve(d3.curveCatmullRom);
         const predLineGenerator = d3.line()
                                     .curve(d3.curveBasis);
-        const line = lineGenerator
+        var line = lineGenerator
                         .x(function(d) { return x(d.date) })
                         .y(function(d) { return y(d.value) })
-        const predLine = predLineGenerator
+        var predLine = predLineGenerator
                             .x(function(d) { return x(d.date) })
                             .y(function(d) { return y(d.value) })
 
@@ -155,7 +169,12 @@ class LeaderboardChart extends Component {
                                 .attr("class", "line")
                                 .datum(predictionData)
                                 .attr("d", predLine)
-                                .attr("stroke",  color(legendString[1]))    
+                                .attr("stroke",  color(legendString[1]))
+        
+        /*
+        d3.select('#leaderboard').on("click", function() {
+            predCurve.exit().remove();
+        })*/
     }
 
     render() {

@@ -41,9 +41,6 @@ function Table({ columns, data, confirmed, style }) {
 }
 
 function createChart(user, confirmed) {
-  console.log(user);
-  console.log(confirmed);
-  //$('#predictionChart').html('IT WORKED');
   ReactDOM.render(<LeaderboardChart userPrediction={user.prediction} confirmed={confirmed} />, document.getElementById('predictionChart'));
 }
 
@@ -139,7 +136,7 @@ class Leaderboard extends React.Component {
       <div>
         <h2>Leaderboard</h2>
         <div className="d-flex flex-row">>
-          <Table columns={columns} data={users} confirmed={confirmed} style={tableStyle} />
+          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Hello</div>
         </div>
       </div>
