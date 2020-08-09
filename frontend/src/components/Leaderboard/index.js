@@ -35,6 +35,71 @@ function Table({ columns, data, confirmed, style }) {
       </thead>
       <tbody {...getTableBodyProps()}>
         {<RenderTable users={data} confirmed={confirmed} />}
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
       </tbody>
     </table>
   )
@@ -137,7 +202,7 @@ class Leaderboard extends React.Component {
         <h2>Leaderboard</h2>
         <div className="d-flex flex-row">>
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} style={tableStyle} />
-          <div id="predictionChart" className="text-center" style={chartStyle}>Hello</div>
+          <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
         </div>
       </div>
     );
