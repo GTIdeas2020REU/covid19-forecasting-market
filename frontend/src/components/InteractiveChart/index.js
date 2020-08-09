@@ -824,7 +824,11 @@ class InteractiveChart extends Component {
         }
         const gb = focus
                         .call(brush)
-                        .call(brush.move, defaultSelection); 
+                        .call(brush.move, defaultSelection)
+                        .on("click", function() {
+                            console.log("yes")
+                            d3.select(".speech-bubble").style("display", "none");
+                        })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         var deleteButton = document.createElement("button")
         deleteButton.className = 'btn primary-btn'
@@ -1531,6 +1535,7 @@ class InteractiveChart extends Component {
 
         })
         function brushed() {
+            console.log("brushed")
             if (d3.event.selection) {
                 var extent = d3.event.selection;
                 //console.log([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
@@ -1577,12 +1582,17 @@ class InteractiveChart extends Component {
         function brushended() {
             if (!d3.event.selection) {
                 gb.call(brush.move, defaultSelection);
+                
             }
 
         }
         const gb = focus
                         .call(brush)
-                        .call(brush.move, defaultSelection);   
+                        .call(brush.move, defaultSelection)
+                        .on("click", function() {
+                            console.log("yes")
+                            d3.select(".speech-bubble").style("display", "none");
+                        })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         var deleteButton = document.createElement("button")
         deleteButton.className = 'btn primary-btn'
@@ -1668,6 +1678,7 @@ class InteractiveChart extends Component {
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div ref={this.chartRef}></div>
             <div class="tooltip-box"></div>
+            <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
             </div>);
     }
 }
