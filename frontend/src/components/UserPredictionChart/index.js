@@ -288,7 +288,7 @@ class UserPredictionChart extends Component {
                             compiledData[1] = predictionData[date];
                         }
                         else {
-                            if (index == 0) {
+                            if (index === 0) {
                                 svg
                                     .select("#prediction")
                                     .datum([])
@@ -324,7 +324,7 @@ class UserPredictionChart extends Component {
                         d3
                             .selectAll(".mouse-per-line")
                             .attr("transform", function(d, i) {
-                                if (d.length == 0) {return;}
+                                if (d.length === 0) {return;}
                                 var date = x.invert(xCoord);
                                 const index = d3.bisector(f => f.date).left(d, date);
                                 var a = null;
@@ -343,7 +343,7 @@ class UserPredictionChart extends Component {
                                 else {
                                     data = b && (date - a.date > b.date - date) ? b : a;
                                 }
-                                if (+d3.timeDay.floor(date) == +data.date || +d3.timeDay.ceil(date) == +data.date) {
+                                if (+d3.timeDay.floor(date) === +data.date || +d3.timeDay.ceil(date) === +data.date) {
                                     if (data.defined != 0) {
                                         var element = d3.select(this)
                                         element
@@ -388,7 +388,7 @@ class UserPredictionChart extends Component {
                             compiledData[1] = predictionData[date];
                         }
                         else {
-                            if (index == 0) {
+                            if (index === 0) {
                                 svg
                                     .select("#prediction")
                                     .datum([])

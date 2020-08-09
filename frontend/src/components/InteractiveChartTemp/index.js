@@ -169,7 +169,7 @@ class InteractiveChartTemp extends Component {
                         var date = clamp(predStartDate, predEndDate, x.invert(pos[0]));
                         var value = clamp(0, y.domain()[1], y.invert(pos[1]));
                         predictionData.forEach(function(d){
-                            if (+d3.timeDay.round(d.date) == +d3.timeDay.round(date)){
+                            if (+d3.timeDay.round(d.date) === +d3.timeDay.round(date)){
                                 d.value = value;
                                 d.defined = true
                             }
@@ -198,7 +198,7 @@ class InteractiveChartTemp extends Component {
 
         var modal = document.getElementById("modal");
         window.onclick = function(event) {
-            if (event.target == modal) {
+            if (event.target === modal) {
               modal.style.display = "none";
             }
         }

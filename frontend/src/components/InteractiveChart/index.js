@@ -102,16 +102,16 @@ class InteractiveChart extends Component {
             return a[1] - b[1];
         });
         var sortedOrgs = [];
-        for (var i = 0; i < sortable.length; i++) {
-            sortedOrgs.push(sortable[i][0] + " (MSE=" + sortable[i][1].toFixed(2).toString() + ")")
-            orgIndices[sortable[i][0]].push(i);
+        for (var j = 0; j < sortable.length; j++) {
+            sortedOrgs.push(sortable[j][0] + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
+            orgIndices[sortable[j][0]].push(j);
         }
 
         // correct order of forecasts
         orgIndices = Object.values(orgIndices);
         var tempForecast = new Array(forecast.length);
-        for (var i = 0; i < orgIndices.length; i++) {
-            tempForecast[orgIndices[i][1]] = forecast[orgIndices[i][0]];
+        for (var k = 0; k < orgIndices.length; k++) {
+            tempForecast[orgIndices[k][1]] = forecast[orgIndices[k][0]];
         }
 
         // replace orgs and forecasts with new orders
@@ -315,7 +315,7 @@ class InteractiveChart extends Component {
         //make sure aggregateData curve stems from confiremData curve
         var idxOfStartDate = d3.bisector(f => f.date).left(aggregateData, predStartDate);
         //check if predStartDate exists in AD
-        if (aggregateData.length > 0 && +aggregateData[idxOfStartDate].date == +predStartDate) {
+        if (aggregateData.length > 0 && +aggregateData[idxOfStartDate].date === +predStartDate) {
             aggregateData[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
         }
         else {
@@ -342,7 +342,7 @@ class InteractiveChart extends Component {
             //var temp = d3.timeParse("%Y-%m-%d")("2020-07-18")
             var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
             //check if predStartDate exists in f
-            if (f.length > 0 && +f[idxOfStartDate].date == +predStartDate) {
+            if (f.length > 0 && +f[idxOfStartDate].date === +predStartDate) {
                 f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
             }
             else {//add data point to forecastData array
@@ -490,7 +490,7 @@ class InteractiveChart extends Component {
                         var value = clamp(0, yAxisMax, y.invert(pos[1]));
                         
                         predictionData.forEach(function(d){
-                            if (+d3.timeDay.round(d.date) == +d3.timeDay.round(date)){
+                            if (+d3.timeDay.round(d.date) === +d3.timeDay.round(date)){
                                 d.value = value;
                                 d.defined = true
                             }
@@ -527,7 +527,7 @@ class InteractiveChart extends Component {
         var modal = document.getElementById("modal");
 
         window.onclick = function(event) {
-            if (event.target == modal) {
+            if (event.target === modal) {
               modal.style.display = "none";
             }
           }
@@ -633,11 +633,11 @@ class InteractiveChart extends Component {
                 d3
                     .selectAll(".mouse-per-line")
                     .attr("transform", function(d, i) {
-                        if (d.data.length == 0) {return;}
+                        if (d.data.length === 0) {return;}
                         var date = x.invert(xCoord);
                         var value = -1;
                         d.data.map(d => {
-                            if(+d.date == +d3.timeDay.round(date) && d.defined != 0) {
+                            if(+d.date === +d3.timeDay.round(date) && d.defined !== 0) {
                                 value = d.value;
                             }
                         })
@@ -861,16 +861,16 @@ class InteractiveChart extends Component {
             return a[1] - b[1];
         });
         var sortedOrgs = [];
-        for (var i = 0; i < sortable.length; i++) {
-            sortedOrgs.push(sortable[i][0] + " (MSE=" + sortable[i][1].toFixed(2).toString() + ")")
-            orgIndices[sortable[i][0]].push(i);
+        for (var j = 0; j < sortable.length; j++) {
+            sortedOrgs.push(sortable[j][0] + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
+            orgIndices[sortable[j][0]].push(j);
         }
 
         // correct order of forecasts
         orgIndices = Object.values(orgIndices);
         var tempForecast = new Array(forecast.length);
-        for (var i = 0; i < orgIndices.length; i++) {
-            tempForecast[orgIndices[i][1]] = forecast[orgIndices[i][0]];
+        for (var k = 0; k < orgIndices.length; k++) {
+            tempForecast[orgIndices[k][1]] = forecast[orgIndices[k][0]];
         }
 
         // replace orgs and forecasts with new orders
@@ -1081,7 +1081,7 @@ class InteractiveChart extends Component {
         //make sure aggregateData curve stems from confiremData curve
         var idxOfStartDate = d3.bisector(f => f.date).left(aggregateData, predStartDate);
         //check if predStartDate exists in AD
-        if (aggregateData.length > 0 && +aggregateData[idxOfStartDate].date == +predStartDate) {
+        if (aggregateData.length > 0 && +aggregateData[idxOfStartDate].date === +predStartDate) {
             aggregateData[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
         }
         else {
@@ -1107,7 +1107,7 @@ class InteractiveChart extends Component {
             //var temp = d3.timeParse("%Y-%m-%d")("2020-07-18")
             var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
             //check if predStartDate exists in f
-            if (f.length > 0 && +f[idxOfStartDate].date == +predStartDate) {
+            if (f.length > 0 && +f[idxOfStartDate].date === +predStartDate) {
                 f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
             }
             else {//add data point to forecastData array
@@ -1241,7 +1241,7 @@ class InteractiveChart extends Component {
             .attr("cy", confirmedAreaEndY)
         })
 
-        if(Object.keys(userPrediction).length == 0) {
+        if(Object.keys(userPrediction).length === 0) {
             svg
                 .select("#drawing-instruction")
                 .style("opacity", "1");
@@ -1264,7 +1264,7 @@ class InteractiveChart extends Component {
                         var value = clamp(0, yAxisMax, y.invert(pos[1]));
                         
                         predictionData.forEach(function(d){
-                            if (+d3.timeDay.round(d.date) == +d3.timeDay.round(date)){
+                            if (+d3.timeDay.round(d.date) === +d3.timeDay.round(date)){
                                 d.value = value;
                                 d.defined = true
                             }
@@ -1389,11 +1389,11 @@ class InteractiveChart extends Component {
                                 d3
                                     .selectAll(".mouse-per-line")
                                     .attr("transform", function(d, i) {
-                                        if (d.data.length == 0) {return;}
+                                        if (d.data.length === 0) {return;}
                                         var date = x.invert(xCoord);
                                         var value = -1;
                                         d.data.map(d => {
-                                            if(+d.date == +d3.timeDay.round(date) && d.defined != 0) {
+                                            if(+d.date === +d3.timeDay.round(date) && d.defined !== 0) {
                                                 value = d.value;
                                             }
                                         })

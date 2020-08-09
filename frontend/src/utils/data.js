@@ -179,7 +179,7 @@ export const findYatX = (x, path, startX) => {
       break;
     }
   }
-  if (result == 0) {
+  if (result === 0) {
     result = getXY(start);
   }
   return result;
@@ -209,7 +209,7 @@ export const getDataPointsFromPath = (predictionData, pathNode, xAxis, yAxis, la
     if (+predictionData[i].date > +lastPredDate) {
       break;
     }
-    if (predictionData[i].defined == 0) {
+    if (predictionData[i].defined === 0) {
       date = predictionData[i].date;
       var point = findYatX(xAxis(date), pathNode, startX);
       predictionData[i].defined = true;
@@ -222,7 +222,7 @@ export const getDataPointsFromPath = (predictionData, pathNode, xAxis, yAxis, la
 
 export const cleanData = (data, predStartDate, value) => {
   var idxOfStartDate = d3.bisector(f => f.date).left(data, predStartDate);
-  if (data.length > 0 && +data[idxOfStartDate].date == +predStartDate) {
+  if (data.length > 0 && +data[idxOfStartDate].date === +predStartDate) {
     data[idxOfStartDate].value = value;
   }
   else {
@@ -264,7 +264,7 @@ export const createDefaultPrediction = (predStartDate, predEndDate) => {
 }
 
 export const cleanPrediction = (data, predStartDate, predEndDate, confirmedLastVal) => {
-  if (+data[0].date != +predStartDate) {
+  if (+data[0].date !== +predStartDate) {
     console.log("needs to be reformatted")
     data = reformatPredData(data);
     var currDate = d3.timeDay.offset(getLastDate(data), 1);
