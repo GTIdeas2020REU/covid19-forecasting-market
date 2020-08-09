@@ -483,8 +483,8 @@ class InteractiveChart extends Component {
                             .style("opacity", "0");
                         d3.selectAll(".mouse-per-line circle")
                             .style("opacity", "0");
-                        d3.selectAll(".mouse-per-line text")
-                            .style("opacity", "0")
+                        d3.select(".tooltip-box")
+                            .style("display", "none")
                         var pos = d3.mouse(this);
                         var date = clamp(predStartDate, predEndDate, x.invert(pos[0]));
                         var value = clamp(0, yAxisMax, y.invert(pos[1]));
@@ -496,11 +496,11 @@ class InteractiveChart extends Component {
                             }
                         predictionData[0].value = confirmedLastVal;//make sure the prediction curve is always connected to the confirmed curve
                         //update totalData everytime predictionData is updated
-                        compiledData[compiledData.length - 1].data = predictionData;
+                        compiledData[2].data = predictionData;
                         //console.log(compiledData)
                         /*yourLine.datum(predictionData)
                                 .attr('d', predLine)*/
-                        var filteredData = predictionData.filter(predLine.defined())
+                        filteredData = predictionData.filter(predLine.defined())
 
                         yourLine.datum(filteredData)
                                 .attr('d', predLine)
@@ -512,6 +512,9 @@ class InteractiveChart extends Component {
                         });
                     })
                     .on("end", function () {
+                        var lastPredDate = filteredData[filteredData.length - 1].date;
+                        getDataPointsFromPath(predictionData, yourLine.node(), x, y, lastPredDate);
+                        compiledData[2].data = predictionData;
                         d3
                             .select("#modal")
                             .style("display", "block");
@@ -519,8 +522,8 @@ class InteractiveChart extends Component {
                             .style("opacity", "1");
                         d3.selectAll(".mouse-per-line circle")
                             .style("opacity", "1");
-                        d3.selectAll(".mouse-per-line text")
-                            .style("opacity", "1")
+                        d3.select(".tooltip-box")
+                            .style("display", "block")
                     });
         
         svg.call(drag)
@@ -837,6 +840,7 @@ class InteractiveChart extends Component {
             var filtered = predictionData.filter(predLine.defined())
             yourLine.datum(filtered)
                     .attr('d', predLine)
+            compiledData[2].data = predictionData;
                     
             svg
                 .select("#drawing-instruction")
@@ -1257,8 +1261,8 @@ class InteractiveChart extends Component {
                             .style("opacity", "0");
                         d3.selectAll(".mouse-per-line circle")
                             .style("opacity", "0");
-                        d3.selectAll(".mouse-per-line text")
-                            .style("opacity", "0")
+                        d3.select(".tooltip-box")
+                            .style("display", "none")
                         var pos = d3.mouse(this);
                         var date = clamp(predStartDate, predEndDate, x.invert(pos[0]));
                         var value = clamp(0, yAxisMax, y.invert(pos[1]));
@@ -1270,7 +1274,7 @@ class InteractiveChart extends Component {
                             }
                         predictionData[0].value = confirmedLastVal;//make sure the prediction curve is always connected to the confirmed curve
                         //update totalData everytime predictionData is updated
-                        compiledData[compiledData.length - 1].data = predictionData;
+                        compiledData[2].data = predictionData;
                         //console.log(compiledData)
                         /*yourLine.datum(predictionData)
                                 .attr('d', predLine)*/
@@ -1285,17 +1289,15 @@ class InteractiveChart extends Component {
                         });
                     })
                     .on("end", function () {
-                        console.log(predictionData);
-                        console.log(filteredData);
                         d3.select("#tooltip-line")
                             .style("opacity", "1");
                         d3.selectAll(".mouse-per-line circle")
                             .style("opacity", "1");
-                        d3.selectAll(".mouse-per-line text")
-                            .style("opacity", "1")
+                        d3.select(".tooltip-box")
+                            .style("display", "block")
                         var lastPredDate = filteredData[filteredData.length - 1].date;
                         getDataPointsFromPath(predictionData, yourLine.node(), x, y, lastPredDate);
-                        console.log(predictionData);
+                        compiledData[2].data = predictionData;
                         savePrediction(predictionData, category);
                     });
         
@@ -1505,19 +1507,19 @@ class InteractiveChart extends Component {
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(models[0]))
+            .attr("stroke", color(names[0]))
         
         focus.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(models[1]))
+            .attr("stroke", color(names[1]))
 
         var focusPredCurve = focus.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
                                     .attr("class", "context-curve")
-                                    .attr("stroke", color(models[2]))
+                                    .attr("stroke", color(names[2]))
         
         forecastData.map((f, index) => {
             focus
@@ -1525,7 +1527,7 @@ class InteractiveChart extends Component {
                     .datum(f)
                     .attr("d", focusLine)
                     .attr("class", "context-curve")
-                    .attr("stroke", color(orgs[index]));
+                    .attr("stroke", color(models[index]));
 
         })
         function brushed() {
@@ -1602,6 +1604,7 @@ class InteractiveChart extends Component {
             svg
                 .select("#drawing-instruction")
                 .style("opacity", "1");
+            compiledData[2].data = predictionData;
         };
         document.querySelector("body").appendChild(deleteButton);
     
