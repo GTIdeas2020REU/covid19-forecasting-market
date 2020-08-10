@@ -3,8 +3,10 @@ import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
 import LeaderboardChart from '../LeaderboardChart';
+import colors from '../../constants/colors';
 
-function Table({ columns, data, confirmed, style }) {
+
+function Table({ columns, data, confirmed, orgs, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
     getTableProps,
@@ -16,6 +18,7 @@ function Table({ columns, data, confirmed, style }) {
     columns,
     data,
     confirmed,
+    orgs,
     style
   });
 
@@ -34,91 +37,28 @@ function Table({ columns, data, confirmed, style }) {
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {<RenderTable users={data} confirmed={confirmed} />}
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
+        {<RenderUsersTable users={data} confirmed={confirmed} />}
+        {<RenderOrgsTable orgs={orgs} confirmed={confirmed} />}
       </tbody>
     </table>
   )
 }
 
-function createChart(user, confirmed, id) {
+function createUserChart(user, confirmed, id) {
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
   ReactDOM.render(<LeaderboardChart userPrediction={user.prediction} confirmed={confirmed} />, document.getElementById('predictionChart'));
 }
 
-function RenderTable({ users, confirmed }) {
+
+function RenderUsersTable({ users, confirmed }) {
   return users.map((user, index) => {
     // ignore null values
     if (user.mse_score == null) {
       return;
     }
     return (
-       <tr id={user.username + user.date} onClick={() => createChart(user, confirmed, user.username + user.date)}>
+       <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
           <td>{user.mse_score.toFixed(2)}</td>
@@ -128,13 +68,31 @@ function RenderTable({ users, confirmed }) {
 }
 
 
+function RenderOrgsTable({ orgs, confirmed }) {
+  return Object.entries(orgs).map( ([key, value]) => {
+    // ignore null values
+    if (value == null) {
+      return;
+    }
+    return (
+      <tr id={key} style={{backgroundColor: colors[key]}}>
+          <td>{key}</td>
+          <td>N/A</td>
+          <td>{value.toFixed(2)}</td>
+      </tr>
+    );
+  });
+}
+
+
 class Leaderboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       users: null,
       columns: null,
-      confirmed: null
+      confirmed: null,
+      orgs: null
     }
   }
 
@@ -142,6 +100,9 @@ class Leaderboard extends React.Component {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
       //console.log(data);
+    });
+    fetch('/us-mse').then(res => res.json()).then(data => {
+      this.setState({ orgs: data });
     });
 
     this.setState({ columns: [
@@ -196,8 +157,8 @@ class Leaderboard extends React.Component {
       left: "50%"
     };
 
-    const { users, columns, confirmed } = this.state;
-    if (!users || !columns || !confirmed) return 'Loading...';
+    const { users, columns, confirmed, orgs } = this.state;
+    if (!users || !columns || !confirmed || !orgs) return 'Loading...';
 
     return (
       <div>
@@ -205,7 +166,7 @@ class Leaderboard extends React.Component {
         <h2>Top Forecasts</h2>
         <br></br>
         <div className="d-flex flex-row">>
-          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} style={tableStyle} />
+          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
         </div>
       </div>
