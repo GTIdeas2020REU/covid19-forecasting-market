@@ -1,0 +1,16 @@
+#confirmed{
+    stroke-width: 0.5;
+    stroke-width : 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    fill: none;
+}
+
+#prediction {
+    stroke-width: 0.5;
+    stroke-width : 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke-dasharray: 3, 3;
+    fill: none;
+}

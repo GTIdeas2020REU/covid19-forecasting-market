@@ -1,0 +1,89 @@
+li {
+    color: green;
+    display: inline;
+    font-family: Tahoma, Geneva, sans-serif;
+
+}
+
+li a {
+    float: left;
+    display: block;
+    padding: 8px;
+    background-color: transparent;
+    border: 3px solid white;
+}
+
+h1 {
+    color: white;
+    margin-left: 20px;
+    font-family: Tahoma, Geneva, sans-serif;
+}
+
+body{
+    background-color: black;
+}
+
+.topnav {
+    overflow: hidden;
+    background-color: transparent;
+    
+}
+
+.topnav a {
+ 	float: left;
+    color: #000;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+    background-color: rgb(255, 255, 255, 0.3);
+}
+
+.topnav a:hover {
+    background-color: black;
+    color: white;
+}
+
+.topnav a.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.title{
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    z-index: 1005;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: 500ms ease-in-out;
+    font-size: 5vmin;
+    font-family: Tahoma, Geneva, sans-serif;
+    color: #fff;
+}
+
+.landing{
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.button{
+    border: 3px solid white;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    background-color: rgb(255, 255, 255, 0.3);
+    cursor: pointer;
+}
+
+.button:hover{
+    background-color: black;
+    color: white;
+}
