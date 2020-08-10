@@ -105,7 +105,9 @@ function Table({ columns, data, confirmed, style }) {
   )
 }
 
-function createChart(user, confirmed) {
+function createChart(user, confirmed, id) {
+  $('tr').removeClass('clicked');
+  $('#' + id).addClass('clicked');
   ReactDOM.render(<LeaderboardChart userPrediction={user.prediction} confirmed={confirmed} />, document.getElementById('predictionChart'));
 }
 
@@ -116,7 +118,7 @@ function RenderTable({ users, confirmed }) {
       return;
     }
     return (
-       <tr onClick={() => createChart(user, confirmed)}>
+       <tr id={user.username + user.date} onClick={() => createChart(user, confirmed, user.username + user.date)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
           <td>{user.mse_score.toFixed(2)}</td>
@@ -210,5 +212,6 @@ class Leaderboard extends React.Component {
     );
   }
 }
+
   
 export default Leaderboard;
