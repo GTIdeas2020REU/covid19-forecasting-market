@@ -1,9 +1,0 @@
-venv
-flask/
-
-.vscode/
-__pycache__/
-.flaskenv
-.DS_Store
-*.pyc 
-node_modules/
