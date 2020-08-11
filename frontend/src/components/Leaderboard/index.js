@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import LeaderboardChart from '../LeaderboardChart';
 import colors from '../../constants/colors';
 
-
+// Create leaderboard table, consisting of user predictions and official forecasts
 function Table({ columns, data, confirmed, orgs, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
@@ -22,8 +22,6 @@ function Table({ columns, data, confirmed, orgs, style }) {
     style
   });
 
-  console.log(data);
-
   // Render the UI for table
   return (
     <table style={style} className="table table-bordered table-hover table-sm" {...getTableProps()}>
@@ -31,26 +29,34 @@ function Table({ columns, data, confirmed, orgs, style }) {
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              <th id={column.render('Header')} {...column.getHeaderProps()}>{column.render('Header')}</th>
             ))}
           </tr>
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {<RenderUsersTable users={data} confirmed={confirmed} />}
         {<RenderOrgsTable orgs={orgs} confirmed={confirmed} />}
+        {<RenderUsersTable users={data} confirmed={confirmed} />}
       </tbody>
     </table>
   )
 }
 
+
+var selectedID = ""; // var used to keep chart in place if same row was clicked
+// Display user's prediction when user's row is clicked on
 function createUserChart(user, confirmed, id) {
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
+  if (selectedID !== id) {
+    $('#predictionChart div').empty(); // reset predictionChart
+  }
+  selectedID = id;
   ReactDOM.render(<LeaderboardChart userPrediction={user.prediction} confirmed={confirmed} />, document.getElementById('predictionChart'));
 }
 
 
+// Add rows with user data to the leaderboard table
 function RenderUsersTable({ users, confirmed }) {
   return users.map((user, index) => {
     // ignore null values
@@ -68,6 +74,7 @@ function RenderUsersTable({ users, confirmed }) {
 }
 
 
+// Add rows with official forecast data to the leaderboard table
 function RenderOrgsTable({ orgs, confirmed }) {
   return Object.entries(orgs).map( ([key, value]) => {
     // ignore null values
@@ -76,13 +83,14 @@ function RenderOrgsTable({ orgs, confirmed }) {
     }
     return (
       <tr id={key} style={{backgroundColor: colors[key]}}>
-          <td>{key}</td>
-          <td>N/A</td>
+          <td>{key}*</td>
+          <td>Ongoing</td>
           <td>{value.toFixed(2)}</td>
       </tr>
     );
   });
 }
+
 
 
 class Leaderboard extends React.Component {
@@ -99,7 +107,6 @@ class Leaderboard extends React.Component {
   componentDidMount() {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
-      //console.log(data);
     });
     fetch('/us-mse').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
@@ -107,11 +114,11 @@ class Leaderboard extends React.Component {
 
     this.setState({ columns: [
         {
-          Header: 'Username',
+          Header: 'Username/Official Forecaster',
           accesor: 'username',
         },
         {
-          Header: 'Prediction Date',
+          Header: 'Prediction Date/Status',
           accesor: 'date',
         },
         {
@@ -124,24 +131,42 @@ class Leaderboard extends React.Component {
     fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
       this.setState({ confirmed: data });
     });
+
   }
 
 
-  renderTable() {
-    return this.state.users.map((user, index) => {
-      // ignore null values
-      if (user.mse_score == null) {
-        return;
+  componentDidUpdate(prevProps, prevState) {
+    // Table should sort by error when MSE header is clicked on
+    $('#MSE').click(function() {
+      if (this.asc === undefined) {
+          this.asc = true;
       }
-      return (
-         <tr>
-            <td>{user.username}</td>
-            <td>{user.date}</td>
-            <td>{user.mse_score.toFixed(2)}</td>
-         </tr>
-      );
-   });
+      var table = $(this).parents('table').eq(0)
+      var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+      this.asc = !this.asc
+    
+      if (!this.asc){
+          rows = rows.reverse()
+      }
+      for (var i = 0; i < rows.length; i++) {
+          table.append(rows[i])
+      }
+    })
+    function comparer(index) {
+        return function(a, b) {
+            var valA = getCellValue(a, index), valB = getCellValue(b, index)
+            return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+        }
+    }
+    function getCellValue(row, index){ 
+        return $(row).children('td').eq(index).text() 
+    }
+
+    // Trigger click events to get orgs and users sorted together
+    $('#MSE').trigger("click");
+    $('#MSE').trigger("click");
   }
+
 
   render() {
     const tableStyle = {
@@ -149,13 +174,14 @@ class Leaderboard extends React.Component {
       textAlign: "center",
       overflowY: "scroll"
     };
-
     
     const chartStyle = {
       position: "fixed",
       width: "50%",
-      left: "50%"
+      left: "50%",
     };
+
+    $("#delete-btn").remove();
 
     const { users, columns, confirmed, orgs } = this.state;
     if (!users || !columns || !confirmed || !orgs) return 'Loading...';
@@ -163,7 +189,9 @@ class Leaderboard extends React.Component {
     return (
       <div>
         <br></br>
-        <h2>Top Forecasts</h2>
+        <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
+        <small>* indicates an official forecaster as labelled by the CDC</small>
+        <br></br>
         <br></br>
         <div className="d-flex flex-row">>
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} style={tableStyle} />
@@ -174,5 +202,5 @@ class Leaderboard extends React.Component {
   }
 }
 
-  
+
 export default Leaderboard;
