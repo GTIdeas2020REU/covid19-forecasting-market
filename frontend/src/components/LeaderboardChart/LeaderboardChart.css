@@ -30,6 +30,7 @@ tr:active td {
 .clicked {
     cursor: grab;
     background-color: rgb(125, 170, 250);
+    border: 2px solid black;
 }
 
 #MSE:hover {
