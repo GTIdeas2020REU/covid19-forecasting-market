@@ -20,9 +20,28 @@ tr:hover {
     border: 2px solid rgb(50, 50, 50);
 }
 
+
 tr:active td {
     cursor: grab;
     background-color: rgb(125, 170, 250);
     border: none;
+}
+
+.clicked {
+    cursor: grab;
+    background-color: rgb(125, 170, 250);
+    border: 2px solid black;
+}
+
+#MSE:hover {
+    cursor: pointer;
+    background-color: rgb(200, 100, 100);
+    transition: 0.3s;
+}
+
+#MSE:active {
+    cursor: grab;
+    background-color: rgb(100, 100, 200);
+    transition: 0.3s;
 }
 
