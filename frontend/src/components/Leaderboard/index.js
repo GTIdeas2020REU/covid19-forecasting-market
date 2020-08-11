@@ -1,11 +1,11 @@
 import React from 'react';
-import { useTable, useSortBy } from 'react-table';
+import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
 import LeaderboardChart from '../LeaderboardChart';
 import colors from '../../constants/colors';
 
-
+// Create leaderboard table, consisting of user predictions and official forecasts
 function Table({ columns, data, confirmed, orgs, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
@@ -20,10 +20,7 @@ function Table({ columns, data, confirmed, orgs, style }) {
     confirmed,
     orgs,
     style
-  }, //useSortBy
-  );
-
-  console.log(data);
+  });
 
   // Render the UI for table
   return (
@@ -32,7 +29,7 @@ function Table({ columns, data, confirmed, orgs, style }) {
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              <th id={column.render('Header')} {...column.getHeaderProps(/*column.getSortByToggleProps()*/)}>{column.render('Header')}</th>
+              <th id={column.render('Header')} {...column.getHeaderProps()}>{column.render('Header')}</th>
             ))}
           </tr>
         ))}
@@ -47,7 +44,7 @@ function Table({ columns, data, confirmed, orgs, style }) {
 
 
 var selectedID = ""; // var used to keep chart in place if same row was clicked
-
+// Display user's prediction when user's row is clicked on
 function createUserChart(user, confirmed, id) {
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
@@ -59,6 +56,7 @@ function createUserChart(user, confirmed, id) {
 }
 
 
+// Add rows with user data to the leaderboard table
 function RenderUsersTable({ users, confirmed }) {
   return users.map((user, index) => {
     // ignore null values
@@ -76,6 +74,7 @@ function RenderUsersTable({ users, confirmed }) {
 }
 
 
+// Add rows with official forecast data to the leaderboard table
 function RenderOrgsTable({ orgs, confirmed }) {
   return Object.entries(orgs).map( ([key, value]) => {
     // ignore null values
@@ -84,7 +83,7 @@ function RenderOrgsTable({ orgs, confirmed }) {
     }
     return (
       <tr id={key} style={{backgroundColor: colors[key]}}>
-          <td>{key}</td>
+          <td>{key}*</td>
           <td>Ongoing</td>
           <td>{value.toFixed(2)}</td>
       </tr>
@@ -115,7 +114,7 @@ class Leaderboard extends React.Component {
 
     this.setState({ columns: [
         {
-          Header: 'Username',
+          Header: 'Username/Official Forecaster',
           accesor: 'username',
         },
         {
@@ -137,6 +136,7 @@ class Leaderboard extends React.Component {
 
 
   componentDidUpdate(prevProps, prevState) {
+    // Table should sort by error when MSE header is clicked on
     $('#MSE').click(function() {
       if (this.asc === undefined) {
           this.asc = true;
@@ -164,23 +164,6 @@ class Leaderboard extends React.Component {
   }
 
 
-  renderTable() {
-    return this.state.users.map((user, index) => {
-      // ignore null values
-      if (user.mse_score == null) {
-        return;
-      }
-      return (
-         <tr>
-            <td>{user.username}</td>
-            <td>{user.date}</td>
-            <td>{user.mse_score.toFixed(2)}</td>
-         </tr>
-      );
-   });
-  }
-
-
   render() {
     const tableStyle = {
       width: "50%",
@@ -191,7 +174,7 @@ class Leaderboard extends React.Component {
     const chartStyle = {
       position: "fixed",
       width: "50%",
-      left: "50%"
+      left: "50%",
     };
 
     const { users, columns, confirmed, orgs } = this.state;
@@ -200,7 +183,9 @@ class Leaderboard extends React.Component {
     return (
       <div>
         <br></br>
-        <h2>Top Forecasts</h2>
+        <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
+        <small>* indicates an official forecaster as labelled by the CDC</small>
+        <br></br>
         <br></br>
         <div className="d-flex flex-row">>
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} style={tableStyle} />
