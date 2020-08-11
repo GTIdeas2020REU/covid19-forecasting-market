@@ -48,7 +48,7 @@ var selectedID = ""; // var used to keep chart in place if same row was clicked
 function createUserChart(user, confirmed, id) {
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
-  if (selectedID != id) {
+  if (selectedID !== id) {
     $('#predictionChart div').empty(); // reset predictionChart
   }
   selectedID = id;
@@ -118,7 +118,7 @@ class Leaderboard extends React.Component {
           accesor: 'username',
         },
         {
-          Header: 'Prediction Date',
+          Header: 'Prediction Date/Status',
           accesor: 'date',
         },
         {
@@ -161,6 +161,10 @@ class Leaderboard extends React.Component {
     function getCellValue(row, index){ 
         return $(row).children('td').eq(index).text() 
     }
+
+    // Trigger click events to get orgs and users sorted together
+    $('#MSE').trigger("click");
+    $('#MSE').trigger("click");
   }
 
 
@@ -176,6 +180,8 @@ class Leaderboard extends React.Component {
       width: "50%",
       left: "50%",
     };
+
+    $("#delete-btn").remove();
 
     const { users, columns, confirmed, orgs } = this.state;
     if (!users || !columns || !confirmed || !orgs) return 'Loading...';
@@ -196,5 +202,5 @@ class Leaderboard extends React.Component {
   }
 }
 
-  
+
 export default Leaderboard;
