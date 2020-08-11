@@ -336,6 +336,18 @@ class InteractiveChart extends Component {
                                     .attr("stroke", color(names[1]))
                                     .style("stroke-width", "2px")
         
+        //function that generates the prediction curve
+        var predLine = predLineGenerator
+            .defined(d => d.defined)
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+
+        //append path for prediction data
+        var yourLine = predictionArea
+                                        .append("path")
+                                        .attr("id", "your-line")
+                                        .attr("class", "prediction line");
+
         //display forecast data
         forecastData.map((f, index) => {
             //make sure they all stem from the confirmed curve!
@@ -355,26 +367,13 @@ class InteractiveChart extends Component {
             forecastData[index] = f;
             predictionArea.append("path")
                         .attr("class", "forecast line")
-                        .attr("id", orgs[index])
+                        .attr("id", modelClassNames[index])
                         .style("stroke", color(models[index]))
                         .datum(f)
                             .attr("d", line);
         })
         
         var lines = document.getElementsByClassName('line');
-
-        //function that generates the prediction curve
-        var predLine = predLineGenerator
-            .defined(d => d.defined)
-            .x(function(d) { return x(d.date) })
-            .y(function(d) { return y(d.value) })
-
-        //append path for prediction data
-        var yourLine = predictionArea
-                                        .append("path")
-                                        .attr("id", "your-line")
-                                        .attr("class", "prediction line");
-
         
         
         //variables used to initialize user prediction data if it doesn't exist in the db
@@ -851,6 +850,146 @@ class InteractiveChart extends Component {
                 .style("opacity", "1");
         };
         document.querySelector("body").appendChild(deleteButton);
+       ///////////////////////////////////////////////////////////////// 
+        var legendElement = document.querySelector("#legend");
+        const legendCompleteWidth = legendElement.getBoundingClientRect().width;
+        const legendSingleHeight = 25;
+        var legendConfirmed = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendAggregate = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendPrediction = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 2)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendGeorgiaTech = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 3)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendIhme = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 4)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendYouyang = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 5)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendColumbia = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 6)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendUcla = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 7)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        console.log(svg.selectAll(".line"))
+        legendConfirmed.on("mouseover", function() {
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#confirmed").style("stroke", color(names[0]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendAggregate.on("mouseover", function() {
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#aggregate").style("stroke", color(names[1]));
+                         })
+                         .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendPrediction.on("mouseover", function() {
+                            console.log("prediction");
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#your-line").style("stroke", color(names[2]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendGeorgiaTech.on("mouseover", function() {
+                            console.log("gt");
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#gt").style("stroke", color(names[3]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendIhme.on("mouseover", function() {
+                        console.log("ihme");
+                        svg.selectAll(".line").style("stroke", "#ddd");
+                        svg.select("#ihme").style("stroke", color(names[4]));
+                    })
+                    .on("mouseout", function() {
+                        svg.selectAll(".line")
+                            .style("stroke", (d, i) => color(names[i]))
+                    })
+        legendYouyang.on("mouseover", function() {
+                        console.log("youyang");
+                        svg.selectAll(".line").style("stroke", "#ddd");
+                        svg.select("#youyang").style("stroke", color(names[5]));
+                    })
+                    .on("mouseout", function() {
+                        svg.selectAll(".line")
+                            .style("stroke", (d, i) => color(names[i]))
+                    })
+        legendColumbia.on("mouseover", function() {
+                            console.log("columbia");
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#columbia").style("stroke", color(names[6]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendUcla.on("mouseover", function() {
+                        console.log("ucla");
+                        svg.selectAll(".line").style("stroke", "#ddd");
+                        svg.select("#ucla").style("stroke", color(names[7]));
+                    })
+                    .on("mouseout", function() {
+                        svg.selectAll(".line")
+                            .style("stroke", (d, i) => color(names[i]))
+                    })
+        
     }
 
     renderChart() {
@@ -1031,6 +1170,16 @@ class InteractiveChart extends Component {
                 .text(function(d){ return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
+        var legendElement = document.querySelector("#legend");
+        const legendCompleteWidth = legendElement.getBoundingClientRect().width;
+        const legendSingleHeight = 25;
+        /*var legendArea = legend.append("rect")
+                                .attr("width", legendCompleteWidth)
+                                .attr("height", legendCompleteHeight)
+                                .attr("x", width + 40)
+                                .attr("y", 10)
+                                .attr("fill", "none")
+                                .style("pointer-events","visible");*/
 
         //create line generator for confirmed/forecast data and prediction data
         var lineGenerator = d3.line()
@@ -1108,6 +1257,20 @@ class InteractiveChart extends Component {
                                     .attr('d', line)
                                     .attr("stroke", color(names[1]))
                                     .style("stroke-width", "2px")
+        //display user prediction
+        //function that generates the prediction curve
+        var predLine = predLineGenerator
+            .defined(d => d.defined)
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+
+        //append path for prediction data
+        var yourLine = predictionArea
+                                        .append("path")
+                                        .attr("id", "your-line")
+                                        .attr("class", "prediction line");
+
+        
         
         //display forecast data
         forecastData.map((f, index) => {
@@ -1134,20 +1297,7 @@ class InteractiveChart extends Component {
                             .attr("d", line);
         })
         
-        var lines = document.getElementsByClassName('line');
-
-        //function that generates the prediction curve
-        var predLine = predLineGenerator
-            .defined(d => d.defined)
-            .x(function(d) { return x(d.date) })
-            .y(function(d) { return y(d.value) })
-
-        //append path for prediction data
-        var yourLine = predictionArea
-                                        .append("path")
-                                        .attr("id", "your-line")
-                                        .attr("class", "prediction line");
-        
+        var lines = document.getElementsByClassName('line');        
         
         //variables used to initialize user prediction data if it doesn't exist in the db
         var currDate = predStartDate;
@@ -1617,58 +1767,141 @@ class InteractiveChart extends Component {
             compiledData[2].data = predictionData;
         };
         document.querySelector("body").appendChild(deleteButton);
-    
-        /*function hover(svg, path) {
-  
-            if ("ontouchstart" in document) svg
-                .style("-webkit-tap-highlight-color", "transparent")
-                .on("touchmove", moved)
-                .on("touchstart", entered)
-                .on("touchend", left)
-            else svg
-                .on("mousemove", moved)
-                .on("mouseenter", entered)
-                .on("mouseleave", left);
-          
-            const dot = svg.append("g")
-                .attr("display", "none");
-          
-            dot.append("circle")
-                .attr("r", 2.5);
-          
-            dot.append("text")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", 10)
-                .attr("text-anchor", "middle")
-                .attr("y", -8);
-          
-            function moved() {
-              d3.event.preventDefault();
-              const mouse = d3.mouse(this);
-              const xm = x.invert(mouse[0]);
-              const ym = y.invert(mouse[1]);
-              const i1 = d3.bisectLeft(data.dates, xm, 1);
-              const i0 = i1 - 1;
-              const i = xm - data.dates[i0] > data.dates[i1] - xm ? i1 : i0;
-              const s = d3.least(data.series, d => Math.abs(d.values[i] - ym));
-              path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
-              dot.attr("transform", `translate(${x(data.dates[i])},${y(s.values[i])})`);
-              dot.select("text").text(s.name);
-            }
-          
-            function entered() {
-              path.style("mix-blend-mode", null).attr("stroke", "#ddd");
-              dot.attr("display", null);
-            }
-          
-            function left() {
-              path.style("mix-blend-mode", "multiply").attr("stroke", null);
-              dot.attr("display", "none");
-            }
-          }*/
+        var legendConfirmed = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
 
+        var legendAggregate = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
 
+        var legendPrediction = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 2)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
 
+        var legendGeorgiaTech = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 3)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendIhme = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 4)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendYouyang = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 5)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendColumbia = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 6)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        var legendUcla = legend.append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", width + 40)
+                .attr("y", 10 + legendSingleHeight * 7)
+                .attr("fill", "none")
+                .style("pointer-events","visible");
+
+        console.log(svg.selectAll(".line"))
+        legendConfirmed.on("mouseover", function() {
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#confirmed").style("stroke", color(names[0]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendAggregate.on("mouseover", function() {
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#aggregate").style("stroke", color(names[1]));
+                         })
+                         .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendPrediction.on("mouseover", function() {
+                            console.log("prediction");
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#your-line").style("stroke", color(names[2]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendGeorgiaTech.on("mouseover", function() {
+                            console.log("gt");
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#gt").style("stroke", color(names[3]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendIhme.on("mouseover", function() {
+                        console.log("ihme");
+                        svg.selectAll(".line").style("stroke", "#ddd");
+                        svg.select("#ihme").style("stroke", color(names[4]));
+                    })
+                    .on("mouseout", function() {
+                        svg.selectAll(".line")
+                            .style("stroke", (d, i) => color(names[i]))
+                    })
+        legendYouyang.on("mouseover", function() {
+                        console.log("youyang");
+                        svg.selectAll(".line").style("stroke", "#ddd");
+                        svg.select("#youyang").style("stroke", color(names[5]));
+                    })
+                    .on("mouseout", function() {
+                        svg.selectAll(".line")
+                            .style("stroke", (d, i) => color(names[i]))
+                    })
+        legendColumbia.on("mouseover", function() {
+                            console.log("columbia");
+                            svg.selectAll(".line").style("stroke", "#ddd");
+                            svg.select("#columbia").style("stroke", color(names[6]));
+                        })
+                        .on("mouseout", function() {
+                            svg.selectAll(".line")
+                                .style("stroke", (d, i) => color(names[i]))
+                        })
+        legendUcla.on("mouseover", function() {
+                        console.log("ucla");
+                        svg.selectAll(".line").style("stroke", "#ddd");
+                        svg.select("#ucla").style("stroke", color(names[7]));
+                    })
+                    .on("mouseout", function() {
+                        svg.selectAll(".line")
+                            .style("stroke", (d, i) => color(names[i]))
+                    })
     }
         
     render() {
