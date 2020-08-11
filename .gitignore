@@ -1,5 +1,6 @@
 venv
 flask/
+info.py
 
 .vscode/
 __pycache__/
