@@ -7,26 +7,19 @@ class LeaderboardChart extends Component {
         super(props);
         this.state = { 
             userPrediction: null,
-            confirmed: null
+            confirmed: null,
          };
         this.chartRef = React.createRef();
     }
 
     componentDidMount() {
         this.setState({userPrediction: this.props.userPrediction, confirmed: this.props.confirmed});
-        //this.renderChart(this.props.userPrediction, this.props.confirmed);
         this.renderChart();
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log(prevProps);
-        console.log(this.props);
-
         // only update chart if the data has changed
         if (prevProps.userPrediction !== this.props.userPrediction) {
-            console.log("HEY");
-            //this.setState({userPrediction: this.props.userPrediction, confirmed: this.props.confirmed})
-            //this.chartRef = React.createRef();
             this.renderChart();
         }
     }

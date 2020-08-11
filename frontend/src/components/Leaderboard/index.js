@@ -46,9 +46,15 @@ function Table({ columns, data, confirmed, orgs, style }) {
 }
 
 
+var selectedID = ""; // var used to keep chart in place if same row was clicked
+
 function createUserChart(user, confirmed, id) {
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
+  if (selectedID != id) {
+    $('#predictionChart div').empty(); // reset predictionChart
+  }
+  selectedID = id;
   ReactDOM.render(<LeaderboardChart userPrediction={user.prediction} confirmed={confirmed} />, document.getElementById('predictionChart'));
 }
 
@@ -102,7 +108,6 @@ class Leaderboard extends React.Component {
   componentDidMount() {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
-      //console.log(data);
     });
     fetch('/us-mse').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
@@ -129,6 +134,7 @@ class Leaderboard extends React.Component {
     });
 
   }
+
 
   componentDidUpdate(prevProps, prevState) {
     $('#MSE').click(function() {
@@ -174,13 +180,13 @@ class Leaderboard extends React.Component {
    });
   }
 
+
   render() {
     const tableStyle = {
       width: "50%",
       textAlign: "center",
       overflowY: "scroll"
     };
-
     
     const chartStyle = {
       position: "fixed",
