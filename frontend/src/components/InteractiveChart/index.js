@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3'
 import './InteractiveChart.css';
-import { clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction } from '../../utils/data';
+import { clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
 import { elementType } from 'prop-types';
 import { addDays, formatDate } from '../../utils/date';
 import { timeDay } from 'd3';
@@ -34,7 +34,6 @@ class InteractiveChart extends Component {
         });
     }
     deletePrediction(category) {
-        console.log(category)
         fetch('/delete/',{
             method: 'POST',
             headers: {
@@ -42,7 +41,6 @@ class InteractiveChart extends Component {
             },
             body: JSON.stringify({"category": category}),
           });
-        console.log("deleted")
     }
 
     createDefaultPrediction(predStartDate, predEndDate) {
@@ -169,10 +167,15 @@ class InteractiveChart extends Component {
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         var confirmedData = reformatData(confirmed)
-        confirmedData.push({
-            date: confirmedLastDate,
-            value: confirmedLastVal
-        })
+        if (+getLastDate(confirmedData) != +confirmedLastDate) {
+            confirmedData.push({
+                date: confirmedLastDate,
+                value: confirmedLastVal
+            })
+        }
+        else {
+            confirmedLastVal = getLastValue(confirmedData);
+        }
         var forecastData = forecast.map(f => {
             return reformatData(f);
         });
@@ -402,7 +405,6 @@ class InteractiveChart extends Component {
         })
         var lastDate = aggregateData[aggregateData.length - 1].date;
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
-        console.log(aggregateData);
         compiledData.push({
             name: labels[1],
             data: aggregateData
@@ -825,7 +827,6 @@ class InteractiveChart extends Component {
                         .call(brush)
                         .call(brush.move, defaultSelection)
                         .on("click", function() {
-                            console.log("yes")
                             d3.select(".speech-bubble").style("display", "none");
                         })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -918,7 +919,6 @@ class InteractiveChart extends Component {
                 .attr("fill", "none")
                 .style("pointer-events","visible");
 
-        console.log(svg.selectAll(".line"))
         legendConfirmed.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#confirmed").style("stroke", color(names[0]));
@@ -936,7 +936,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendPrediction.on("mouseover", function() {
-                            console.log("prediction");
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#your-line").style("stroke", color(names[2]));
                         })
@@ -945,7 +944,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendGeorgiaTech.on("mouseover", function() {
-                            console.log("gt");
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#gt").style("stroke", color(names[3]));
                         })
@@ -954,7 +952,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendIhme.on("mouseover", function() {
-                        console.log("ihme");
                         svg.selectAll(".line").style("stroke", "#ddd");
                         svg.select("#ihme").style("stroke", color(names[4]));
                     })
@@ -963,7 +960,6 @@ class InteractiveChart extends Component {
                             .style("stroke", (d, i) => color(names[i]))
                     })
         legendYouyang.on("mouseover", function() {
-                        console.log("youyang");
                         svg.selectAll(".line").style("stroke", "#ddd");
                         svg.select("#youyang").style("stroke", color(names[5]));
                     })
@@ -972,7 +968,6 @@ class InteractiveChart extends Component {
                             .style("stroke", (d, i) => color(names[i]))
                     })
         legendColumbia.on("mouseover", function() {
-                            console.log("columbia");
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#columbia").style("stroke", color(names[6]));
                         })
@@ -981,7 +976,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendUcla.on("mouseover", function() {
-                        console.log("ucla");
                         svg.selectAll(".line").style("stroke", "#ddd");
                         svg.select("#ucla").style("stroke", color(names[7]));
                     })
@@ -1076,10 +1070,16 @@ class InteractiveChart extends Component {
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         var confirmedData = reformatData(confirmed);
-        confirmedData.push({
-            date: confirmedLastDate,
-            value: confirmedLastVal
-        })
+        if (+getLastDate(confirmedData) != +confirmedLastDate) {
+            confirmedData.push({
+                date: confirmedLastDate,
+                value: confirmedLastVal
+            })
+        }
+        else {
+            confirmedLastVal = getLastValue(confirmedData);
+        }
+        
         var forecastData = forecast.map(f => {
             return reformatData(f);
         });
@@ -1136,7 +1136,6 @@ class InteractiveChart extends Component {
             models.push(o.substring(0, idx - 1));
         })
         var names = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(models)
-        console.log(names);
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
         const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
         //color function that assigns random colors to each data
@@ -1330,6 +1329,8 @@ class InteractiveChart extends Component {
             name: labels[0],
             data: confirmedData
         })
+        console.log(confirmedData);
+        console.log(confirmed)
         var lastDate = aggregateData[aggregateData.length - 1].date;
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
         compiledData.push({
@@ -1685,7 +1686,6 @@ class InteractiveChart extends Component {
 
         })
         function brushed() {
-            console.log("brushed")
             if (d3.event.selection) {
                 var extent = d3.event.selection;
                 //console.log([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
@@ -1740,7 +1740,6 @@ class InteractiveChart extends Component {
                         .call(brush)
                         .call(brush.move, defaultSelection)
                         .on("click", function() {
-                            console.log("yes")
                             d3.select(".speech-bubble").style("display", "none");
                         })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1831,7 +1830,6 @@ class InteractiveChart extends Component {
                 .attr("fill", "none")
                 .style("pointer-events","visible");
 
-        console.log(svg.selectAll(".line"))
         legendConfirmed.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#confirmed").style("stroke", color(names[0]));
@@ -1849,7 +1847,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendPrediction.on("mouseover", function() {
-                            console.log("prediction");
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#your-line").style("stroke", color(names[2]));
                         })
@@ -1858,7 +1855,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendGeorgiaTech.on("mouseover", function() {
-                            console.log("gt");
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#gt").style("stroke", color(names[3]));
                         })
@@ -1867,7 +1863,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendIhme.on("mouseover", function() {
-                        console.log("ihme");
                         svg.selectAll(".line").style("stroke", "#ddd");
                         svg.select("#ihme").style("stroke", color(names[4]));
                     })
@@ -1876,7 +1871,6 @@ class InteractiveChart extends Component {
                             .style("stroke", (d, i) => color(names[i]))
                     })
         legendYouyang.on("mouseover", function() {
-                        console.log("youyang");
                         svg.selectAll(".line").style("stroke", "#ddd");
                         svg.select("#youyang").style("stroke", color(names[5]));
                     })
@@ -1885,7 +1879,6 @@ class InteractiveChart extends Component {
                             .style("stroke", (d, i) => color(names[i]))
                     })
         legendColumbia.on("mouseover", function() {
-                            console.log("columbia");
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#columbia").style("stroke", color(names[6]));
                         })
@@ -1894,7 +1887,6 @@ class InteractiveChart extends Component {
                                 .style("stroke", (d, i) => color(names[i]))
                         })
         legendUcla.on("mouseover", function() {
-                        console.log("ucla");
                         svg.selectAll(".line").style("stroke", "#ddd");
                         svg.select("#ucla").style("stroke", color(names[7]));
                     })
