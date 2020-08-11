@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTable } from 'react-table';
+import { useTable, useSortBy } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
 import LeaderboardChart from '../LeaderboardChart';
@@ -20,7 +20,8 @@ function Table({ columns, data, confirmed, orgs, style }) {
     confirmed,
     orgs,
     style
-  });
+  }, //useSortBy
+  );
 
   console.log(data);
 
@@ -31,18 +32,19 @@ function Table({ columns, data, confirmed, orgs, style }) {
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
-              <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              <th id={column.render('Header')} {...column.getHeaderProps(/*column.getSortByToggleProps()*/)}>{column.render('Header')}</th>
             ))}
           </tr>
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {<RenderUsersTable users={data} confirmed={confirmed} />}
         {<RenderOrgsTable orgs={orgs} confirmed={confirmed} />}
+        {<RenderUsersTable users={data} confirmed={confirmed} />}
       </tbody>
     </table>
   )
 }
+
 
 function createUserChart(user, confirmed, id) {
   $('tr').removeClass('clicked');
@@ -77,12 +79,13 @@ function RenderOrgsTable({ orgs, confirmed }) {
     return (
       <tr id={key} style={{backgroundColor: colors[key]}}>
           <td>{key}</td>
-          <td>N/A</td>
+          <td>Ongoing</td>
           <td>{value.toFixed(2)}</td>
       </tr>
     );
   });
 }
+
 
 
 class Leaderboard extends React.Component {
@@ -124,6 +127,34 @@ class Leaderboard extends React.Component {
     fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
       this.setState({ confirmed: data });
     });
+
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    $('#MSE').click(function() {
+      if (this.asc === undefined) {
+          this.asc = true;
+      }
+      var table = $(this).parents('table').eq(0)
+      var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+      this.asc = !this.asc
+    
+      if (!this.asc){
+          rows = rows.reverse()
+      }
+      for (var i = 0; i < rows.length; i++) {
+          table.append(rows[i])
+      }
+    })
+    function comparer(index) {
+        return function(a, b) {
+            var valA = getCellValue(a, index), valB = getCellValue(b, index)
+            return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+        }
+    }
+    function getCellValue(row, index){ 
+        return $(row).children('td').eq(index).text() 
+    }
   }
 
 
