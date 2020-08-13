@@ -10,7 +10,7 @@ import { timeDay } from 'd3';
 class InteractiveChart extends Component {
     constructor(props) {
         super(props);
-        this.state = { category: "us_daily_deaths" };
+        this.state = { category: "us_daily_deaths", predictionData: null};
         this.chartRef = React.createRef();
     }
     componentDidMount() {
@@ -830,13 +830,8 @@ class InteractiveChart extends Component {
                             d3.select(".speech-bubble").style("display", "none");
                         })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        var deleteButton = document.createElement("button")
-        deleteButton.className = 'btn primary-btn'
-        deleteButton.id = 'delete-btn'
-        deleteButton.innerText = "Reset";
-        d3.select("#delete-btn")
+        var deleteButton = d3.select("#delete-btn").node()
         deleteButton.onclick = () => {
-            this.deletePrediction(category)
             predictionData = createDefaultPrediction(predStartDate, predEndDate);
             predictionData[0].value = confirmedLastVal;
             predictionData[0].defined = true;
@@ -844,14 +839,15 @@ class InteractiveChart extends Component {
             var filtered = predictionData.filter(predLine.defined())
             yourLine.datum(filtered)
                     .attr('d', predLine)
-            compiledData[2].data = predictionData;
+            focusPredCurve.datum(filtered)
+                            .attr("d", focusPredLine)
                     
             svg
                 .select("#drawing-instruction")
                 .style("opacity", "1");
+            compiledData[2].data = predictionData;
         };
-        document.querySelector("body").appendChild(deleteButton);
-       ///////////////////////////////////////////////////////////////// 
+        ///////////////////////////////////////////////////////////////// 
         var legendElement = document.querySelector("#legend");
         const legendCompleteWidth = legendElement.getBoundingClientRect().width;
         const legendSingleHeight = 25;
@@ -1269,7 +1265,6 @@ class InteractiveChart extends Component {
                                         .attr("id", "your-line")
                                         .attr("class", "prediction line");
 
-        
         
         //display forecast data
         forecastData.map((f, index) => {
@@ -1743,13 +1738,10 @@ class InteractiveChart extends Component {
                             d3.select(".speech-bubble").style("display", "none");
                         })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        var deleteButton = document.createElement("button")
-        deleteButton.className = 'btn primary-btn'
-        deleteButton.id = 'delete-btn'
-        deleteButton.innerText = "Reset";
-        d3.select("#delete-btn")
+        var deleteButton = d3.select("#delete-btn").node()
         deleteButton.onclick = () => {
             this.deletePrediction(category)
+            console.log("deleted")
             predictionData = createDefaultPrediction(predStartDate, predEndDate);
             predictionData[0].value = confirmedLastVal;
             predictionData[0].defined = true;
@@ -1765,7 +1757,6 @@ class InteractiveChart extends Component {
                 .style("opacity", "1");
             compiledData[2].data = predictionData;
         };
-        document.querySelector("body").appendChild(deleteButton);
         var legendConfirmed = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
@@ -1897,14 +1888,16 @@ class InteractiveChart extends Component {
     }
         
     render() {
-        return(<div>
+        return(
+        <div>
             <h2>US Daily Deaths</h2>
             <p>Daily deaths is the best indicator of the progression of the pandemic.</p>
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div ref={this.chartRef}></div>
             <div class="tooltip-box"></div>
+            <button className="btn btn-primary" id="delete-btn">Reset</button>
             <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
-            </div>);
+        </div>);
     }
 }
 
