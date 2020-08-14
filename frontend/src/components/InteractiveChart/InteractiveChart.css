@@ -1,3 +1,16 @@
+.chart {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: 100vh;
+}
+.main-chart {
+    width: 100%;
+    height: auto;
+}
+.legend-svg {
+    width: 100%;
+    height: auto;
+}
 #confirmed{
     stroke-width : 1.5;
     stroke-linejoin: round;
