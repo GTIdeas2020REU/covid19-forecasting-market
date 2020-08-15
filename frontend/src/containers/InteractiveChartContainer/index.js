@@ -31,6 +31,9 @@ class InteractiveChartContainer extends Component {
         fetch('/us-inc-deaths-forecasts').then(res => res.json()).then(data => {
             const [results, orgs] = organizeData(data);
             this.setState({ forecast: results, orgs });
+            console.log("FETCHED DATA");
+            console.log(results);
+            console.log(orgs);
         });
         fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
             this.setState({ userPrediction: data });
@@ -47,10 +50,14 @@ class InteractiveChartContainer extends Component {
              });
         });
         fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
+            console.log("AGGREGATE");
+            console.log(data);
             this.setState({ aggregate: data });
             //console.log(data);
         });
         fetch('/us-mse').then(res => res.json()).then(data => {
+            console.log("FORECAST MSE");
+            console.log(data);
             this.setState({ mse: data });
         });
         fetch('/user-mse').then(res => res.json()).then(data => {
