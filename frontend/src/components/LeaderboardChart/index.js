@@ -53,11 +53,12 @@ class LeaderboardChart extends Component {
             height = 300 - margin.top - margin.bottom;
         var svg = d3.select(this.chartRef.current)
                     .append("svg")
-                        .attr("width", width + margin.left + margin.right + legendWidth)
-                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + contextHeight)
+                        //.attr("width", width + margin.left + margin.right + legendWidth)
+                        //.attr("height", height + margin.top + margin.bottom + toolTipHeight + contextHeight)
+                        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + contextHeight + 100}`)
+                        .attr('preserveAspectRatio','xMinYMin meet')
                     .append("g")
-                        .attr("transform",
-                        "translate(" + margin.left + "," + margin.top + ")");
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         
         //Create X axis label   
         svg.append("text")
@@ -97,27 +98,31 @@ class LeaderboardChart extends Component {
                         .scaleOrdinal()
                         .domain(legendString)
                         .range(d3.schemeTableau10);
-        const legend = svg
-                            .append('g')
-                            .attr("id", "legend");
+
+        var legend = svg
+                        .append('g')
+                        .attr("viewBox", "0 0 400 500")
+                        .append('g')
+                        .attr("id", "legend");
+
         legend
                 .selectAll("rect")
                 .data(legendString)
                 .enter()
                 .append("circle")
-                    .attr('cx', width + 30)
-                    .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+                    .attr('cx', width*3/5)
+                    //.attr('cx', width-65)
+                    .attr("cy", function(d,i){ return 0 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .attr("r", 6)
-                    //.attr("width", size)
-                    //.attr("height", size)
                     .style("fill", function(d){ return color(d)})
         legend
                 .selectAll("labels")
                 .data(legendString)
                 .enter()
                 .append("text")
-                    .attr("x", width + 45)
-                    .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+                    .attr("x", width*3/5+20)
+                    //.attr("x", width-50)
+                    .attr("y", function(d,i){ return 0 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .style("fill", function(d){ return color(d)})
                     .text(function(d){ return d})
                         .attr("text-anchor", "left")
@@ -164,14 +169,12 @@ class LeaderboardChart extends Component {
                                 .attr("d", predLine)
                                 .attr("stroke",  color(legendString[1]))
         
-        /*
-        d3.select('#leaderboard').on("click", function() {
-            predCurve.exit().remove();
-        })*/
     }
 
     render() {
-        return(<div ref={this.chartRef}></div>);
+        return(
+            <div style={{padding: "20px"}} ref={this.chartRef}></div>
+        );
     }
 }
 
