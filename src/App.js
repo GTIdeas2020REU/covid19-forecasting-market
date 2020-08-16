@@ -18,7 +18,7 @@ import Mapportal from './components/Mapportal';
 import Login from './components/LogIn';
 import SignUp from './components/SignUp';
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
