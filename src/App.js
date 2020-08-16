@@ -27,7 +27,7 @@ import {
 class App extends React.Component {
   render() {
     return (
-      <Router>
+      <Router basename='/'>
         <div className="App">
           <Navbar />
           <Switch>
