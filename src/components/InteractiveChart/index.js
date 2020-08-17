@@ -10,7 +10,7 @@ import { timeDay } from 'd3';
 class InteractiveChart extends Component {
     constructor(props) {
         super(props);
-        this.state = { category: "us_daily_deaths" };
+        this.state = { category: "us_daily_deaths", predictionData: null};
         this.chartRef = React.createRef();
     }
     componentDidMount() {
@@ -129,10 +129,13 @@ class InteractiveChart extends Component {
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
-        var svg = d3.select(this.chartRef.current)
-                    .append("svg")
-                        .attr("width", width + margin.left + margin.right + legendWidth)
-                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + focusHeight)
+        var svg = d3.select(".main-chart")
+                    // .append("svg")
+                    //     .attr("class", "main-chart")
+                        // .attr("viewBox", `0 0 ${width} ${height}`)
+                        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + focusHeight + 100}`)
+                        // .attr("width", width)
+                        // .attr("height", height)
                     .append("g")
                     .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
         
@@ -235,7 +238,9 @@ class InteractiveChart extends Component {
                         .range(d3.schemeTableau10);
 
          //draw legend
-        var legend = svg.append('g')
+        var legend = d3.select(".legend-container")
+                        .attr("viewBox", "0 0 400 500")
+                        .append('g')
                         .attr("id", "legend")
         var size = 10;
         const legendMarginL = 30;
@@ -243,7 +248,7 @@ class InteractiveChart extends Component {
             .data(names)
             .enter()
             .append("circle")
-                .attr('cx', width + legendMarginL)
+                .attr('cx', 10)
                 .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                 .attr("r", 6)
                 //.attr("width", size)
@@ -255,9 +260,9 @@ class InteractiveChart extends Component {
             .data(legendString)
             .enter()
             .append("text")
-                .attr("x", width + 45)
+                .attr("x", 30)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                .style("fill", function(d, index){ return color(names[index])})
+                // .style("fill", function(d, index){ return color(names[index])})
                 .text(function(d){console.log("D TEXT"); console.log(d); return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
@@ -706,13 +711,7 @@ class InteractiveChart extends Component {
                                 //.attr("width", width + 100)
                                 //.attr("height", height)
                                 .style("display", "block")
-
-
-
-        /*const xAxis = (g, x, height) => g
-                                            .attr("transform", `translate(0,${height - margin.bottom})`)
-                                            .call(d3.axisBottom(x))*/
-
+ 
         var focusX = d3
                             .scaleTime()
                             .domain([confirmedStartDate, predEndDate])
@@ -830,13 +829,8 @@ class InteractiveChart extends Component {
                             d3.select(".speech-bubble").style("display", "none");
                         })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        var deleteButton = document.createElement("button")
-        deleteButton.className = 'btn primary-btn'
-        deleteButton.id = 'delete-btn'
-        deleteButton.innerText = "Reset";
-        d3.select("#delete-btn")
+        var deleteButton = d3.select("#delete-btn").node()
         deleteButton.onclick = () => {
-            this.deletePrediction(category)
             predictionData = createDefaultPrediction(predStartDate, predEndDate);
             predictionData[0].value = confirmedLastVal;
             predictionData[0].defined = true;
@@ -844,29 +838,30 @@ class InteractiveChart extends Component {
             var filtered = predictionData.filter(predLine.defined())
             yourLine.datum(filtered)
                     .attr('d', predLine)
-            compiledData[2].data = predictionData;
+            focusPredCurve.datum(filtered)
+                            .attr("d", focusPredLine)
                     
             svg
                 .select("#drawing-instruction")
                 .style("opacity", "1");
+            compiledData[2].data = predictionData;
         };
-        document.querySelector("body").appendChild(deleteButton);
-       ///////////////////////////////////////////////////////////////// 
+        ///////////////////////////////////////////////////////////////// 
         var legendElement = document.querySelector("#legend");
         const legendCompleteWidth = legendElement.getBoundingClientRect().width;
         const legendSingleHeight = 25;
         var legendConfirmed = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
-                .attr("y", 10)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        .attr("width", legendCompleteWidth)
+        .attr("height", legendSingleHeight)
+        .attr("x", 0)
+        .attr("y", 10)
+        .attr("fill", "none")
+        .style("pointer-events","visible");
 
         var legendAggregate = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -874,7 +869,7 @@ class InteractiveChart extends Component {
         var legendPrediction = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 2)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -882,7 +877,7 @@ class InteractiveChart extends Component {
         var legendGeorgiaTech = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 3)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -890,7 +885,7 @@ class InteractiveChart extends Component {
         var legendIhme = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 4)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -898,7 +893,7 @@ class InteractiveChart extends Component {
         var legendYouyang = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 5)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -906,7 +901,7 @@ class InteractiveChart extends Component {
         var legendColumbia = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 6)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -914,11 +909,43 @@ class InteractiveChart extends Component {
         var legendUcla = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 7)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
-
+        
+        // var resetBtn = legend.append("rect")
+        //         .attr("class", "reset-btn")
+        //         .attr("width", 100)
+        //         .attr("height", 40)
+        //         .attr("x", 0)
+        //         .attr("y", 30 + legendSingleHeight * 8)
+        //         .attr("fill", "red")
+        //         .style("pointer-events","visible")
+        //         .on("click", function(){
+        //             predictionData = createDefaultPrediction(predStartDate, predEndDate);
+        //             predictionData[0].value = confirmedLastVal;
+        //             predictionData[0].defined = true;
+        //             //update yourLine
+        //             var filtered = predictionData.filter(predLine.defined())
+        //             yourLine.datum(filtered)
+        //                     .attr('d', predLine)
+        //             focusPredCurve.datum(filtered)
+        //                             .attr("d", focusPredLine)
+                            
+        //             svg
+        //                 .select("#drawing-instruction")
+        //                 .style("opacity", "1");
+        //             compiledData[2].data = predictionData;
+        //         });
+        // var resetText = legend.append("text")
+        //                         .text("hello")
+        //                         .attr("fill", "black")
+        //                         .attr("position", "absolute")
+        //                         .attr("x", 0)
+        //                         .attr("y", 0)
+        // resetBtn.node().innerHTML = "  <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'>TEXT</text>"
+                
         legendConfirmed.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
                             svg.select("#confirmed").style("stroke", color(names[0]));
@@ -1032,13 +1059,16 @@ class InteractiveChart extends Component {
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
-        var svg = d3.select(this.chartRef.current)
-                    .append("svg")
-                        .attr("width", width + margin.left + margin.right + legendWidth)
-                        .attr("height", height + margin.top + margin.bottom + toolTipHeight + focusHeight)
-                    .append("g")
-                        .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
-        
+        var svg = d3.select(".main-chart")
+            // .append("svg")
+                // .attr("class", "main-chart")
+                // .attr("viewBox", `0 0 ${width} ${height}`)
+                .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + focusHeight + 100}`)
+                // .attr("width", width)
+                // .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
+
         // add title
         svg.append("text")
             .attr("x", (width / 2))             
@@ -1145,28 +1175,32 @@ class InteractiveChart extends Component {
                         .range(d3.schemeTableau10);
 
          //draw legend
-        var legend = svg.append('g')
+        var legend = d3.select(".legend-container")
+                        .attr("viewBox", "0 0 400 500")
+                        .append('g')
                         .attr("id", "legend")
         var size = 10;
         const legendMarginL = 30;
-        legend.selectAll("circle")
+        legend.selectAll("rect")
             .data(names)
             .enter()
             .append("circle")
-                .attr('cx', width + legendMarginL)
+                .attr('cx', 10)
                 .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                 .attr("r", 6)
                 //.attr("width", size)
                 //.attr("height", size)
-                .style("fill", function(d){ return color(d)})
+                .style("fill", (function(d){ return color(d)}))
+
+        
         legend.selectAll("labels")
             .data(legendString)
             .enter()
             .append("text")
-                .attr("x", width + 45)
+                .attr("x", 30)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                .style("fill", function(d, i){ return color(names[i])})
-                .text(function(d){ return d})
+                // .style("fill", function(d, index){ return color(names[index])})
+                .text(function(d){console.log("D TEXT"); console.log(d); return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
         var legendElement = document.querySelector("#legend");
@@ -1269,7 +1303,6 @@ class InteractiveChart extends Component {
                                         .attr("id", "your-line")
                                         .attr("class", "prediction line");
 
-        
         
         //display forecast data
         forecastData.map((f, index) => {
@@ -1743,13 +1776,10 @@ class InteractiveChart extends Component {
                             d3.select(".speech-bubble").style("display", "none");
                         })
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        var deleteButton = document.createElement("button")
-        deleteButton.className = 'btn primary-btn'
-        deleteButton.id = 'delete-btn'
-        deleteButton.innerText = "Reset";
-        d3.select("#delete-btn")
+        var deleteButton = d3.select("#delete-btn").node()
         deleteButton.onclick = () => {
             this.deletePrediction(category)
+            console.log("deleted")
             predictionData = createDefaultPrediction(predStartDate, predEndDate);
             predictionData[0].value = confirmedLastVal;
             predictionData[0].defined = true;
@@ -1765,11 +1795,10 @@ class InteractiveChart extends Component {
                 .style("opacity", "1");
             compiledData[2].data = predictionData;
         };
-        document.querySelector("body").appendChild(deleteButton);
         var legendConfirmed = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1777,7 +1806,7 @@ class InteractiveChart extends Component {
         var legendAggregate = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1785,7 +1814,7 @@ class InteractiveChart extends Component {
         var legendPrediction = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 2)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1793,7 +1822,7 @@ class InteractiveChart extends Component {
         var legendGeorgiaTech = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 3)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1801,7 +1830,7 @@ class InteractiveChart extends Component {
         var legendIhme = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 4)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1809,7 +1838,7 @@ class InteractiveChart extends Component {
         var legendYouyang = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 5)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1817,7 +1846,7 @@ class InteractiveChart extends Component {
         var legendColumbia = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 6)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1825,7 +1854,7 @@ class InteractiveChart extends Component {
         var legendUcla = legend.append("rect")
                 .attr("width", legendCompleteWidth)
                 .attr("height", legendSingleHeight)
-                .attr("x", width + 40)
+                .attr("x", 0)
                 .attr("y", 10 + legendSingleHeight * 7)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
@@ -1897,14 +1926,24 @@ class InteractiveChart extends Component {
     }
         
     render() {
-        return(<div>
+        return(
+        <div>
             <h2>US Daily Deaths</h2>
             <p>Daily deaths is the best indicator of the progression of the pandemic.</p>
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
-            <div ref={this.chartRef}></div>
+            <div className="chart">
+                <div className="text"></div>
+                <div ref={this.chartRef}>
+                    <svg className="main-chart"></svg>
+                </div>
+                <div>
+                    <svg className="legend-container"></svg>
+                    <button className="btn btn-primary" id="delete-btn">Reset</button>
+                    <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
+                </div>
+            </div>
             <div class="tooltip-box"></div>
-            <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
-            </div>);
+        </div>);
     }
 }
 
