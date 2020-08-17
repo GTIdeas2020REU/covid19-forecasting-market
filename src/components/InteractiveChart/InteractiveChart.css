@@ -51,10 +51,21 @@
     opacity: 1;
 }
 
+.third-column {
+    position: relative;
+}
+
 #delete-btn {
     position: absolute;
-    top: 63vh;
-    right: 20vw;
+    /* top: 63vh;
+    right: 20vw; */
+    top: 22vw;
+    left: 0px;
+    /* width: 5vw; */
+    box-sizing: border-box;
+    font-size: 1.2vw;
+    text-align: center;
+    margin: 0 auto;
 }
 
 /* .reset-btn {
