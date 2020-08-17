@@ -42,6 +42,8 @@ class InteractiveChartContainer extends Component {
         });
         fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
             this.setState({ confirmed: data });
+            console.log("CONFIRMED WEEKLY");
+            console.log(data);
         });
         fetch('/us-inc-deaths-confirmed').then(res => res.json()).then(data => {
             this.setState({ 

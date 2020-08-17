@@ -26,10 +26,13 @@ def get_us_new_deaths_weekly_avg(data):
     for d in dates:
         tempSum += daily_deaths[d]
         datetime_obj = date(*(int(s) for s in d.split('-')))
-        if datetime_obj.weekday() == 5:
-            tempDate = d
+        '''if datetime_obj.weekday() == 5:
+            tempDate = d'''
         if n == 7:
+            tempDate = d
             result[tempDate] = tempSum/7
+            for i in range(dates.index(tempDate), dates.index(tempDate)-7, -1):
+                result[dates[i]] = tempSum/7
             n = 0
             tempSum = 0
         n += 1
@@ -37,6 +40,7 @@ def get_us_new_deaths_weekly_avg(data):
     result = dict(sorted(result.items()))
     return json.dumps(result)
         
+#print(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
 
 # get confirmed cumulative deaths in the us
 def get_us_confirmed():
