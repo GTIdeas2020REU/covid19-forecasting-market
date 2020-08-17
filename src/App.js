@@ -54,6 +54,15 @@ class App extends React.Component {
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
             <Route exact path="/temp" render={(props) => <ChartContainer isProfile={true}/>}/>
+            <Route path='#test'>
+              <div>bloop</div>
+            </Route>
+            <Route path='/#teste'>
+              <div>bloop2</div>
+            </Route>
+            <Route path='/#/testd'>
+              <div>bloop3</div>
+            </Route>
           </Switch>
         </div>
       </Router>
