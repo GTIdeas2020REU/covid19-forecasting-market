@@ -18,7 +18,7 @@ import Mapportal from './components/Mapportal';
 import Login from './components/LogIn';
 import SignUp from './components/SignUp';
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
@@ -27,7 +27,7 @@ import {
 class App extends React.Component {
   render() {
     return (
-      <Router>
+      <Router basename='/'>
         <div className="App">
           <Navbar />
           <Switch>
