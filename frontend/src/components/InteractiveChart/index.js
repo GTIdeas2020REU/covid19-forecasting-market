@@ -129,9 +129,9 @@ class InteractiveChart extends Component {
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
-        var svg = d3.select(this.chartRef.current)
-                    .append("svg")
-                        .attr("class", "main-chart")
+        var svg = d3.select(".main-chart")
+                    // .append("svg")
+                    //     .attr("class", "main-chart")
                         // .attr("viewBox", `0 0 ${width} ${height}`)
                         .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + focusHeight + 100}`)
                         // .attr("width", width)
@@ -913,6 +913,38 @@ class InteractiveChart extends Component {
                 .attr("y", 10 + legendSingleHeight * 7)
                 .attr("fill", "none")
                 .style("pointer-events","visible");
+        
+        // var resetBtn = legend.append("rect")
+        //         .attr("class", "reset-btn")
+        //         .attr("width", 100)
+        //         .attr("height", 40)
+        //         .attr("x", 0)
+        //         .attr("y", 30 + legendSingleHeight * 8)
+        //         .attr("fill", "red")
+        //         .style("pointer-events","visible")
+        //         .on("click", function(){
+        //             predictionData = createDefaultPrediction(predStartDate, predEndDate);
+        //             predictionData[0].value = confirmedLastVal;
+        //             predictionData[0].defined = true;
+        //             //update yourLine
+        //             var filtered = predictionData.filter(predLine.defined())
+        //             yourLine.datum(filtered)
+        //                     .attr('d', predLine)
+        //             focusPredCurve.datum(filtered)
+        //                             .attr("d", focusPredLine)
+                            
+        //             svg
+        //                 .select("#drawing-instruction")
+        //                 .style("opacity", "1");
+        //             compiledData[2].data = predictionData;
+        //         });
+        // var resetText = legend.append("text")
+        //                         .text("hello")
+        //                         .attr("fill", "black")
+        //                         .attr("position", "absolute")
+        //                         .attr("x", 0)
+        //                         .attr("y", 0)
+        // resetBtn.node().innerHTML = "  <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'>TEXT</text>"
                 
         legendConfirmed.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
@@ -1901,12 +1933,16 @@ class InteractiveChart extends Component {
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div className="chart">
                 <div className="text">text</div>
-                <div ref={this.chartRef}></div>
-                <div><svg className="legend-container"></svg></div>
+                <div ref={this.chartRef}>
+                    <svg className="main-chart"></svg>
+                </div>
+                <div>
+                    <svg className="legend-container"></svg>
+                    <button className="btn btn-primary" id="delete-btn">Reset</button>
+                    <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
+                </div>
             </div>
             <div class="tooltip-box"></div>
-            <button className="btn btn-primary" id="delete-btn">Reset</button>
-            <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
         </div>);
     }
 }
