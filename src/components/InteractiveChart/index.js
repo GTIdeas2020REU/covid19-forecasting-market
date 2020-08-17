@@ -1927,7 +1927,7 @@ class InteractiveChart extends Component {
         
     render() {
         return(
-        <div>
+       <div>
             <h2>US Daily Deaths</h2>
             <p>Daily deaths is the best indicator of the progression of the pandemic.</p>
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
@@ -1936,9 +1936,9 @@ class InteractiveChart extends Component {
                 <div ref={this.chartRef}>
                     <svg className="main-chart"></svg>
                 </div>
-                <div>
+                <div className="third-column">
                     <svg className="legend-container"></svg>
-                    <button className="btn btn-primary" id="delete-btn">Reset</button>
+                    <button className="btn btn-primary " id="delete-btn">Reset</button>
                     <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
                 </div>
             </div>
