@@ -20,8 +20,8 @@ def get_forecasts():
         df = df.loc[df['location'] == 'US']
         df = df.loc[df['type'] == 'point']
         df = df.loc[df['target'].str.contains("cum death")]
+        df = df.sort_values(by=['forecast_date', 'target_end_date'])
         df = df[['target_end_date', 'value']]
-        df = df.sort_values('target_end_date')
         df = df.drop_duplicates()
         JSON = df.to_json()
         models[orgs.pop()] = df.to_dict('list')
@@ -40,14 +40,16 @@ def get_daily_forecasts():
     models = dict()
     for line in file:
         df = pd.read_csv(line.strip())
-        df = df.loc[(df['location'] == 'US') & (df['type'] == 'point') & (df['target'].str.contains("inc death")) & (df['target'].str.contains("wk"))]
 
-        mask = df['target'].str.contains('wk')
-        df.loc[mask, 'value'] /= 7
+        #df = df.loc[(df['location'] == 'US') & (df['type'] == 'point') & (df['target'].str.contains("inc death")) & (df['target'].str.contains("wk"))]
+        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc death"))]
+        #mask = df['target'].str.contains('wk')
+        #df.loc[mask, 'value'] /= 7
+        df.value = df.value.astype('float')
+        df['value'] = df['value'].div(7)
+        df = df.sort_values(by=['forecast_date', 'target_end_date'])
         df = df[['target_end_date', 'value']]
-        df = df.sort_values('target_end_date')
         df = df.drop_duplicates(subset=['target_end_date'], keep='last')
-
         models[orgs.pop()] = df.to_dict('list')
     return models
 
@@ -160,4 +162,3 @@ def get_daily_confirmed(d):
     data = pd.read_csv(file_path)
     return data['Deaths'].sum()
     # catch error!!
-
