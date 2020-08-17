@@ -1059,9 +1059,9 @@ class InteractiveChart extends Component {
         var margin = {top: 20, right: 30, bottom: 20, left: 60},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
-        var svg = d3.select(this.chartRef.current)
-            .append("svg")
-                .attr("class", "main-chart")
+        var svg = d3.select(".main-chart")
+            // .append("svg")
+                // .attr("class", "main-chart")
                 // .attr("viewBox", `0 0 ${width} ${height}`)
                 .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + focusHeight + 100}`)
                 // .attr("width", width)
