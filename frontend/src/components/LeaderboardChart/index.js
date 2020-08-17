@@ -110,23 +110,23 @@ class LeaderboardChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("circle")
-                    .attr('cx', width*3/5)
+                    .attr('cx', width*3/5+40)
                     //.attr('cx', width-65)
                     .attr("cy", function(d,i){ return 0 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .attr("r", 6)
-                    .style("fill", function(d){ return color(d)})
+                    .style("fill", function(d){ return color(d)});
         legend
                 .selectAll("labels")
                 .data(legendString)
                 .enter()
                 .append("text")
-                    .attr("x", width*3/5+20)
+                    .attr("x", width*3/5+60)
                     //.attr("x", width-50)
                     .attr("y", function(d,i){ return 0 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .style("fill", function(d){ return color(d)})
                     .text(function(d){ return d})
                         .attr("text-anchor", "left")
-                        .style("alignment-baseline", "middle")
+                        .style("alignment-baseline", "middle");
 
         //SET UP CLIP PATH//
         var mainClip = svg
@@ -148,10 +148,10 @@ class LeaderboardChart extends Component {
                                     .curve(d3.curveBasis);
         var line = lineGenerator
                         .x(function(d) { return x(d.date) })
-                        .y(function(d) { return y(d.value) })
+                        .y(function(d) { return y(d.value) });
         var predLine = predLineGenerator
                             .x(function(d) { return x(d.date) })
-                            .y(function(d) { return y(d.value) })
+                            .y(function(d) { return y(d.value) });
 
         //DRAW CURVES//
         var confirmedCurve = mainArea
@@ -160,14 +160,36 @@ class LeaderboardChart extends Component {
                                     .attr("class", "line")
                                     .datum(confirmedData)
                                     .attr("d", line)
-                                    .attr("stroke", color(legendString[0]))
+                                    .attr("stroke", color(legendString[0]));
         var predCurve = mainArea
                                 .append("path")
                                 .attr("id", "lbPrediction")
                                 .attr("class", "line")
                                 .datum(predictionData)
                                 .attr("d", predLine)
-                                .attr("stroke",  color(legendString[1]))
+                                .attr("stroke",  color(legendString[1]));
+
+        ////ADD TODAY LINE/////////////////////////////////////////////////////
+        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
+        var todayMarker = svg
+                            .append("g")
+                            .attr("id", "today-marker");
+        todayMarker
+                    .append("line")
+                    .attr("id", "today-line")
+                    .attr("x1", x(today))
+                    .attr("x2", x(today))
+                    .attr("y1", 0)
+                    .attr("y2", height)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1)
+                    .attr("stroke-dasharray", "8, 8");
+        todayMarker
+                    .append("text")
+                    .attr("id", "today-text")
+                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+                    .text("Today")
+                    .style("text-anchor", "end");
         
     }
 
