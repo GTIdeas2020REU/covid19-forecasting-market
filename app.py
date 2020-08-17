@@ -53,10 +53,6 @@ def load_us_inc_confirmed_wk_avg():
 def load_us_inc_forecasts():
     us_inc_forecasts = get_daily_forecasts()
 
- @app.route('/', methods=['GET'])
- def index():
-     return app.send_static_file('index.html')   
-
 @app.route('/', defaults={'u_path': ''})
 @app.route('/<path:u_path>')
 def catch_all(u_path):
