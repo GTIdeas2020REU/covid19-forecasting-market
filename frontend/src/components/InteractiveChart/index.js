@@ -1932,7 +1932,7 @@ class InteractiveChart extends Component {
             <p>Daily deaths is the best indicator of the progression of the pandemic.</p>
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div className="chart">
-                <div className="text">text</div>
+                <div className="text"></div>
                 <div ref={this.chartRef}>
                     <svg className="main-chart"></svg>
                 </div>
