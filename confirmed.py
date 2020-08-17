@@ -16,27 +16,51 @@ def get_us_new_deaths():
     return json.dumps(pd.Series(df.new_deaths.values,index=df.date).to_dict())
 
 
+# def get_us_new_deaths_weekly_avg(data):
+#     daily_deaths = json.loads(data)
+#     dates = list(daily_deaths.keys())[::-1]
+#     result = dict()
+#     n = 1
+#     tempDate = ""
+#     tempSum = 0
+#     for d in dates:
+#         tempSum += daily_deaths[d]
+#         datetime_obj = date(*(int(s) for s in d.split('-')))
+#         '''if datetime_obj.weekday() == 5:
+#             tempDate = d'''
+#         if n == 7:
+#             tempDate = d
+#             result[tempDate] = tempSum/7
+#             for i in range(dates.index(tempDate), dates.index(tempDate)-7, -1):
+#                 result[dates[i]] = tempSum/7
+#             n = 0
+#             tempSum = 0
+#         n += 1
+
+#     result = dict(sorted(result.items()))
+#     return json.dumps(result)
+        
 def get_us_new_deaths_weekly_avg(data):
     daily_deaths = json.loads(data)
-    dates = list(daily_deaths.keys())[::-1]
+    dates = list(daily_deaths.keys())
     result = dict()
-    n = 1
-    tempDate = ""
     tempSum = 0
-    for d in dates:
-        tempSum += daily_deaths[d]
-        datetime_obj = date(*(int(s) for s in d.split('-')))
-        if datetime_obj.weekday() == 5:
-            tempDate = d
-        if n == 7:
-            result[tempDate] = tempSum/7
-            n = 0
-            tempSum = 0
-        n += 1
-
+    for i in range(7):
+        tempSum += daily_deaths[dates[i]]
+    result[dates[6]] = tempSum/7 #store first avg
+    for i in range(7, len(dates)):
+        currDate = dates[i]
+        oldDate = dates[i - 7] #currDate - 7
+        tempSum += daily_deaths[currDate] - daily_deaths[oldDate]
+        # print(tempSum)
+        result[currDate] = tempSum / 7
     result = dict(sorted(result.items()))
+    print(result)
     return json.dumps(result)
         
+# get_us_new_deaths_weekly_avg(get_us_new_deaths())
+
+#print(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
 
 # get confirmed cumulative deaths in the us
 def get_us_confirmed():
