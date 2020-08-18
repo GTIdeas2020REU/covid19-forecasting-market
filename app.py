@@ -65,6 +65,7 @@ def catch_all(u_path):
 def index():
     return app.send_static_file('index.html')
 '''
+
 def add_vote(id, pred_model):
     vote = mongo.db.votes.find_one(
         {"user_id": id})
