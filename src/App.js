@@ -27,7 +27,7 @@ import {
 class App extends React.Component {
   render() {
     return (
-      <Router>
+      <Router basename='/'>
         <div className="App">
           <Navbar />
           <Switch>
@@ -54,7 +54,15 @@ class App extends React.Component {
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
             <Route exact path="/temp" render={(props) => <ChartContainer isProfile={true}/>}/>
-         
+            <Route exact path='#yer'>
+              <div>bloop</div>
+            </Route>
+            <Route exact path='#/yere'>
+              <div>bloop2</div>
+            </Route>
+            <Route exact path='/#/yere'>
+              <div>bloop3</div>
+            </Route>
           </Switch>
         </div>
       </Router>
