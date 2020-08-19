@@ -58,8 +58,8 @@ class InteractiveChart extends Component {
     }
     
     appendModal() {
-        const signinRedirect = () => {window.location.href='#signin'}
-        const signupRedirect = () => {window.location.href='#signup'}
+        const signinRedirect = () => {window.location.href='/signin'}
+        const signupRedirect = () => {window.location.href='/signup'}
         var modal = document.createElement("div");
         modal.id = "modal";
         var modalContent = document.createElement("div");
