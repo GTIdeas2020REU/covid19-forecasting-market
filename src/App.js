@@ -32,7 +32,7 @@ class App extends React.Component {
           <Navbar />
           <Switch>
             <Route exact path={ROUTES.LANDING} >
-              <br></br>
+              {/*<br></br>
             <div class="dropdown">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Country
@@ -41,7 +41,10 @@ class App extends React.Component {
               <a class="dropdown-item" href="/">USA</a>
               
             </div>
-          </div><br></br>
+              </div><br></br>*/}
+              <br></br>
+              <p className='pagedesc'><b>COVIDforecasts is created by academic researchers for you to compare official COVID forecasts and contribute your own. Currently we compare forecasts for U.S. daily deaths, and we hope to expand to more forecasts in the future.</b></p>
+              <br></br>
               <InteractiveChartContainer/>
               </Route>
             {/* <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />
@@ -54,15 +57,7 @@ class App extends React.Component {
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
             <Route exact path="/temp" render={(props) => <ChartContainer isProfile={true}/>}/>
-            <Route exact path='#yer'>
-              <div>bloop</div>
-            </Route>
-            <Route exact path='#/yere'>
-              <div>bloop2</div>
-            </Route>
-            <Route exact path='/#/yere'>
-              <div>bloop3</div>
-            </Route>
+            
           </Switch>
         </div>
       </Router>
