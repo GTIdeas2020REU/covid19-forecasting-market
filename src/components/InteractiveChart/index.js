@@ -101,7 +101,6 @@ class InteractiveChart extends Component {
         });
         var sortedOrgs = [];
         for (var j = 0; j < sortable.length; j++) {
-            //sortedOrgs.push(sortable[j][0] + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
             sortedOrgs.push(sortable[j][0]); // + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
             orgIndices[sortable[j][0]].push(j);
         }
@@ -1930,14 +1929,35 @@ class InteractiveChart extends Component {
         
     render() {
         return(
-       <div>
+        <div>
             <h2>US Daily Deaths</h2>
             
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div className="chart">
-                <div className="text"></div>
-                <div ref={this.chartRef}>
+                <div className="first-column">
+                    <div className="main-instruction">
+                        <p className="info">
+                            <b>COVIDforecasts is created by academic researchers for you to compare 
+                            official COVID forecasts and contribute your own. Currently we compare 
+                            forecasts for U.S. daily deaths, and we hope to expand to more forecasts 
+                            in the future.</b>
+                        </p>
+                        <p>> Hover over the graph to view the tooltip</p>
+                        {/* <br/> */}
+                        <p>> Hover over the legend to view individual curves</p>
+                        {/* <br/> */}
+                        <p>> Drag on the chart to draw your own prediction</p>
+                        {/* <br/> */}
+                        <p>> Click Reset to erase your prediction</p>
+                        {/* <br/> */}
+                        <p>> Navigate to <b>Top Forecasts</b> to view the accuracy of various forecasts and user predictions</p>
+                    </div>
+                </div>
+                <div ref={this.chartRef} className="second-column">
                     <svg className="main-chart"></svg>
+                    <div className="privacy">
+                        <span className="bold">Privacy</span>: User-contributed forecast data is used to create aggregate forecasts and is displayed to other visitors on the "Top Forecasts" page. It may also be used, anonymized, for academic research purposes. Other than that, we do not and will not share or sell any user or visitor information for any reason.
+                    </div>
                 </div>
                 <div className="third-column">
                     <svg className="legend-container"></svg>
