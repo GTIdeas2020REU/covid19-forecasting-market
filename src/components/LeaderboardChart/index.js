@@ -123,7 +123,7 @@ class LeaderboardChart extends Component {
                     .attr("x", width*3/5+60)
                     //.attr("x", width-50)
                     .attr("y", function(d,i){ return 0 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                    .style("fill", function(d){ return color(d)})
+                    .style("fill", function(d){ return 'black'})
                     .text(function(d){ return d})
                         .attr("text-anchor", "left")
                         .style("alignment-baseline", "middle");
