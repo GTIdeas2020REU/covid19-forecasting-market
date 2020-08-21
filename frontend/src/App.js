@@ -42,8 +42,8 @@ class App extends React.Component {
               
             </div>
     </div><br></br>*/}
-        <p className='pagedesc'><b>COVIDforecasts is created by academic researchers for you to compare official COVID forecasts and contribute your own. Currently we compare forecasts for U.S. daily deaths, and we hope to expand to more forecasts in the future.</b></p>
-               <br></br>
+        {/* <p className='pagedesc'><b>COVIDforecasts is created by academic researchers for you to compare official COVID forecasts and contribute your own. Currently we compare forecasts for U.S. daily deaths, and we hope to expand to more forecasts in the future.</b></p> */}
+               {/* <br></br> */}
               <InteractiveChartContainer/>
               </Route>
             {/* <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />

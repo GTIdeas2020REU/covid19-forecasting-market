@@ -1936,15 +1936,21 @@ class InteractiveChart extends Component {
             <div className="chart">
                 <div className="first-column">
                     <div className="main-instruction">
-                        <div><p>> Hover over the graph to view the tooltip</p></div>
-                        <br/>
+                        <p className="info">
+                            <b>COVIDforecasts is created by academic researchers for you to compare 
+                            official COVID forecasts and contribute your own. Currently we compare 
+                            forecasts for U.S. daily deaths, and we hope to expand to more forecasts 
+                            in the future.</b>
+                        </p>
+                        <p>> Hover over the graph to view the tooltip</p>
+                        {/* <br/> */}
                         <p>> Hover over the legend to view individual curves</p>
-                        <br/>
-                        <p> > Drag on the chart to draw your own prediction</p>
-                        <br/>
+                        {/* <br/> */}
+                        <p>> Drag on the chart to draw your own prediction</p>
+                        {/* <br/> */}
                         <p>> Click Reset to erase your prediction</p>
-                        <br/>
-                        <p>> Navigate to <span className="bold">Top Forecasts</span> to view the accuracy of various forecasts and user predictions</p>
+                        {/* <br/> */}
+                        <p>> Navigate to <b>Top Forecasts</b> to view the accuracy of various forecasts and user predictions</p>
                     </div>
                 </div>
                 <div ref={this.chartRef} className="second-column">

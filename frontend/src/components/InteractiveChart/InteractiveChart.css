@@ -4,7 +4,10 @@
     font-family: 'Assistant', sans-serif;
 }
 p {
-    margin-bottom: 1px;
+    margin-bottom: 8px;
+}
+.info {
+    margin-bottom: 35px;
 }
 .chart {
     display: grid;
@@ -25,12 +28,14 @@ p {
 }
 
 .main-instruction {
-    /* display: grid;
-    grid-template-rows: fit-content(50%) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr); */
     background-color: #ddd;
-    margin: 20px;
+    display: grid;
+    grid-template-rows: fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr);
+    /* grid-template-rows: fit-content(50%) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr); */
+    /* background-color: #ddd; */
+    margin: 12px;
     padding: 20px;
-    height: 50%;
+    /* height: 50%; */
     text-align: left;
 }
 
