@@ -3,7 +3,7 @@ from get_estimates import get_daily_forecasts
 
 import json
 import pymongo
-from sklearn.metrics import mean_squared_error 
+from sklearn.metrics import mean_squared_error
 
 def get_mse(confirmed, forecasts):
     result = dict()

@@ -42,7 +42,7 @@ mongo = PyMongo(app)
 data = {}
 
 
-''' Functions to update variables on daily basis '''
+''' Functions to update variables and database on daily basis '''
 def load_us_inc_confirmed():
     us_inc_confirmed = get_us_new_deaths()
 
@@ -51,6 +51,19 @@ def load_us_inc_confirmed_wk_avg():
 
 def load_us_inc_forecasts():
     us_inc_forecasts = get_daily_forecasts()
+
+def update_errors():
+    prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
+    for p in prediction:
+        temp = dict()
+        temp[p['date']] = p['prediction']
+        mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
+        if mse == None:
+            continue
+        mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
+            {'$set': 
+                { "mse_score": list(mse.values())[0] }
+            })
 
 
 
@@ -94,7 +107,12 @@ def delete_user_prediction(username, category):
 
 def update_user_prediction(username, data, category, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
+    print("DATA: ")
+    print(data)
+    print("SCORE:")
     score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
+    print(score)
+    print(' ')
     pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
     if pred:
         mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
@@ -345,6 +363,7 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
+scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app
