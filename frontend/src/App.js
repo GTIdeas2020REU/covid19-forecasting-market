@@ -33,7 +33,7 @@ class App extends React.Component {
           <Switch>
             <Route exact path={ROUTES.LANDING} >
               <br></br>
-            <div class="dropdown">
+            {/*<div class="dropdown">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Country
             </button>
@@ -41,7 +41,9 @@ class App extends React.Component {
               <a class="dropdown-item" href="/">USA</a>
               
             </div>
-          </div><br></br>
+    </div><br></br>*/}
+        <p className='pagedesc'><b>COVIDforecasts is created by academic researchers for you to compare official COVID forecasts and contribute your own. Currently we compare forecasts for U.S. daily deaths, and we hope to expand to more forecasts in the future.</b></p>
+               <br></br>
               <InteractiveChartContainer/>
               </Route>
             {/* <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />

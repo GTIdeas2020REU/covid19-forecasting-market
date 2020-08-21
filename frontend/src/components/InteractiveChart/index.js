@@ -58,8 +58,8 @@ class InteractiveChart extends Component {
     }
     
     appendModal() {
-        const signinRedirect = () => {window.location.href='/signin'}
-        const signupRedirect = () => {window.location.href='/signup'}
+        const signinRedirect = () => {window.location.href='/#/signin'}
+        const signupRedirect = () => {window.location.href='/#/signup'}
         var modal = document.createElement("div");
         modal.id = "modal";
         var modalContent = document.createElement("div");
@@ -1931,7 +1931,7 @@ class InteractiveChart extends Component {
         return(
         <div>
             <h2>US Daily Deaths</h2>
-            <p>Daily deaths is the best indicator of the progression of the pandemic.</p>
+            
             {/*<p>Current total: {this.confirmedData.value}</p>*/}
             <div className="chart">
                 <div className="text"></div>
