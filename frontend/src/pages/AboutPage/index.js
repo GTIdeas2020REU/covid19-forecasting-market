@@ -3,19 +3,24 @@ import React, { Component } from 'react';
 const pstyle = {
     textAlign: 'left',
     marginLeft: '20px',
-    fontSize: '20px'
+    fontSize: '20px',
+     paddingLeft: '100px',
+     paddingRight: '100px'
 }
 
 const h1style = {
     textAlign: 'left',
     marginLeft: '20px',
-    fontSize: '40px'
+    fontSize: '40px',
+    paddingLeft: '100px',
+     paddingRight: '100px'
 }
 
 class AboutPage extends Component {
     render() {
         return(
             <div>
+                <br></br>
                 <h1 style={h1style}>About</h1>
                 <h3></h3>
                 <p style={pstyle}> 
@@ -25,8 +30,11 @@ class AboutPage extends Component {
                     Our mission is to deliver future projections and collected data by providing the best information on the COVID-19 pandemic.
                 </p>
                 <br></br>
-                <h3 style={h1style}>How we Score</h3>
-                <p></p>
+                <h1 style={h1style}>Privacy</h1>
+                <p style={pstyle}>User-contributed forecast data is used to create aggregate forecasts and is displayed to other visitors on the "Top Forecasts" page. It may also be used, anonymized, for academic research purposes. Other than that, we do not and will not share or sell any user or visitor information for any reason.</p>
+
+                 <small>Created by the Aggregators Team of the <a href='http://www.covideas20reu.org/about'>COV-IDEAS 2020 REU</a></small>
+               
             </div>
         );  
     }
