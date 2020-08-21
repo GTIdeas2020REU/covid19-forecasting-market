@@ -220,7 +220,7 @@ class Leaderboard extends React.Component {
         <small>* indicates an official forecaster as labelled by the CDC</small>
         <br></br>
         <br></br>
-        <div className="d-flex flex-row">>
+        <div className="d-flex flex-row">
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
         </div>
