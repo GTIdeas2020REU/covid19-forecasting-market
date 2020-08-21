@@ -1,8 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Assistant&display=swap');
+
+* {
+    font-family: 'Assistant', sans-serif;
+}
+p {
+    margin-bottom: 8px;
+}
+.info {
+    margin-bottom: 35px;
+}
 .chart {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     grid-template-rows: 100vh;
 }
+
+.bold {
+    font-weight: bold;
+}
+.second-column {
+    /* background-color: #ddd; */
+    padding: 10px;
+}
+
+.third-column {
+    position: relative;
+}
+
+.main-instruction {
+    background-color: #ddd;
+    display: grid;
+    grid-template-rows: fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr);
+    /* grid-template-rows: fit-content(50%) fit-content(1fr) fit-content(1fr) fit-content(1fr) fit-content(1fr); */
+    /* background-color: #ddd; */
+    margin: 12px;
+    padding: 20px;
+    /* height: 50%; */
+    text-align: left;
+}
+
 .main-chart {
     width: 100%;
     height: auto;
@@ -49,10 +85,6 @@
 
 .tooltip {
     opacity: 1;
-}
-
-.third-column {
-    position: relative;
 }
 
 #delete-btn {
@@ -231,4 +263,9 @@ font-weight: bold;
     position: absolute;
     left: 100px;
     top: 100px;
+}
+
+.privacy {
+    font-size: 13px;
+    margin-top: 40px;
 }
