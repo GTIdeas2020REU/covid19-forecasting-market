@@ -102,7 +102,7 @@ class InteractiveChart extends Component {
         var sortedOrgs = [];
         for (var j = 0; j < sortable.length; j++) {
             //sortedOrgs.push(sortable[j][0] + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
-            sortedOrgs.push(sortable[j][0] + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
+            sortedOrgs.push(sortable[j][0]); // + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
             orgIndices[sortable[j][0]].push(j);
         }
 
@@ -226,8 +226,9 @@ class InteractiveChart extends Component {
         var legendString = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(orgs);
         var models = [];
         orgs.map((o, i) => {
-            var idx = o.indexOf("(");
-            models.push(o.substring(0, idx - 1));
+            //var idx = o.indexOf("(");
+            //models.push(o.substring(0, idx - 1));
+            models.push(o);
         })
         var names = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(models)
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
@@ -1031,7 +1032,7 @@ class InteractiveChart extends Component {
         });
         var sortedOrgs = [];
         for (var j = 0; j < sortable.length; j++) {
-            sortedOrgs.push(sortable[j][0] + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
+            sortedOrgs.push(sortable[j][0]); // + " (MSE=" + sortable[j][1].toFixed(2).toString() + ")")
             orgIndices[sortable[j][0]].push(j);
         }
 
@@ -1163,8 +1164,9 @@ class InteractiveChart extends Component {
         var legendString = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(orgs);
         var models = [];
         orgs.map((o, i) => {
-            var idx = o.indexOf("(");
-            models.push(o.substring(0, idx - 1));
+            //var idx = o.indexOf("(");
+            //models.push(o.substring(0, idx - 1));
+            models.push(o);
         })
         var names = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(models)
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
