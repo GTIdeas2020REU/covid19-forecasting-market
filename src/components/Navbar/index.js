@@ -42,6 +42,7 @@ class Navbar extends React.Component {
 				'Content-Type': 'application/json'
 			}
 		});
+		window.location.reload(false)
 		
 		
 	}
@@ -64,7 +65,7 @@ class Navbar extends React.Component {
 							</a>
 							<div className="dropdown-menu dropdown-menu-left">
 							<NavLink exact activeClassName="active" className="dropdown-item" to={ROUTES.PROFILE}>Profile</NavLink>
-							<NavLink className="dropdown-item" to={ROUTES.LANDING}><a className="dropdown-item" onClick={() => this.saveLogout()} >Sign Out</a></NavLink>
+							<NavLink className="dropdown-item" to={ROUTES.LANDING}><a className="dropdown-item" onClick={() => this.saveLogout()} href='/'>Sign Out</a></NavLink>
 							</div>
 						</li>
 					</ul>

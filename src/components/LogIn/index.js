@@ -51,6 +51,9 @@ class Login extends React.Component{
           .then((data) => {
             this.setState({loginStatus: data['logged in']});
             console.log(data['logged in']);
+            if (!data['logged in']){
+                window.alert("Wrong username and/or password")
+            }
             console.log('heretoo')
             resolve(data['logged in']);
           });
