@@ -35,6 +35,7 @@ class Login extends React.Component{
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
+          console.log('here2')
           this.setState({loginStatus: data['status']});
           resolve(data);
         });
@@ -50,6 +51,7 @@ class Login extends React.Component{
           .then((data) => {
             this.setState({loginStatus: data['logged in']});
             console.log(data['logged in']);
+            console.log('heretoo')
             resolve(data['logged in']);
           });
         }, 200)

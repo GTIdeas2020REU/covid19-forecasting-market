@@ -47,6 +47,9 @@ class SignUp extends React.Component{
           .then((data) => {
             this.setState({loginStatus: data['logged in']});
             console.log(data['logged in']);
+            if (!data['logged in']){
+                window.alert("That username is already taken.")
+            }
             resolve(data['logged in']);
           });
         }, 300)
@@ -56,7 +59,7 @@ class SignUp extends React.Component{
     async handleSubmit(event) {
       event.preventDefault();
       await this.saveLogin(this.state.nam, this.state.email, this.state.username, this.state.password);
-      this.updateLoginState();
+      await this.updateLoginState();
     }
     
     render() {
@@ -74,6 +77,7 @@ class SignUp extends React.Component{
             value={this.state.nam}
             onChange={this.handleChange.bind(this)}
             name='nam'
+            required
           />
           <br></br>
           <span className='signupSpan'><b>Email</b></span>
@@ -83,6 +87,7 @@ class SignUp extends React.Component{
             value={this.state.email}
             onChange={this.handleChange.bind(this)}
             name='email'
+            required
           />
           <br></br>
           <span style={{paddingRight:'280px'}}><b>Username</b></span>
@@ -92,6 +97,7 @@ class SignUp extends React.Component{
             value={this.state.username}
             onChange={this.handleChange.bind(this)}
             name='username'
+            required
           />
           <br></br>
           <span style={{paddingRight:'285px'}}><b>Password</b></span>
@@ -101,6 +107,7 @@ class SignUp extends React.Component{
             value={this.state.password}
             onChange={this.handleChange.bind(this)}
             name='password'
+            required
           />
           <br></br>
           <input type="submit" value="Submit" />

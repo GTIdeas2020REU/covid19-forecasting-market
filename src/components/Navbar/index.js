@@ -42,6 +42,7 @@ class Navbar extends React.Component {
 				'Content-Type': 'application/json'
 			}
 		});
+		window.location.href = '/'
 		
 	}
 
@@ -63,7 +64,7 @@ class Navbar extends React.Component {
 							</a>
 							<div className="dropdown-menu dropdown-menu-left">
 							<NavLink exact activeClassName="active" className="dropdown-item" to={ROUTES.PROFILE}>Profile</NavLink>
-							<NavLink className="dropdown-item" to={ROUTES.LANDING}><a className="dropdown-item" onClick={() => this.saveLogout()} href='/'>Sign Out</a></NavLink>
+							<NavLink className="dropdown-item" to={ROUTES.LANDING}><a className="dropdown-item" onClick={() => this.saveLogout()} >Sign Out</a></NavLink>
 							</div>
 						</li>
 					</ul>
@@ -76,7 +77,7 @@ class Navbar extends React.Component {
 				<div className='navbar-nav ml-auto dropleft'>
 					<ul className="navbar-nav ml-auto">
 						<li className="nav-item dropdown">
-							<a className="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">Welcome</a>
+							<a className="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">Sign In/Sign Up</a>
 							<div className="dropdown-menu">
 								<NavLink exact activeClassName="active" className="dropdown-item" to={ROUTES.SIGN_UP}>Sign Up</NavLink>
 								<NavLink exact activeClassName="active" className="dropdown-item" to={ROUTES.SIGN_IN}>Sign In</NavLink>
