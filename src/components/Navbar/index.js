@@ -42,9 +42,7 @@ class Navbar extends React.Component {
 				'Content-Type': 'application/json'
 			}
 		});
-		
-		
-		
+		window.location.href ='/';				
 	}
 
 	isLoggedIn = () => {
