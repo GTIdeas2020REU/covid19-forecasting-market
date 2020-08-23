@@ -42,7 +42,8 @@ class Navbar extends React.Component {
 				'Content-Type': 'application/json'
 			}
 		});
-		window.location.href ='/';				
+		window.location.href ='/';
+		console.log("logged out")			
 	}
 
 	isLoggedIn = () => {
