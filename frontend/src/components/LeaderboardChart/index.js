@@ -27,7 +27,7 @@ class LeaderboardChart extends Component {
 
     renderChart() {
         var { userPrediction, confirmed } = this.props;
-
+        var compiledData = [];
         //format confirmedData, predictionData
         var confirmedData = Object.keys(confirmed).map(key => ({
             date: d3.timeParse("%Y-%m-%d")(key),
@@ -37,6 +37,7 @@ class LeaderboardChart extends Component {
             date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
             value: d.value
         }));
+        compiledData = [confirmedData, predictionData]
 
         //IMPORTANT BOUNDARIES// 
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-02-01");
@@ -94,6 +95,7 @@ class LeaderboardChart extends Component {
         
         //DRAW LEGEND//
         const legendString = ["Daily Confirmed Deaths", "User Prediction"];
+        const classNames = ['confirmed', 'prediction'];
         const color = d3
                         .scaleOrdinal()
                         .domain(legendString)
@@ -190,12 +192,152 @@ class LeaderboardChart extends Component {
                     .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
                     .text("Today")
                     .style("text-anchor", "end");
+        //////////add tooltip///////////////////////////////////////////////////////////////////////
+        const tooltipArea = svg
+                                .append("g")
+                                .attr("class", "tooltip")
+
+        tooltipArea.append("path") //vertical line
+                    .attr("id", "tooltip-line")
+                    .style("stroke", "black")
+                    .style("stroke-width", "0.5px")
+                    .style("opacity", "0");
+        tooltipArea.append("text")
+                    .attr("x", 10)
+                    .attr("y", 10)
+                    .attr("class", "confirmed confirmed-value")
+                    .text("Confirmed: ")
+        tooltipArea.append("text")
+                    .attr("x", 10)
+                    .attr("y", 30)
+                    .attr("class", "prediction prediction-value")
+                    .text("User Prediction: ")
+        //where text will be
+        var tooltipBox = d3.select(".tooltip-box")
+                            .style("position", "absolute")
+                            .style("display", "block")
+                            .style("left", "10px")
+                            .style("top", "10px");
+
+        var mousePerLine = tooltipArea
+                                        .selectAll(".mouse-per-line")
+                                        .data(compiledData)
+                                        .enter()
+                                        .append("g")
+                                        .attr("class", "mouse-per-line");
         
+        mousePerLine.append("circle")
+                        .attr("r", 2)
+                        .style("stroke", function(d, i) {
+                            return color(legendString[i]);
+                        })
+                        .style("fill", "none")
+                        .style("stroke-width", "1px")
+                        .style("opacity", "0");
+
+        var chart = tooltipArea
+                            .append("svg:rect")
+                            .attr('width', width)
+                            .attr('height', height)
+                            .attr('fill', 'none')
+                            .attr('pointer-events', 'all')
+                            //.style("cursor", "pointer")
+                            .on('mouseout', function() { // on mouse out hide line, circles and text
+                                console.log("out")
+                                d3.select("#tooltip-line")
+                                .style("opacity", "0");
+                                d3.selectAll(".mouse-per-line circle")
+                                .style("opacity", "0");
+                                d3.selectAll(".mouse-per-line text")
+                                .style("opacity", "0")
+                                tooltipBox.style("display", "none")
+                            })
+                            .on('mouseover', function() { // on mouse in show line, circles and text
+                                // console.log("over")
+                                d3.select("#tooltip-line")
+                                .style("opacity", "1");
+                                tooltipBox.style("display", "block")
+                            })
+                            .on('mousemove', function() { // mouse moving over canvas
+                                var mouse = d3.mouse(this);
+                                var xCoord = mouse[0];
+                                var yCoord = mouse[1];
+                                d3
+                                    .select("#tooltip-line")
+                                    .attr("d", function() {
+                                        var d = "M" + xCoord + "," + height;
+                                        d += " " + xCoord + "," + 0;
+                                        return d;
+                                    });
+                                tooltipBox
+                                    .style('left', `${d3.event.pageX + 20}px`)
+                                    .style('top', `${d3.event.pageY + 20}px`)
+                                d3
+                                    .selectAll(".mouse-per-line")
+                                    .attr("transform", function(d, i) {
+                                        if (d.length === 0) {return;}
+                                        var date = x.invert(xCoord);
+                                        var value = -1;
+                                        d.map(data => {
+                                            if(+data.date === +d3.timeDay.round(date) && data.defined !== 0) {
+                                                value = data.value;
+                                            }
+                                        })
+                                        var element = d3.select(this);
+                                        var textBox = tooltipBox.select(`.${classNames[i]}`);
+                                        var tempText = d3.select(`.${classNames[i]}`)
+
+                                        if (value >= 0) {
+                                            // d3.select(".current-value").text(`${Math.round(value)}`)
+                                            if (i == 0) {
+                                                tempText.text(`Confirmed: ${Math.round(value)}`)
+                                            }
+                                            else {
+                                                tempText.text(`User Prediction: ${Math.round(value)}`)
+                                            }
+
+                                            if(textBox.empty()) {
+                                                textBox = tooltipBox.append("div")
+                                                                     .attr("class", classNames[i])
+                                                                     .style("padding-left", "10px")
+                                                                     .style("padding-right", "10px")
+                                                                     .style("background-color", color(legendString[i]))
+                                                                     .style("color", "white");
+
+                                            }
+                                            else {
+                                                textBox.html(`${legendString[i]}: ${Math.round(value)}`)
+                                            }
+                                            element.select("circle")
+                                                    .style("opacity", "1");
+                                            return "translate(" + mouse[0] + "," + y(value)+")";
+                                        }
+                                        else {
+                                            if (i == 0) {
+                                                tempText.text(`Confirmed:`)
+                                            }
+                                            else {
+                                                tempText.text(`User Prediction:`)
+                                            }
+                                            if(!textBox.empty()) {
+                                                textBox.remove();
+                                            }
+
+                                            element
+                                                    .select("circle")
+                                                    .style("opacity", "0");
+                                        }
+                                });
+                            })
     }
+
 
     render() {
         return(
-            <div style={{padding: "20px"}} ref={this.chartRef}></div>
+            // <div>
+                <div style={{padding: "20px"}} ref={this.chartRef}></div>
+                // <div className="tooltip-box"></div>
+            /* </div>  */
         );
     }
 }

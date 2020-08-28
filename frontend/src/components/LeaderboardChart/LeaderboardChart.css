@@ -45,3 +45,7 @@ tr:active td {
     transition: 0.3s;
 }
 
+
+#today-text {
+    font-size: 12px;
+}
