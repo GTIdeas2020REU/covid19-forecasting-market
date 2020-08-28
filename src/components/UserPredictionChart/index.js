@@ -399,7 +399,7 @@ class UserPredictionChart extends Component {
                         })
         }
     }
-
+    //comment
     render() {
         return(<div ref={this.chartRef}></div>);
     }
