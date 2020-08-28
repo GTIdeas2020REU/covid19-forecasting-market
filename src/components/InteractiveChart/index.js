@@ -1957,9 +1957,9 @@ class InteractiveChart extends Component {
                 </div>
                 <div ref={this.chartRef} className="second-column">
                     <svg className="main-chart"></svg>
-                    <div className="privacy">
+                    {/* <div className="privacy">
                         <span className="bold">Privacy</span>: User-contributed forecast data is used to create aggregate forecasts and is displayed to other visitors on the "Top Forecasts" page. It may also be used, anonymized, for academic research purposes. Other than that, we do not and will not share or sell any user or visitor information for any reason.
-                    </div>
+                    </div> */}
                 </div>
                 <div className="third-column">
                     <svg className="legend-container"></svg>
