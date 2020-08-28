@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 import './UserPredictionChart.css';
-import { getMostRecentPrediction, getAllDataPoints, sortDictByDate, sortStringDates } from '../../utils/data';
+import { getMostRecentPrediction, getAllDataPoints, sortDictByDate, sortStringDates, createDefaultPrediction, getLastDate } from '../../utils/data';
 
 class UserPredictionChart extends Component {
     constructor(props) {
@@ -25,15 +25,19 @@ class UserPredictionChart extends Component {
         var predictionData = {};//where we will store formatted userPrediction
         const category = this.state.category;
         var compiledData = [];
+        console.log(confirmed)
+        const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-01-01");
+        const valueMax = 5000;
+        var predEndDate = null;
+        const predLength = 155;
+        var mostRecentPred = [];
 
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         var confirmedData = Object.keys(confirmed).map(key => ({
             date: d3.timeParse("%Y-%m-%d")(key),
             value: confirmed[key]
         }));
-
-        console.log("USER PREDICTION");
-        console.log(userPrediction);
+        var predStartDate = getLastDate(confirmedData);
 
         //store userPrediction in predictionData if it exists; parse dates and store as d3 date objects
         if(Object.keys(userPrediction).length > 0) {
@@ -44,35 +48,16 @@ class UserPredictionChart extends Component {
                     defined: d.defined
                 }))
             })
+            predictionData = sortDictByDate(predictionData);
+            //get most recent prediction
+            var dates = sortStringDates(Object.keys(userPrediction));
+            const mostRecentPred = predictionData[dates[dates.length - 1]];
+            //push to compiledData
+            compiledData = [confirmedData, mostRecentPred];
+            //IMPORTANT BOUNDARIES// 
+            predEndDate = mostRecentPred[mostRecentPred.length - 1].date;
         }
-
-        predictionData = sortDictByDate(predictionData);
-        console.log("PREDICTION DATA");
-        console.log(predictionData);
-
-        console.log(predictionData)
-        //get most recent prediction
-        var dates = sortStringDates(Object.keys(userPrediction))
-        const mostRecentPred = predictionData[dates[dates.length - 1]]
-        console.log("MOST RECENT PRED");
-        console.log(mostRecentPred)
-        //push to compiledData
-        compiledData = [confirmedData, mostRecentPred]
-        console.log(dates[0])
-        console.log(d3.timeFormat("%B %d, %Y")(dates[0]))
-    
-
-        //IMPORTANT BOUNDARIES// 
-        const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-02-01");
-        const predEndDate = mostRecentPred[mostRecentPred.length - 1].date;
-        const valueMax = 5000;
-        
-
-        /*dateList.map(d => {
-            dates.push({
-                date: d
-            })
-        })*/
+        predEndDate = !predEndDate ? d3.timeDay.offset(predStartDate, predLength) : predEndDate;
 
         /////////////////////////////////////////////////DRAW CHART//////////////////////////////
         //set up margin, width, height of chart
@@ -210,206 +195,209 @@ class UserPredictionChart extends Component {
                                     .datum(confirmedData)
                                     .attr("d", line)
                                     .attr("stroke", color(legendString[0]))
+
         var predCurve = mainArea
                                 .append("path")
                                 .attr("id", "prediction")
                                 .attr("class", "line")
-                                .datum(mostRecentPred.filter(predLine.defined()))
-                                .attr("d", predLine)
-                                .attr("stroke",  color(legendString[1]))
-        
-        //SET UP TOOLTIP//
-        const tooltip = svg 
-                            .append("g")
-                            .attr("class", "tooltip")
-        tooltip
-                .append("path")
-                .attr("id", "tooltip-line")
-                .style("stroke", "black")
-                .style("stroke-width", "0.5px")
-                .style("display", "none");
-        var mousePerLine = tooltip
-                                    .selectAll(".mouse-per-line")
-                                    .data(compiledData)
-                                    .enter()
-                                    .append("g")
-                                    .attr("class", "mouse-per-line");
-        mousePerLine.append("circle")
-                    .attr("r", 2)
-                    .style("stroke", function(d, index) {
-                        return color(legendString[index]);
-                    })
-                    .attr("id", "circle")
-                    .style("fill", "none")
-                    .style("stroke-width", "1px")
+        console.log(predictionData, userPrediction)
+        if (Object.keys(userPrediction).length != 0) {
+            console.log("yes prediction")
+            predCurve.datum(mostRecentPred.filter(predLine.defined()))
+                    .attr("d", predLine)
+                    .attr("stroke",  color(legendString[1]))
+            //SET UP TOOLTIP//
+            const tooltip = svg 
+                                .append("g")
+                                .attr("class", "tooltip")
+            tooltip
+                    .append("path")
+                    .attr("id", "tooltip-line")
+                    .style("stroke", "black")
+                    .style("stroke-width", "0.5px")
                     .style("display", "none");
-        mousePerLine.append("text")
-                    .attr("id", "value")
-                    .attr("transform", "translate(10,3)"); 
-        mousePerLine.append("text")
-                    .attr("id", "date")
-                    .attr("text-anchor", "end")
-                    .attr("transform", "rotate(-90)")
-        
-        svg
-                .append("svg:rect")
-                    .attr('width', width)
-                    .attr('height', height)
-                    .attr("id", "interactive-area")
-                    .attr('fill', 'none')
-                    .attr('pointer-events', 'all')
-                    .style("cursor", "pointer")
-                    .on('mouseout', function() { // on mouse out hide line, circles and text
-                        d3.select("#tooltip-line")
-                            .style("display", "none");
-                        d3.selectAll(".mouse-per-line circle")
-                            .style("display", "none");
-                        d3.selectAll(".mouse-per-line text")
-                            .style("display", "none")
-                    })
-                    .on('mouseover', function() { // on mouse in show line, circles and text
-                        d3.select("#tooltip-line")
-                            .style("display", "block");
-                    })
-                    .on('mousemove', function() { // mouse moving over canvas
-                        var todayDate = new Date();
-                        todayDate = d3.timeParse("%Y-%m-%d")(todayDate.toISOString().substring(0,10));
-                        var date = x.invert(d3.mouse(this)[0])
-                        if (+date > +todayDate) {
-                            date = todayDate;
-                        }
-                        const index = d3.bisectRight(dates, date);
-                        if(predictionData[date]) {
-                            console.log("exists")
-                            svg
-                                .select("#prediction")
-                                .datum(predictionData[date].filter(predLine.defined()))
-                                .attr("d", predLine)
-                            compiledData[1] = predictionData[date];
-                        }
-                        else {
-                            if (index === 0) {
+            var mousePerLine = tooltip
+                                        .selectAll(".mouse-per-line")
+                                        .data(compiledData)
+                                        .enter()
+                                        .append("g")
+                                        .attr("class", "mouse-per-line");
+            mousePerLine.append("circle")
+                        .attr("r", 2)
+                        .style("stroke", function(d, index) {
+                            return color(legendString[index]);
+                        })
+                        .attr("id", "circle")
+                        .style("fill", "none")
+                        .style("stroke-width", "1px")
+                        .style("display", "none");
+            mousePerLine.append("text")
+                        .attr("id", "value")
+                        .attr("transform", "translate(10,3)"); 
+            mousePerLine.append("text")
+                        .attr("id", "date")
+                        .attr("text-anchor", "end")
+                        .attr("transform", "rotate(-90)")
+            
+            svg
+                    .append("svg:rect")
+                        .attr('width', width)
+                        .attr('height', height)
+                        .attr("id", "interactive-area")
+                        .attr('fill', 'none')
+                        .attr('pointer-events', 'all')
+                        .style("cursor", "pointer")
+                        .on('mouseout', function() { // on mouse out hide line, circles and text
+                            d3.select("#tooltip-line")
+                                .style("display", "none");
+                            d3.selectAll(".mouse-per-line circle")
+                                .style("display", "none");
+                            d3.selectAll(".mouse-per-line text")
+                                .style("display", "none")
+                        })
+                        .on('mouseover', function() { // on mouse in show line, circles and text
+                            d3.select("#tooltip-line")
+                                .style("display", "block");
+                        })
+                        .on('mousemove', function() { // mouse moving over canvas
+                            var todayDate = new Date();
+                            todayDate = d3.timeParse("%Y-%m-%d")(todayDate.toISOString().substring(0,10));
+                            var date = x.invert(d3.mouse(this)[0])
+                            if (+date > +todayDate) {
+                                date = todayDate;
+                            }
+                            const index = d3.bisectRight(dates, date);
+                            if(predictionData[date]) {
+                                console.log("exists")
                                 svg
                                     .select("#prediction")
-                                    .datum([])
+                                    .datum(predictionData[date].filter(predLine.defined()))
                                     .attr("d", predLine)
-                                compiledData[1] = [];
+                                compiledData[1] = predictionData[date];
                             }
                             else {
-                                var newDate = dates[index - 1];
-                                console.log(+predictionData[newDate][0].date, +date);
-                                var pred = predictionData[newDate].filter(d => +d.date >= +date)
-                                console.log(pred)
-                                svg
-                                    .select("#prediction")
-                                    .datum(pred.filter(predLine.defined()))
-                                    .attr("d", predLine);
-                                compiledData[1] = pred;
-                            }
-                        }
-                        mousePerLine.data(compiledData);
-                        ////////////////////
-
-
-
-                        var mouse = d3.mouse(this);
-                        var xCoord = mouse[0];
-                        d3
-                            .select("#tooltip-line")
-                            .attr("d", function() {
-                                var d = "M" + xCoord + "," + height;
-                                d += " " + xCoord + "," + 0;
-                                return d;
-                            });
-                        d3
-                            .selectAll(".mouse-per-line")
-                            .attr("transform", function(d, i) {
-                                if (d.length === 0) {return;}
-                                var date = x.invert(xCoord);
-                                const index = d3.bisector(f => f.date).left(d, date);
-                                var a = null;
-                                if (index > 0) {
-                                    a = d[index - 1];
-                                }
-                                const b = d[index];
-                                //d = the data object corresponding to date and value pointed by the cursors
-                                var data = null;
-                                if (!a) {
-                                    data = b;
-                                }
-                                else if (!b) {
-                                    data = a;
+                                if (index === 0) {
+                                    svg
+                                        .select("#prediction")
+                                        .datum([])
+                                        .attr("d", predLine)
+                                    compiledData[1] = [];
                                 }
                                 else {
-                                    data = b && (date - a.date > b.date - date) ? b : a;
+                                    var newDate = dates[index - 1];
+                                    console.log(+predictionData[newDate][0].date, +date);
+                                    var pred = predictionData[newDate].filter(d => +d.date >= +date)
+                                    console.log(pred)
+                                    svg
+                                        .select("#prediction")
+                                        .datum(pred.filter(predLine.defined()))
+                                        .attr("d", predLine);
+                                    compiledData[1] = pred;
                                 }
-                                if (+d3.timeDay.floor(date) === +data.date || +d3.timeDay.ceil(date) === +data.date) {
-                                    if (data.defined != 0) {
-                                        var element = d3.select(this)
-                                        element
-                                                .select('#value')
-                                                .style("display", "block")
-                                                .text(Math.round(data.value))
-                                                .attr("transform", `translate(${mouse[0]}, ${y(data.value)})`);
-                                            
-                                        element
-                                                .select("#date")
-                                                .style("display", "block")
-                                                .attr("transform", `translate(${mouse[0] + 15}, 0) rotate(-90)`)
-                                                .text(d3.timeFormat("%B %d, %Y")(data.date));
-                                        element
-                                                .select("circle")
-                                                .style("display", "block")
-                                                .attr("transform", `translate(${mouse[0]}, ${y(data.value)})`);
-                                        return "translate(0,0)";
+                            }
+                            mousePerLine.data(compiledData);
+                            ////////////////////
+
+
+
+                            var mouse = d3.mouse(this);
+                            var xCoord = mouse[0];
+                            d3
+                                .select("#tooltip-line")
+                                .attr("d", function() {
+                                    var d = "M" + xCoord + "," + height;
+                                    d += " " + xCoord + "," + 0;
+                                    return d;
+                                });
+                            d3
+                                .selectAll(".mouse-per-line")
+                                .attr("transform", function(d, i) {
+                                    if (d.length === 0) {return;}
+                                    var date = x.invert(xCoord);
+                                    const index = d3.bisector(f => f.date).left(d, date);
+                                    var a = null;
+                                    if (index > 0) {
+                                        a = d[index - 1];
                                     }
-                                }
-                                var element = d3.select(this)
-                                element                
-                                    .selectAll("text")
-                                        .style("display", "none")
-                                element
-                                        .select("circle")
-                                        .style("display", "none");
-                            });
-                    })
-                    .on("click", function() {
-                        var date = x.invert(d3.mouse(this)[0])
-                        const index = d3.bisectRight(dates, date);
-                        console.log(dates)
-                        console.log(date)
-                        console.log(index)
-                        if(predictionData[date]) {
-                            console.log("exists")
-                            svg
-                                .select("#prediction")
-                                .datum(predictionData[date].filter(predLine.defined()))
-                                .attr("d", predLine)
-                            compiledData[1] = predictionData[date];
-                        }
-                        else {
-                            if (index === 0) {
+                                    const b = d[index];
+                                    //d = the data object corresponding to date and value pointed by the cursors
+                                    var data = null;
+                                    if (!a) {
+                                        data = b;
+                                    }
+                                    else if (!b) {
+                                        data = a;
+                                    }
+                                    else {
+                                        data = b && (date - a.date > b.date - date) ? b : a;
+                                    }
+                                    if (+d3.timeDay.floor(date) === +data.date || +d3.timeDay.ceil(date) === +data.date) {
+                                        if (data.defined != 0) {
+                                            var element = d3.select(this)
+                                            element
+                                                    .select('#value')
+                                                    .style("display", "block")
+                                                    .text(Math.round(data.value))
+                                                    .attr("transform", `translate(${mouse[0]}, ${y(data.value)})`);
+                                                
+                                            element
+                                                    .select("#date")
+                                                    .style("display", "block")
+                                                    .attr("transform", `translate(${mouse[0] + 15}, 0) rotate(-90)`)
+                                                    .text(d3.timeFormat("%B %d, %Y")(data.date));
+                                            element
+                                                    .select("circle")
+                                                    .style("display", "block")
+                                                    .attr("transform", `translate(${mouse[0]}, ${y(data.value)})`);
+                                            return "translate(0,0)";
+                                        }
+                                    }
+                                    var element = d3.select(this)
+                                    element                
+                                        .selectAll("text")
+                                            .style("display", "none")
+                                    element
+                                            .select("circle")
+                                            .style("display", "none");
+                                });
+                        })
+                        .on("click", function() {
+                            var date = x.invert(d3.mouse(this)[0])
+                            const index = d3.bisectRight(dates, date);
+                            console.log(dates)
+                            console.log(date)
+                            console.log(index)
+                            if(predictionData[date]) {
+                                console.log("exists")
                                 svg
                                     .select("#prediction")
-                                    .datum([])
+                                    .datum(predictionData[date].filter(predLine.defined()))
                                     .attr("d", predLine)
-                                compiledData[1] = [];
+                                compiledData[1] = predictionData[date];
                             }
                             else {
-                                var newDate = dates[index - 1];
-                                console.log(+predictionData[newDate][0].date, +date);
-                                var pred = predictionData[newDate].filter(d => +d.date >= +date)
-                                console.log(pred)
-                                svg
-                                    .select("#prediction")
-                                    .datum(pred.filter(predLine.defined()))
-                                    .attr("d", predLine);
-                                compiledData[1] = pred;
+                                if (index === 0) {
+                                    svg
+                                        .select("#prediction")
+                                        .datum([])
+                                        .attr("d", predLine)
+                                    compiledData[1] = [];
+                                }
+                                else {
+                                    var newDate = dates[index - 1];
+                                    console.log(+predictionData[newDate][0].date, +date);
+                                    var pred = predictionData[newDate].filter(d => +d.date >= +date)
+                                    console.log(pred)
+                                    svg
+                                        .select("#prediction")
+                                        .datum(pred.filter(predLine.defined()))
+                                        .attr("d", predLine);
+                                    compiledData[1] = pred;
+                                }
                             }
-                        }
-                        mousePerLine.data(compiledData);
-                    })
-                
+                            mousePerLine.data(compiledData);
+                        })
+        }
     }
 
     render() {
