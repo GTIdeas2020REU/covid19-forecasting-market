@@ -461,13 +461,14 @@ class InteractiveChart extends Component {
                                         .attr("id", "drawing-instruction")
                                         .style("opacity", "1");
         drawingInstruction
-                            .append("text")
-                            .attr("id", "draw-guess")
-                            .attr("x", confirmedAreaEndX + (width - confirmedAreaEndX) / 2)             
-                            .attr("y", height - 100)
-                            .attr("text-anchor", "middle")  
-                            .text("Draw your guess")
-                            .style("font-size", "16px");
+                        .append("text")
+                        .attr("id", "draw-guess")
+                        // .attr("x", 0)             
+                        .attr("y", 20)
+                        .attr("text-anchor", "middle")  
+                        .text("Draw your guess")
+                        .style("font-size", "19px")
+                        .style("font-weight", "bold")
         //append circle at the end of confirmed curve
         var selectCircle = drawingInstruction
                                                 .append("g")
@@ -1418,11 +1419,12 @@ class InteractiveChart extends Component {
         drawingInstruction
                             .append("text")
                             .attr("id", "draw-guess")
-                            .attr("x", confirmedAreaEndX + (width - confirmedAreaEndX) / 2)             
-                            .attr("y", height - 100)
+                            // .attr("x", 0)             
+                            .attr("y", 20)
                             .attr("text-anchor", "middle")  
                             .text("Draw your guess")
-                            .style("font-size", "16px");
+                            .style("font-size", "19px")
+                            .style("font-weight", "bold")
         //append circle at the end of confirmed curve
         var selectCircle = drawingInstruction
                                                 .append("g")
@@ -1492,7 +1494,7 @@ class InteractiveChart extends Component {
                     });
         
         svg.call(drag)
-
+        //////add tooltip//////
         const tooltipArea = svg
                                 .append("g")
                                 .attr("class", "tooltip")
