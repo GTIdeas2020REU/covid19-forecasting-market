@@ -28,17 +28,28 @@ class LeaderboardChart extends Component {
     renderChart() {
         var { userPrediction, confirmed } = this.props;
         var compiledData = [];
+        var predictionData = [];
         //format confirmedData, predictionData
         var confirmedData = Object.keys(confirmed).map(key => ({
             date: d3.timeParse("%Y-%m-%d")(key),
             value: confirmed[key]
         }));
-        var predictionData = userPrediction.map(d => ({
-            date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
-            value: d.value
-        }));
+        if (userPrediction[0].defined == undefined) {
+            predictionData = userPrediction.map(d => ({
+                date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
+                value: d.value,
+                defined: true
+            }));
+        }
+        else {
+            predictionData = userPrediction.map(d => ({
+                date: d3.timeParse("%Y-%m-%d")((d.date).substring(0,10)),
+                value: d.value,
+                defined: d.defined
+            }));
+        }
+        predictionData = predictionData.filter(d => d.defined);       
         compiledData = [confirmedData, predictionData]
-
         //IMPORTANT BOUNDARIES// 
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-02-01");
         var predEndDate = predictionData[predictionData.length - 1].date;
@@ -152,6 +163,7 @@ class LeaderboardChart extends Component {
                         .x(function(d) { return x(d.date) })
                         .y(function(d) { return y(d.value) });
         var predLine = predLineGenerator
+                            .defined(d => d.defined)
                             .x(function(d) { return x(d.date) })
                             .y(function(d) { return y(d.value) });
 
