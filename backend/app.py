@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_pymongo import PyMongo
 from pymongo import MongoClient, DESCENDING
+from flask_talisman import Talisman
 from passlib.hash import pbkdf2_sha256
 from datetime import timedelta, date
 from bson.json_util import dumps, loads
@@ -15,6 +16,7 @@ import atexit
 
 
 app = Flask(__name__)
+Talisman(app)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
 
