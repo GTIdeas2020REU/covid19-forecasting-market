@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_pymongo import PyMongo
 from pymongo import MongoClient, DESCENDING
-from flask_talisman import Talisman
+# from flask_talisman import Talisman
 from passlib.hash import pbkdf2_sha256
 from datetime import timedelta, date
 from bson.json_util import dumps, loads
@@ -16,7 +16,7 @@ import atexit
 
 
 app = Flask(__name__)
-Talisman(app)
+# Talisman(app)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
 
@@ -168,11 +168,21 @@ def register(name, email, username, password):
     store_session((new_user['_id']), new_user['email'], new_user['name'], new_user['username'])
     return True
 
+def get_all_usernames():
+    users = []
+    usernames = mongo.db.users.find({}, {'username': 1})
+    for user in usernames:
+        users.append(user['username'])
+    print(users)
+    return users
 
 @app.before_first_request
 def make_session_permanent():
     session.permanent = True
 
+@app.route("/all-users", methods=['POST','GET'])
+def all_users():
+    return json.dumps(get_all_usernames())
 
 @app.route("/user-prediction", methods=['POST','GET'])
 def home():
