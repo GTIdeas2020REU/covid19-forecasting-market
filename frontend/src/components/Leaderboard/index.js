@@ -2,7 +2,7 @@ import React from 'react';
 import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
-
+import { Dropdown } from 'react-bootstrap';
 import LeaderboardChart from '../LeaderboardChart';
 import colors from '../../constants/colors';
 
@@ -123,7 +123,9 @@ class Leaderboard extends React.Component {
       columns: null,
       confirmed: null,
       orgs: null,
-      forecasts: null
+      forecasts: null,
+      predictionLength: 1,
+      dropDownTitle: '1-week-ahead'
     }
   }
 
@@ -212,13 +214,25 @@ class Leaderboard extends React.Component {
 
     const { users, columns, confirmed, orgs, forecasts } = this.state;
     if (!users || !columns || !confirmed || !orgs || !forecasts) return 'Loading...';
+    var dropdownTitle = this.state.predictionLength <= 1 ? ' week ahead' : 'weeks ahead'
 
     return (
       <div>
         <br></br>
         <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
         <small>* indicates an official forecaster as labelled by the CDC</small>
-        <br></br>
+        <Dropdown>
+          <Dropdown.Toggle variant="success" id="dropdown-basic">
+            {this.state.dropDownTitle}
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item href="#/action-1">1-week-ahead</Dropdown.Item>
+            <Dropdown.Item href="#/action-2">2-week-ahead</Dropdown.Item>
+            <Dropdown.Item href="#/action-3">4-week-ahead</Dropdown.Item>
+            <Dropdown.Item href="#/action-3">8-week-ahead</Dropdown.Item>
+            <Dropdown.Item href="#/action-3">overall</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
         <br></br>
         <div className="d-flex flex-row">
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} style={tableStyle} />
