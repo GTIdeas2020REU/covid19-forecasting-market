@@ -18,7 +18,7 @@ import atexit
 
 app = Flask(__name__, static_folder='build', static_url_path='')
 #Talisman(app)
-Talisman(app, content_security_policy=None)
+#Talisman(app, content_security_policy=None)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
 
