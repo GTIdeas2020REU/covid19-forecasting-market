@@ -22,7 +22,6 @@ class InteractiveChart extends Component {
             this.renderChartUnregistered()
         }
     }
-
     //move to utils
     savePrediction(data, category) {
         fetch('/update/',{

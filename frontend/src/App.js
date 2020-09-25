@@ -17,6 +17,8 @@ import 'leaflet/dist/leaflet.css';
 import Mapportal from './components/Mapportal';
 import Login from './components/LogIn';
 import SignUp from './components/SignUp';
+import HomePage from './pages/HomePage';
+import MainChartContainer from './components/MainChartContainer';
 import {
   BrowserRouter as Router,
   Switch,
@@ -44,7 +46,7 @@ class App extends React.Component {
     </div><br></br>*/}
         {/* <p className='pagedesc'><b>COVIDforecasts is created by academic researchers for you to compare official COVID forecasts and contribute your own. Currently we compare forecasts for U.S. daily deaths, and we hope to expand to more forecasts in the future.</b></p> */}
                {/* <br></br> */}
-              <InteractiveChartContainer/>
+              <HomePage/>
               </Route>
             {/* <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />
             <Route exact path={ROUTES.US_NATIONAL_INC} component={newDeathsContainer} /> */}
@@ -56,6 +58,9 @@ class App extends React.Component {
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
             <Route exact path="/temp" render={(props) => <ChartContainer isProfile={true}/>}/>
+            <Route exact path="/new-home" component={HomePage}/>
+            <Route exact path="/dev" component={MainChartContainer}/>
+
           </Switch>
         </div>
       </Router>

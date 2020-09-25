@@ -67,7 +67,20 @@ def update_errors():
                 { "mse_score": list(mse.values())[0] }
             })
 
-
+def save_daily_cases():
+    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-09-17')
+    confirmed_df['date'] = confirmed_df['date'].astype(str) 
+    dates = confirmed_df['date'].to_list()[1:]
+    confirmed = confirmed_df['confirmed'].diff()[1:]
+    confirmed_cases = dict(zip(dates, confirmed))
+    # confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-09-17')
+    # confirmed_df['date'] = confirmed_df['date'].astype(str) 
+    # confirmed_cases = confirmed_df.set_index('date').diff().to_dict()['confirmed']
+    mongo.db.confirmed.insert_one({
+        'category': 'daily_cases',
+        'data': confirmed_cases
+    })
+    print('success')
 
 def add_vote(id, pred_model):
     vote = mongo.db.votes.find_one(
@@ -176,6 +189,9 @@ def get_all_usernames():
     print(users)
     return users
 
+# save_daily_cases()
+# print("saved")
+
 @app.before_first_request
 def make_session_permanent():
     session.permanent = True
@@ -230,6 +246,18 @@ def us_agg_inc_deaths():
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
     us_aggregates_daily = get_aggregates(us_inc_forecasts, user_prediction)
     return us_aggregates_daily
+
+@app.route('/us-daily-cases-confirmed')
+def us_daily_cases_confirmed():
+    # save_daily_cases()
+    # return 'done'
+    confirmed_cases = {}
+    for data in mongo.db.confirmed.find({'category': 'daily_cases'}):
+        confirmed_cases = dict(data['data'])
+    confirmed_cases = get_us_new_deaths_weekly_avg(dumps(confirmed_cases))
+    return confirmed_cases
+    # return json.dumps(confirmed_cases)
+
 
 @app.route('/us-mse')
 def us_mse():
