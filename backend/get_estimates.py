@@ -53,6 +53,30 @@ def get_daily_forecasts():
         models[orgs.pop()] = df.to_dict('list')
     return models
 
+def get_daily_forecasts_cases():
+    file = open('orgs.csv', 'r')
+    orgs = []
+    for line in file:
+        orgs.append(line.strip())
+    orgs = orgs[::-1]
+
+    file = open('model-links.csv', 'r')
+    models = dict()
+    for line in file:
+        df = pd.read_csv(line.strip())
+
+        #df = df.loc[(df['location'] == 'US') & (df['type'] == 'point') & (df['target'].str.contains("inc death")) & (df['target'].str.contains("wk"))]
+        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc case"))]
+        #mask = df['target'].str.contains('wk')
+        #df.loc[mask, 'value'] /= 7
+        df.value = df.value.astype('float')
+        df['value'] = df['value'].div(7)
+        df = df.sort_values(by=['forecast_date', 'target_end_date'])
+        df = df[['target_end_date', 'value']]
+        df = df.drop_duplicates(subset=['target_end_date'], keep='last')
+        models[orgs.pop()] = df.to_dict('list')
+    return models
+
 
 # Get aggregate data (average of all forecasts including user prediction)
 def get_aggregates(forecast_data, user_prediction):
@@ -160,6 +184,6 @@ def get_daily_confirmed(d):
     github_dir_path = 'https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_daily_reports_us/'
     file_path = github_dir_path + d + '.csv'
     data = pd.read_csv(file_path)
-    return data['Deaths'].sum()
+    return data['Confirmed'].sum()
     # catch error!!
 

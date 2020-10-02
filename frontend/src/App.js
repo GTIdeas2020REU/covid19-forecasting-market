@@ -33,31 +33,17 @@ class App extends React.Component {
         <div className="App">
           <Navbar />
           <Switch>
-            <Route exact path={ROUTES.LANDING} >
-              <br></br>
-            {/*<div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Country
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a class="dropdown-item" href="/">USA</a>
-              
-            </div>
-    </div><br></br>*/}
-        {/* <p className='pagedesc'><b>COVIDforecasts is created by academic researchers for you to compare official COVID forecasts and contribute your own. Currently we compare forecasts for U.S. daily deaths, and we hope to expand to more forecasts in the future.</b></p> */}
-               {/* <br></br> */}
-              <HomePage/>
-              </Route>
             {/* <Route exact path={ROUTES.US_NATIONAL_CUM} component={ChartContainer} />
             <Route exact path={ROUTES.US_NATIONAL_INC} component={newDeathsContainer} /> */}
-            <Route exact path={ROUTES.MAP_PORTAL} component={Mapportal} />
+            <Route exact path={ROUTES.LANDING} component={HomePage}/>
+            <Route exact path={ROUTES.MAP_PORTAL} component={Mapportal}/>
             <Route exact path={ROUTES.LEADERBOARD} component={Leaderboard} />
             {/* <Route exact path={ROUTES.MARKET} component={MarketChart} /> */}
             <Route exact path={ROUTES.PROFILE} component={ProfilePage} />
             <Route exact path={ROUTES.SIGN_IN} component={Login} />
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
-            <Route exact path="/temp" render={(props) => <ChartContainer isProfile={true}/>}/>
+            {/* <Route exact path="/temp" render={(props) => <ChartContainer compiledData={data} category="us_daily_deaths"/>}/> */}
             <Route exact path="/new-home" component={HomePage}/>
             <Route exact path="/dev" component={MainChartContainer}/>
 

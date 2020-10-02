@@ -1,10 +1,56 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import InteractiveChartContainer from '../../containers/InteractiveChartContainer';
 import MainChartContainer from '../../components/MainChartContainer';
+import ChartContainer from '../../containers/ChartContainer';
 
 import './HomePage.css';
 
+const data = [
+    {
+      "name": "confirmed",
+      "data": "/us-inc-deaths-confirmed-wk-avg"
+    },
+    {
+      "name": "forecast",
+      "data": "/us-inc-deaths-forecasts"
+    },
+    {
+      "name": "aggregate",
+      "data": "/us-agg-inc-deaths"
+    },
+    {
+      "name": "user_prediction",
+      "data": "/user-prediction?category=us_daily_deaths"
+    },
+    {
+      "name": "mse",
+      "data": "/us-mse"
+    },
+  ]
+
+  const CaseData = [
+    {
+      "name": "confirmed",
+      "data": "/us-daily-cases-confirmed"
+    },
+    {
+      "name": "forecast",
+      "data": "/us-daily-cases-forecast"
+    },
+    {
+      "name": "aggregate",
+      "data": "/us-agg-inc-cases"
+    },
+    {
+      "name": "user_prediction",
+      "data": "/user-prediction?category=us_daily_cases"
+    },
+    {
+      "name": "mse",
+      "data": "/us-mse"
+    },
+  ]
 class HomePage extends Component {
     constructor(props) {
         super(props);
@@ -19,10 +65,17 @@ class HomePage extends Component {
         console.log(category)
         const renderChartContainer = () => {
             if(category == "US Daily Deaths") {
-                return <InteractiveChartContainer/>
+                return (<Fragment>
+                            <h2>US Daily Deaths</h2>
+                            <ChartContainer key='123' compiledData={data} category="us_daily_deaths"/>
+                        </Fragment>)
             }
             else {
-                return <MainChartContainer/>
+                console.log("daily cases")
+                return (<Fragment>
+                            <h2>US Daily Cases</h2>
+                            <ChartContainer key='321' compiledData={CaseData} category="us_daily_cases"/>
+                        </Fragment>)
             }
         }
         return(

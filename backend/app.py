@@ -6,7 +6,7 @@ from passlib.hash import pbkdf2_sha256
 from datetime import timedelta, date
 from bson.json_util import dumps, loads
 import json
-from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
+from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
 from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
@@ -30,6 +30,9 @@ us_inc_forecasts = get_daily_forecasts()
 us_inc_confirmed = get_us_new_deaths()
 us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 
+us_inc_forecasts_cases = get_daily_forecasts_cases()
+print("case count forecast fetched")
+print(us_inc_forecasts_cases)
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
 #us_aggregates_daily = get_aggregates(us_inc_forecasts)
@@ -68,7 +71,7 @@ def update_errors():
             })
 
 def save_daily_cases():
-    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-09-17')
+    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-01')
     confirmed_df['date'] = confirmed_df['date'].astype(str) 
     dates = confirmed_df['date'].to_list()[1:]
     confirmed = confirmed_df['confirmed'].diff()[1:]
@@ -247,6 +250,14 @@ def us_agg_inc_deaths():
     us_aggregates_daily = get_aggregates(us_inc_forecasts, user_prediction)
     return us_aggregates_daily
 
+@app.route('/us-agg-inc-cases')
+def us_agg_inc_cases():
+    user_prediction = {}
+    if 'id' in session:
+        user_prediction = get_user_prediction(session['username'], 'us_daily_cases') 
+    us_aggregates_daily = get_aggregates(us_inc_forecasts_cases, user_prediction)
+    return us_aggregates_daily
+
 @app.route('/us-daily-cases-confirmed')
 def us_daily_cases_confirmed():
     # save_daily_cases()
@@ -256,7 +267,12 @@ def us_daily_cases_confirmed():
         confirmed_cases = dict(data['data'])
     confirmed_cases = get_us_new_deaths_weekly_avg(dumps(confirmed_cases))
     return confirmed_cases
+
+@app.route('/us-daily-cases-forecast')
+def us_daily_cases_forecast():
+    return dumps(us_inc_forecasts_cases)
     # return json.dumps(confirmed_cases)
+
 
 
 @app.route('/us-mse')

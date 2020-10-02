@@ -29,6 +29,7 @@ class InteractiveChartContainer extends Component {
 
     componentDidMount() {
         fetch('/us-inc-deaths-forecasts').then(res => res.json()).then(data => {
+            console.log(data);
             const [results, orgs] = organizeData(data);
             this.setState({ forecast: results, orgs });
             console.log("FETCHED DATA");
