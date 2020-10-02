@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3'
-import './index.css'
+import './MainChart.css'
 import { clamp, createDefaultPrediction, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
 import { elementType } from 'prop-types';
 import { addDays, formatDate } from '../../utils/date';
@@ -13,6 +13,33 @@ class MainChart extends Component {
     }
     componentDidMount() {
         this.renderChart()
+    }
+
+    appendModal() {
+        const signinRedirect = () => {window.location.href='/#/signin'}
+        const signupRedirect = () => {window.location.href='/#/signup'}
+        var modal = document.createElement("div");
+        modal.id = "modal";
+        var modalContent = document.createElement("div");
+        modalContent.id = "modal-content";
+        var text = document.createElement("p");
+        text.innerText = "Please log in to save your prediction.";
+        var signinBtn = document.createElement("button");
+        signinBtn.id = "signin-btn";
+        signinBtn.innerText = "Sign In";
+        signinBtn.onclick= signinRedirect;
+        signinBtn.className = "btn primary-btn";
+        var signupBtn = document.createElement("button");
+        signupBtn.id = "signup-btn";
+        signupBtn.onclick= signupRedirect;
+        signupBtn.innerText = "Sign Up";
+        signupBtn.className = "btn primary-btn";
+
+        modalContent.appendChild(text);
+        modalContent.appendChild(signinBtn);
+        modalContent.appendChild(signupBtn);
+        modal.appendChild(modalContent);
+        this.chartRef.current.appendChild(modal);
     }
 
     createDefaultPrediction(predStartDate, predEndDate) {
@@ -51,11 +78,13 @@ class MainChart extends Component {
 
     renderChart() {
         const {compiled, loggedIn, category} = this.props;
+        console.log(loggedIn);
         const confirmed = compiled["confirmed"];
         const forecast = compiled["forecast"];
         const aggregate = compiled["aggregate"];
         const userPrediction = compiled["user_prediction"];
         const mse = compiled["mse"];
+        if (!loggedIn) {this.appendModal()}
         const orgs = []
         forecast.forEach(d => {
             orgs.push(d.name);
@@ -504,9 +533,26 @@ class MainChart extends Component {
                         getDataPointsFromPath(predictionData, yourLine.node(), x, y, lastPredDate);
                         compiledData[2].data = predictionData;
                         savePrediction(predictionData, category);
+                        if (!loggedIn) {
+                            d3.select("#modal")
+                                .style("display", "block");
+                            d3.select("#tooltip-line")
+                                .style("opacity", "1");
+                            d3.selectAll(".mouse-per-line circle")
+                                .style("opacity", "1");
+                            d3.select(".tooltip-box")
+                                .style("display", "block")
+                        }
                     });
         
         svg.call(drag)
+        var modal = document.getElementById("modal");
+                    
+        window.onclick = function(event) {
+            if (event.target === modal) {
+              modal.style.display = "none";
+            }
+          }
         //////add tooltip//////
         const tooltipArea = svg
                                 .append("g")
