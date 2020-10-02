@@ -1215,7 +1215,7 @@ class MainChart extends Component {
                         <p className="info">
                             <b>COVIDforecasts is created by academic researchers for you to compare 
                             official COVID forecasts and contribute your own. Currently we compare 
-                            forecasts for U.S. daily deaths, and we hope to expand to more forecasts 
+                            forecasts for U.S. daily deaths and US daily cases, and we hope to expand to more forecasts 
                             in the future.</b>
                         </p>
                         <p>> Hover over the graph to view the tooltip</p>
