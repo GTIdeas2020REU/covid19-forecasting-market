@@ -15,6 +15,30 @@ class ProfilePage extends React.Component {
     });*/
   }
 
+  async saveLogout() {
+		fetch('/logout/',{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		window.location.href ='/';
+		console.log("logged out")			
+	}
+
+	isLoggedIn = () => {
+		fetch('/login-status/')
+		.then((response) => response.json())
+		.then((data) => this.setState({user: data}));
+  }
+  
+  async handleLogout(event) {
+    console.log("logging out");
+    event.preventDefault();
+    await this.saveLogout();
+    
+  }
+
   
 
   renderUser() {
@@ -22,6 +46,12 @@ class ProfilePage extends React.Component {
       <div>
         <h3>My Predictions</h3>
         <UserPredictionChartContainer/>
+
+        <form className='form-group' onSubmit={this.handleLogout.bind(this)}>
+          
+            
+          <input type="submit" value="Logout"/>
+        </form>
       </div>
 
         /*<div>
