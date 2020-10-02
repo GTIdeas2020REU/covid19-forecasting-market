@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import InteractiveChartContainer from '../../containers/InteractiveChartContainer';
-import MainChartContainer from '../../components/MainChartContainer';
 import ChartContainer from '../../containers/ChartContainer';
 
 import './HomePage.css';
