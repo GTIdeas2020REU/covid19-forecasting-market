@@ -1,4 +1,5 @@
 import React from 'react';
+import { Dropdown } from 'react-bootstrap';
 import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
@@ -123,7 +124,8 @@ class Leaderboard extends React.Component {
       columns: null,
       confirmed: null,
       orgs: null,
-      forecasts: null
+      forecasts: null,
+      score_type: 'Overall'
     }
   }
 
@@ -220,21 +222,38 @@ class Leaderboard extends React.Component {
         <small>* indicates an official forecaster as labelled by the CDC</small>
         <br></br>
         <br></br>
-        <div >
-                    <div className="main-instruction">
-                        <p >
-                            <b>The Top Forecasts page showcases the best predictions by all users of the site, ranked by Mean Squared Error. Each 
-                              row on the chart is an entry given by either a single user, or from a University source.
-                            </b>
-                        </p>
-                        <p>> Click on a row to view a user's prediction</p>
-                        {/* <br/> */}
-                        <p>> Hover over the prediction chart to see the exact value of the user's prediction</p>
-                        {/* <br/> */}
-                        <p>> Click on the 'MSE' chart header to toggle forecasts rank</p>
-                        {/* <br/> */}
-                    </div>
-                </div>
+        <div>
+          <div className="main-instruction">
+            <p>
+              <b>
+                The Top Forecasts page showcases the best predictions by all users of the site, ranked by Mean Squared Error. Each 
+                row on the chart is an entry given by either a single user, or from a University source.
+               </b>
+             </p>
+            <p>Click on a row to view a user's prediction</p>
+            <p>Hover over the prediction chart to see the exact value of the user's prediction</p>
+            <p>Click on the 'MSE' chart header to toggle forecasts rank</p>
+            </div>
+          </div>
+
+        <div>
+          <br></br>
+          <Dropdown>
+            <Dropdown.Toggle variant="success">
+              {this.state.score_type}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item eventKey="Overall" onSelect={this.onClick}>Overall</Dropdown.Item>
+              <Dropdown.Item eventKey="1-Week" onSelect={this.onClick}>1 Weeks</Dropdown.Item>
+              <Dropdown.Item eventKey="2-Week" onSelect={this.onClick}>2 Weeks</Dropdown.Item>
+              <Dropdown.Item eventKey="4-Week" onSelect={this.onClick}>4 Weeks</Dropdown.Item>
+              <Dropdown.Item eventKey="8-Week" onSelect={this.onClick}>8 Weeks</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+          <br></br>
+          <br></br>
+        </div>
+
         <div className="d-flex flex-row">
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
