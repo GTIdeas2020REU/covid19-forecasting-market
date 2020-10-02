@@ -222,21 +222,20 @@ class Leaderboard extends React.Component {
         <small>* indicates an official forecaster as labelled by the CDC</small>
         <br></br>
         <br></br>
-        <div >
-                    <div className="main-instruction">
-                        <p >
-                            <b>The Top Forecasts page showcases the best predictions by all users of the site, ranked by Mean Squared Error. Each 
-                              row on the chart is an entry given by either a single user, or from a University source.
-                            </b>
-                        </p>
-                        <p>> Click on a row to view a user's prediction</p>
-                        {/* <br/> */}
-                        <p>> Hover over the prediction chart to see the exact value of the user's prediction</p>
-                        {/* <br/> */}
-                        <p>> Click on the 'MSE' chart header to toggle forecasts rank</p>
-                        {/* <br/> */}
-                    </div>
-                </div>
+        <div>
+          <div className="main-instruction">
+            <p>
+              <b>
+                The Top Forecasts page showcases the best predictions by all users of the site, ranked by Mean Squared Error. Each 
+                row on the chart is an entry given by either a single user, or from a University source.
+               </b>
+             </p>
+            <p>Click on a row to view a user's prediction</p>
+            <p>Hover over the prediction chart to see the exact value of the user's prediction</p>
+            <p>Click on the 'MSE' chart header to toggle forecasts rank</p>
+            </div>
+          </div>
+
         <div>
           <br></br>
           <Dropdown>
@@ -252,7 +251,9 @@ class Leaderboard extends React.Component {
             </Dropdown.Menu>
           </Dropdown>
           <br></br>
+          <br></br>
         </div>
+
         <div className="d-flex flex-row">
           <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
