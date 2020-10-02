@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import InteractiveChartContainer from '../../containers/InteractiveChartContainer';
+import MainChartContainer from '../../components/MainChartContainer';
 import ChartContainer from '../../containers/ChartContainer';
 
 import './HomePage.css';
@@ -64,17 +65,12 @@ class HomePage extends Component {
         console.log(category)
         const renderChartContainer = () => {
             if(category == "US Daily Deaths") {
-                return (<Fragment>
-                            <h2>US Daily Deaths</h2>
-                            <ChartContainer key='123' compiledData={data} category="us_daily_deaths"/>
-                        </Fragment>)
+                return <ChartContainer key='123' compiledData={data} category="us_daily_deaths"/>
+
             }
             else {
                 console.log("daily cases")
-                return (<Fragment>
-                            <h2>US Daily Cases</h2>
-                            <ChartContainer key='321' compiledData={CaseData} category="us_daily_cases"/>
-                        </Fragment>)
+                return <ChartContainer key='321' compiledData={CaseData} category="us_daily_cases"/>
             }
         }
         return(

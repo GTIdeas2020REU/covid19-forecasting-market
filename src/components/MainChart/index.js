@@ -5,6 +5,7 @@ import { clamp, createDefaultPrediction, getAllDataPoints, getDataPointsFromPath
 import { elementType } from 'prop-types';
 import { addDays, formatDate } from '../../utils/date';
 import { timeDay } from 'd3';
+import { titles } from '../../constants/data';
 
 class MainChart extends Component {
     constructor(props) {
@@ -78,7 +79,9 @@ class MainChart extends Component {
 
     renderChart() {
         const {compiled, loggedIn, category} = this.props;
-        console.log(loggedIn);
+        console.log(category);
+        const title = titles[category][0];
+        const subtitle = titles[category][1];
         const confirmed = compiled["confirmed"];
         const forecast = compiled["forecast"];
         const aggregate = compiled["aggregate"];
@@ -121,7 +124,7 @@ class MainChart extends Component {
             .style("font-size", "16px") 
             .style("text-decoration", "underline")  
             .style("font-weight", "bold")
-            .text("COVID-19 Forecasts of Daily Deaths in the US Over Time");
+            .text(`COVID-19 Forecasts of ${subtitle} Over Time`);
 
         const w = 710 - margin.left - margin.right;
         const h = 360 - margin.top - margin.bottom;
@@ -140,7 +143,7 @@ class MainChart extends Component {
             .attr("x", 0 - (h/2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Confirmed");
+            .text(`${title}`);
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         console.log(confirmed)
@@ -202,14 +205,14 @@ class MainChart extends Component {
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         
-        var legendString = ["Confirmed", "Aggregate Forecast", "User Prediction"].concat(orgs);
+        var legendString = [`${title} Confirmed`, "Aggregate Forecast", "User Prediction"].concat(orgs);
         var models = [];
         orgs.map((o, i) => {
             //var idx = o.indexOf("(");
             //models.push(o.substring(0, idx - 1));
             models.push(o);
         })
-        var names = ["Confirmed", "Aggregate Forecast", "User Prediction"].concat(models)
+        var names = [`${title} Confirmed`, "Aggregate Forecast", "User Prediction"].concat(models)
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
         const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
         //color function that assigns random colors to each data
@@ -547,7 +550,7 @@ class MainChart extends Component {
         
         svg.call(drag)
         var modal = document.getElementById("modal");
-                    
+
         window.onclick = function(event) {
             if (event.target === modal) {
               modal.style.display = "none";
@@ -1202,11 +1205,10 @@ class MainChart extends Component {
                         })
     }
     render() {
+        const title = titles[this.props.category][0];
         return (
             <div>
-            {/* <h2>US Daily Deaths</h2> */}
-            
-            {/*<p>Current total: {this.confirmedData.value}</p>*/}
+            <h2>{title}</h2>
             <div className="chart">
                 <div className="first-column">
                     <div className="main-instruction">
