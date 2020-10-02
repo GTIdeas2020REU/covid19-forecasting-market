@@ -10,7 +10,7 @@ class ChartContainer extends React.Component {
     this.state = {
       compiledData: null,
       length: 0,
-      loggedIn: false,
+      loggedIn: null,
       category: ""
     };
   }
@@ -63,7 +63,9 @@ class ChartContainer extends React.Component {
     // const { forecast, orgs, userPrediction, confirmed, confirmedAvg, aggregate, loggedIn } = this.state;
     // if (!forecast || !orgs || !userPrediction || !confirmed || !aggregate || !loggedIn) return 'Loading...';
     const {compiledData, length, loggedIn, category} = this.state;
-    if (!compiledData || length != 5 || !loggedIn) return "Loading..."
+    console.log(compiledData, loggedIn, length);
+
+    if (!compiledData || length != 5 || loggedIn == null) return "Loading..."
     else {
       console.log(compiledData, loggedIn, length);
     }
