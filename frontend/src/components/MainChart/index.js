@@ -111,7 +111,7 @@ class MainChart extends Component {
             .attr("x", 0 - (h/2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Daily Deaths");
+            .text("Confirmed");
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         console.log(confirmed)
@@ -173,14 +173,14 @@ class MainChart extends Component {
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         
-        var legendString = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(orgs);
+        var legendString = ["Confirmed", "Aggregate Forecast", "User Prediction"].concat(orgs);
         var models = [];
         orgs.map((o, i) => {
             //var idx = o.indexOf("(");
             //models.push(o.substring(0, idx - 1));
             models.push(o);
         })
-        var names = ["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"].concat(models)
+        var names = ["Confirmed", "Aggregate Forecast", "User Prediction"].concat(models)
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
         const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
         //color function that assigns random colors to each data
