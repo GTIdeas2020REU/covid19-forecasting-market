@@ -5,7 +5,7 @@ class ProfilePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: null
+      user: null, loginStatus: true
     }
   }
 
@@ -15,13 +15,69 @@ class ProfilePage extends React.Component {
     });*/
   }
 
+  async saveLogout() {
+		fetch('/logout/',{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		console.log("logged out")			
+  }
+  
+  
+
+	isLoggedIn = () => {
+		fetch('/login-status/')
+		.then((response) => response.json())
+    .then((data) => this.setState({loginStatus: data}));
+    
+  }
+
+  updateLoginState = () => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        fetch('/login-status/')
+        .then((response) => response.json())
+        .then((data) => {
+          this.setState({loginStatus: data['logged in']});
+          console.log(data['logged in']);
+          if (data['logged in']){
+              window.alert("LogOut fail, try again")
+          }
+          resolve(data['logged in']);
+        });
+      }, 200)
+    })
+  }
+  
+  async handleLogout(event) {
+    console.log("logging out");
+    event.preventDefault();
+    await this.saveLogout();
+    await this.updateLoginState();
+    
+  }
+
   
 
   renderUser() {
+    if (!this.state.loginStatus) {
+      //return <Redirect to="/" />
+      
+      window.location.href ='/';
+    }
     return (
+      
       <div>
         <h3>My Predictions</h3>
         <UserPredictionChartContainer/>
+
+        <form className='form-group' onSubmit={this.handleLogout.bind(this)}>
+          
+            
+          <input type="submit" value="Logout"/>
+        </form>
       </div>
 
         /*<div>

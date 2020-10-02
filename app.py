@@ -18,6 +18,7 @@ import atexit
 
 app = Flask(__name__, static_folder='build', static_url_path='')
 #Talisman(app)
+Talisman(app, content_security_policy=None)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
 
@@ -31,6 +32,9 @@ us_inc_forecasts = get_daily_forecasts()
 us_inc_confirmed = get_us_new_deaths()
 us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 
+us_inc_forecasts_cases = get_daily_forecasts_cases()
+print("case count forecast fetched")
+print(us_inc_forecasts_cases)
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
 #us_aggregates_daily = get_aggregates(us_inc_forecasts)
@@ -54,7 +58,7 @@ def load_us_inc_confirmed_wk_avg():
 
 def load_us_inc_forecasts():
     us_inc_forecasts = get_daily_forecasts()
-    
+
 def update_errors():
     prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
     for p in prediction:
@@ -68,32 +72,31 @@ def update_errors():
                 { "mse_score": list(mse.values())[0] }
             })
 
-
-@app.route('/', defaults={'u_path': ''})
-@app.route('/<path:u_path>')
-def catch_all(u_path):
-    print(repr(u_path))
-    return app.send_static_file('index.html')
-
-'''
-@app.route('/', methods=['GET'])
-def index():
-    return app.send_static_file('index.html')
-'''
+def save_daily_cases():
+    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-01')
+    confirmed_df['date'] = confirmed_df['date'].astype(str) 
+    dates = confirmed_df['date'].to_list()[1:]
+    confirmed = confirmed_df['confirmed'].diff()[1:]
+    confirmed_cases = dict(zip(dates, confirmed))
+    # confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-09-17')
+    # confirmed_df['date'] = confirmed_df['date'].astype(str) 
+    # confirmed_cases = confirmed_df.set_index('date').diff().to_dict()['confirmed']
+    mongo.db.confirmed.insert_one({
+        'category': 'daily_cases',
+        'data': confirmed_cases
+    })
+    print('success')
 
 def add_vote(id, pred_model):
     vote = mongo.db.votes.find_one(
         {"user_id": id})
     # user already voted
     if vote:
-        #print(vote)
         # edit old_vote
         mongo.db.votes.update_one({"user_id": id}, 
         {'$set': 
             { "prediction_model": pred_model, "date":str(date.today()) }
         })
-        #vote['prediction_model'] = pred_model
-        #vote['date'] = str(date.today())
     else: 
         mongo.db.votes.insert_one({
             'user_id': id,
@@ -106,12 +109,9 @@ def fetch_votes(pred_model):
     return mongo.db.votes.count({'prediction_model':pred_model})
 
 def get_score(pred_model):
-    #(pred_model)
     if pred_model == "Columbia":
-        #print('correct')
         return 50
     else:
-        #print('incorrect')
         return 0
 
 def update_score(username, score):
@@ -119,26 +119,22 @@ def update_score(username, score):
         {'$inc': 
             { "score": score }
         })
-    #print("score updated")
+
 def delete_user_prediction(username, category):
-    print(username)
-    print(category)
     curr_date = date.today().strftime("%Y-%m-%d")
-    print(mongo.db.predictions.find_one({"username": username, "category": category}))
     pred = mongo.db.predictions.delete_one({"username": username, "category": category, "date": curr_date})
-    print(pred.deleted_count)
-    print("deleted")
+
 
 def update_user_prediction(username, data, category, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
-    '''print(curr_date)
-    print('DATA:')
-    print(data)'''
+    print("DATA: ")
+    print(data)
+    print("SCORE:")
     score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
+    print(score)
+    print(' ')
     pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
-    #print(pred)
     if pred:
-        #print("already exists")
         mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
         {'$set': 
             { "prediction": data, "mse_score": score }
@@ -146,23 +142,21 @@ def update_user_prediction(username, data, category, a=None, higher=False, index
     else:
         mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score": score })
 
+
 def get_user_prediction(username, category):
     user_prediction = {}
     prediction = mongo.db.predictions.find({"username": username, "category": category})
     for p in prediction:
-        #print("inside")
-        #(date, prediction)
-        #print(p)
-        #print(p['prediction'])
         user_prediction[p['date']] = p['prediction']
-    #user_prediction = exists['prediction']        
     return user_prediction
+
 
 def store_session(id, email, name, username):
     session['id'] = str(id)
     session['email'] = email
     session['name'] = name
     session['username'] = username
+
 
 def authenticate(username, password):
     user = mongo.db.users.find_one(
@@ -192,29 +186,29 @@ def register(name, email, username, password):
     store_session((new_user['_id']), new_user['email'], new_user['name'], new_user['username'])
     return True
 
+def get_all_usernames():
+    users = []
+    usernames = mongo.db.users.find({}, {'username': 1})
+    for user in usernames:
+        users.append(user['username'])
+    print(users)
+    return users
+
+# save_daily_cases()
+# print("saved")
 
 @app.before_first_request
 def make_session_permanent():
     session.permanent = True
-    ''' Get forecasts data when initially launching website6
-    data['us_cum_forecasts'] = get_forecasts()
-    print("cum forecasts")
-    # Get confirmed cases in US
-    data['us_cum_confirmed'] = get_us_confirmed()
-    print("cum confirmed")
-    data['us_inc_forecasts'] = get_daily_forecasts()
-    print("inc forecasts")
-    # Get new deaths in US
-    data['us_inc_confirmed'] = get_us_new_deaths()
-    print("inc confirmed")'''
 
+@app.route("/all-users", methods=['POST','GET'])
+def all_users():
+    return json.dumps(get_all_usernames())
 
 @app.route("/user-prediction", methods=['POST','GET'])
 def home():
     user_prediction = {}
     pred_category = request.args.get('category')
-    #print(pred_category)
-    #print("done")
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
@@ -222,25 +216,24 @@ def home():
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
     return forecast_data
-    #return data['us_cum_forecasts']
 
 @app.route("/us-inc-deaths-forecasts")
 def us_inc_deaths_forecasts():
+    #us_inc_forecasts = get_daily_forecasts()
     return us_inc_forecasts
-    #return data['us_inc_forecasts']
 
 @app.route("/us-cum-deaths-confirmed")
 def us_cum_deaths_confirmed():
     return us_data
-    #return data['us_cum_confirmed']
 
 @app.route('/us-inc-deaths-confirmed')
 def us_inc_deaths_confirmed():
+    #us_inc_confirmed = get_us_new_deaths()
     return us_inc_confirmed
-    #return data['us_inc_confirmed']
 
 @app.route('/us-inc-deaths-confirmed-wk-avg')
 def us_inc_deaths_confirmed_wk_avg():
+    #us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_deaths_confirmed)
     return us_inc_confirmed_wk_avg
 
 @app.route('/us-agg-cum-deaths')
@@ -258,6 +251,31 @@ def us_agg_inc_deaths():
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
     us_aggregates_daily = get_aggregates(us_inc_forecasts, user_prediction)
     return us_aggregates_daily
+
+@app.route('/us-agg-inc-cases')
+def us_agg_inc_cases():
+    user_prediction = {}
+    if 'id' in session:
+        user_prediction = get_user_prediction(session['username'], 'us_daily_cases') 
+    us_aggregates_daily = get_aggregates(us_inc_forecasts_cases, user_prediction)
+    return us_aggregates_daily
+
+@app.route('/us-daily-cases-confirmed')
+def us_daily_cases_confirmed():
+    # save_daily_cases()
+    # return 'done'
+    confirmed_cases = {}
+    for data in mongo.db.confirmed.find({'category': 'daily_cases'}):
+        confirmed_cases = dict(data['data'])
+    confirmed_cases = get_us_new_deaths_weekly_avg(dumps(confirmed_cases))
+    return confirmed_cases
+
+@app.route('/us-daily-cases-forecast')
+def us_daily_cases_forecast():
+    return dumps(us_inc_forecasts_cases)
+    # return json.dumps(confirmed_cases)
+
+
 
 @app.route('/us-mse')
 def us_mse():
@@ -280,7 +298,6 @@ def user_mse():
 def update():
     if request.method == 'POST':
         data = request.json
-        print(data)
         #replace username with user id
         if 'id' in session:
             update_user_prediction(session['username'], data['data'], data['category'])
@@ -292,10 +309,8 @@ def update():
 @app.route('/delete/', methods=["POST"])
 def delete():
     if request.method == 'POST':
-        print(request.json)
         if 'id' in session:
             delete_user_prediction(session['username'], request.json['category'])
-            print("prediction deleted!")
         else:
             print("session empty")
         return "Success"  
@@ -308,7 +323,6 @@ def login():
         data = request.json
         username = data['username']
         password = data['password']
-        #print(username, password)
         if authenticate(username, password):
             print("logged in")
             return "Success"
@@ -402,7 +416,7 @@ def total():
     return json.dumps(results)
 
 
-# Schedule jobs to perform functions once a day 
+''' Schedule jobs to perform functions once a day '''
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
@@ -410,9 +424,9 @@ scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
 scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
 scheduler.start()
 
-
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=False, port=os.environ.get('PORT', 80))
+    app.run(debug=True, use_reloader=False)
+
