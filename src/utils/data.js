@@ -24,6 +24,23 @@ export const organizeData = (data) => {
   return [results, orgs];
 }
 
+export const cleanForecastData = (data) => {
+  let orgs = Object.keys(data);
+  let cleaned = []
+  orgs.forEach(org => {
+    let rawData = data[org];
+    let dates = rawData.target_end_date;
+    let values = rawData.value;
+    let cleanedData = {}
+    dates.forEach((date, i) => cleanedData[date] = values[i])
+    cleaned.push({
+      "name": org,
+      "data": cleanedData
+    })
+  })
+  return cleaned;
+}
+
 
 function addDays(date, days) {
   var result = new Date(date);
