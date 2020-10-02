@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_pymongo import PyMongo
 from pymongo import MongoClient, DESCENDING
-# from flask_talisman import Talisman
+from flask_talisman import Talisman
 from passlib.hash import pbkdf2_sha256
 from datetime import timedelta, date
 from bson.json_util import dumps, loads
 import json
-from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
+import os
+from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_confirmed_df, get_daily_forecasts, get_daily_forecasts_cases, get_aggregates
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
 from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
@@ -15,8 +16,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 
 
-app = Flask(__name__)
-# Talisman(app)
+app = Flask(__name__, static_folder='build', static_url_path='')
+#Talisman(app)
 Talisman(app, content_security_policy=None)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
@@ -30,10 +31,8 @@ us_data = get_us_confirmed()
 us_inc_forecasts = get_daily_forecasts()
 us_inc_confirmed = get_us_new_deaths()
 us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
-
 us_inc_forecasts_cases = get_daily_forecasts_cases()
-print("case count forecast fetched")
-print(us_inc_forecasts_cases)
+
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
 #us_aggregates_daily = get_aggregates(us_inc_forecasts)
@@ -415,7 +414,7 @@ def total():
     return json.dumps(results)
 
 
-''' Schedule jobs to perform functions once a day '''
+# Schedule jobs to perform functions once a day 
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
@@ -423,8 +422,9 @@ scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
 scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
 scheduler.start()
 
+
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', debug=False, port=os.environ.get('PORT', 80), ssl_context='adhoc')
