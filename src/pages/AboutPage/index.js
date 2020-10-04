@@ -31,6 +31,8 @@ class AboutPage extends Component {
                     <br></br><br></br>
                     With the large uncertainty about the future of the COVID-19 pandemic, prediction models can be critical planning tools for policymakers and public health officials.
                     By examining forecasts by individual users, this can help anticipate change in the upcoming months, as well as reduce uncertainty concerning the trajection of the pandemic.
+                    After you are done exploring our site, we would appreciiate it if you could fill out <a href='https://docs.google.com/forms/d/e/1FAIpQLSe0-op5rJmW0aimj59Pj76cE0p9v3PQ9FtOSyHMLmfQhgo6PA/viewform?usp=sf_link'>this form</a> with any feedback or thoughts, thank you
+                                for visiting COVIDforecasts.
                   
                 </p>
                 <br></br>
