@@ -20,7 +20,7 @@ import SignUp from './components/SignUp';
 import HomePage from './pages/HomePage';
 import MainChartContainer from './components/MainChartContainer';
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
@@ -29,7 +29,7 @@ import {
 class App extends React.Component {
   render() {
     return (
-      <Router>
+      <Router basename='/'>
         <div className="App">
           <Navbar />
           <Switch>

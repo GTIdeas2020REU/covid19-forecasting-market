@@ -61,6 +61,7 @@ class HomePage extends Component {
         this.setState({category: e})
     }
     render() {
+      
         let category = this.state.category;
         console.log(category)
         const renderChartContainer = () => {
