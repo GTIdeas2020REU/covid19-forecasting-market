@@ -62,11 +62,11 @@ class ProfilePage extends React.Component {
   
 
   renderUser() {
-    if (!this.state.loginStatus) {
+    //if (!this.state.loginStatus) {
       //return <Redirect to="/" />
       
-      window.location.href ='/';
-    }
+      //window.location.href ='/';
+    //}
     return (
       
       <div>
