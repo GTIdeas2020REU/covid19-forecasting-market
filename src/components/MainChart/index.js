@@ -1244,7 +1244,7 @@ class MainChart extends Component {
                 </div>
                 <div className="third-column">
                     <svg className="legend-container"></svg>
-                    <button className="btn btn-primary " id="delete-btn">Reset</button>
+                    <button className="btn btn-danger " id="delete-btn">Reset</button>
                     <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
                 </div>
             </div>
