@@ -54,7 +54,7 @@ const data = [
 class HomePage extends Component {
     constructor(props) {
         super(props);
-        this.state = { category: "US Daily Deaths"};
+        this.state = { category: "US Daily Cases"};
         this.chartRef = React.createRef();
     }
     onClick = (e) => {
