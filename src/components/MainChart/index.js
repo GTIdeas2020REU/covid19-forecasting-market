@@ -79,7 +79,6 @@ class MainChart extends Component {
 
     renderChart() {
         const {compiled, loggedIn, category} = this.props;
-        console.log(category);
         const title = titles[category][0];
         const subtitle = titles[category][1];
         const confirmed = compiled["confirmed"];
@@ -146,18 +145,32 @@ class MainChart extends Component {
             .text(`${title}`);
         
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
-        console.log(confirmed)
         var confirmedData = reformatData(confirmed);
-        console.log(confirmedData);
         const confirmedLastDate = getLastDate(confirmedData);
-        const confirmedLastVal = getLastValue(confirmedData);
-        console.log(confirmedLastDate, confirmedLastVal);
-        
-        
-        var forecastData = forecast.map(f => {
+        const confirmedLastVal = getLastValue(confirmedData);        
+        let temp = forecast.map(f => {
             return reformatData(f.data);
         }); 
-        console.log(forecastData)
+        let forecastData = forecast.map(f => {
+            return reformatData(f.data);
+        }); 
+        let tempNames = []
+        let forecastDataTemp = []
+        console.log(temp)
+        let todayD3 = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
+        temp.forEach((forecast, index) => {
+            if (forecast.length > 0) {
+                let filtered = forecast.filter(d => +d.date > +confirmedLastDate)
+                if (filtered.length > 0) {
+                    filtered.unshift({"date": confirmedLastDate, "value": confirmedLastVal})
+                    console.log(filtered)
+                    forecastDataTemp.push(filtered);
+                    tempNames.push(orgs[index]);
+                }
+            }
+        })
+
+        console.log(forecastDataTemp, tempNames)
         var aggregateData = reformatData(aggregate);
 
         //store userPrediction in predictionData if it exists
@@ -352,29 +365,39 @@ class MainChart extends Component {
 
         
         //display forecast data
+        let forecastNames = [];
         console.log(forecastData)
         forecastData.map((f, index) => {
+            console.log(f)
             //make sure they all stem from the confirmed curve!
             //var temp = d3.timeParse("%Y-%m-%d")("2020-07-18")
-            var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
-            //check if predStartDate exists in f
-            if (f.length > 0 && +f[idxOfStartDate].date === +predStartDate) {
-                f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
+            if (f.length != 0) {
+                console.log(predStartDate)
+                var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
+                console.log(idxOfStartDate)
+                console.log(f[idxOfStartDate])
+
+                //check if predStartDate exists in f
+                if (f.length > 0 && idxOfStartDate < f.length && +f[idxOfStartDate].date === +predStartDate) {
+                    f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
+                }
+                else {//add data point to forecastData array
+                    f.splice(idxOfStartDate, 0, {
+                        date: predStartDate,
+                        value: confirmedData[confirmedData.length - 1].value
+                    });
+                    f = f.slice(idxOfStartDate, f.length);
+                }
+                console.log(f)
+                forecastData[index] = f;
+                predictionArea.append("path")
+                            .attr("class", "forecast line")
+                            .attr("id", modelClassNames[index])
+                            .style("stroke", color(models[index]))
+                            .datum(f)
+                                .attr("d", line);
             }
-            else {//add data point to forecastData array
-                f.splice(idxOfStartDate, 0, {
-                    date: predStartDate,
-                    value: confirmedData[confirmedData.length - 1].value
-                });
-                f = f.slice(idxOfStartDate, f.length);
-            }
-            forecastData[index] = f;
-            predictionArea.append("path")
-                        .attr("class", "forecast line")
-                        .attr("id", modelClassNames[index])
-                        .style("stroke", color(models[index]))
-                        .datum(f)
-                            .attr("d", line);
+            
         })
         
         var lines = document.getElementsByClassName('line');        
@@ -423,12 +446,15 @@ class MainChart extends Component {
             data: predictionData
         })
         modelClassNames.map((m, index) => {
-            var lastDate = forecastData[index][forecastData[index].length - 1].date;
-            forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
-            compiledData.push({
-                name: m,
-                data: forecastData[index]
-            })
+            console.log(m, forecastData[index])
+            if (forecastData[index].length > 1) {
+                var lastDate = forecastData[index][forecastData[index].length - 1].date;
+                forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
+                compiledData.push({
+                    name: m,
+                    data: forecastData[index]
+                })
+            }
         })
         //join data to yourLine
         filteredData = predictionData.filter(predLine.defined())
@@ -1215,7 +1241,7 @@ class MainChart extends Component {
                         <p className="info">
                             <b>COVIDforecasts is created by academic researchers for you to compare 
                             official COVID forecasts and contribute your own. Currently we compare 
-                            forecasts for U.S. daily deaths and U.S. daily cases, and we hope to expand to more forecasts 
+                            forecasts for U.S. daily deaths, and we hope to expand to more forecasts 
                             in the future.</b>
                         </p>
                         <p>> Hover over the graph to view the tooltip</p>
@@ -1228,13 +1254,6 @@ class MainChart extends Component {
                         {/* <br/> */}
                         <p>> Navigate to <b>Top Forecasts</b> to view the accuracy of various forecasts and user predictions</p>
                     </div>
-                    <div className="main-instruction">
-                        <p className="info">
-                            <b>After exploring our site, we would appreciiate it if you could fill out <a href='https://docs.google.com/forms/d/e/1FAIpQLSe0-op5rJmW0aimj59Pj76cE0p9v3PQ9FtOSyHMLmfQhgo6PA/viewform?usp=sf_link'>this form</a> with any feedback or thoughts, thank you
-                                for visiting COVIDforecasts.
-                            </b>
-                        </p>
-                    </div>
                 </div>
                 <div ref={this.chartRef} className="second-column">
                     <svg className="main-chart"></svg>
@@ -1244,7 +1263,7 @@ class MainChart extends Component {
                 </div>
                 <div className="third-column">
                     <svg className="legend-container"></svg>
-                    <button className="btn btn-danger " id="delete-btn">Reset</button>
+                    <button className="btn btn-primary " id="delete-btn">Reset</button>
                     <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
                 </div>
             </div>
