@@ -89,7 +89,7 @@ function RenderUsersTable({ users, confirmed }) {
        <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
-          <td>{user.mse_score.toFixed(2)}</td>
+          <td>{parseFloat(user.mse_score).toFixed(2)}</td>
        </tr>
     );
  });
@@ -107,7 +107,7 @@ function RenderOrgsTable({ orgs, forecasts, confirmed }) {
       <tr id={key} style={{backgroundColor: colors[key]}} onClick={() => createOrgChart(forecasts[key], confirmed, key)}>
           <td>{key}*</td>
           <td>Ongoing</td>
-          <td>{value.toFixed(2)}</td>
+          <td>{parseFloat(value).toFixed(2)}</td>
       </tr>
     );
   });
@@ -208,6 +208,7 @@ class Leaderboard extends React.Component {
       position: "fixed",
       width: "50%",
       left: "50%",
+      top: "30%"
     };
 
     $("#delete-btn").remove();
