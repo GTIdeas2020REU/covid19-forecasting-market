@@ -132,6 +132,7 @@ class Leaderboard extends React.Component {
   componentDidMount() {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
+      console.log(data);
     });
     fetch('/us-mse').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
@@ -194,6 +195,10 @@ class Leaderboard extends React.Component {
     // Trigger click events to get orgs and users sorted together
     $('#MSE').trigger("click");
     $('#MSE').trigger("click");
+  }
+
+  onClick = (e) => {
+    this.setState({category: e})
   }
 
 

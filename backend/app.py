@@ -62,13 +62,15 @@ def update_errors():
     for p in prediction:
         temp = dict()
         temp[p['date']] = p['prediction']
-        mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
-        if mse == None:
-            continue
-        mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-            {'$set': 
-                { "mse_score": list(mse.values())[0] }
-            })
+        intervals = ['overall', 1, 2, 4, 8]
+        for interval in intervals:
+            mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp, interval)
+            if mse == None:
+                continue
+            mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
+                {'$set': 
+                    { "mse_score_" + str(interval): list(mse.values())[0] }
+                })
 
 def save_daily_cases():
     confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-08')
@@ -128,17 +130,19 @@ def update_user_prediction(username, data, category, a=None, higher=False, index
     print("DATA: ")
     print(data)
     print("SCORE:")
-    score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
-    print(score)
-    print(' ')
-    pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
-    if pred:
-        mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
-        {'$set': 
-            { "prediction": data, "mse_score": score }
-        })
-    else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score": score })
+    intervals = ['overall', 1, 2, 4, 8]
+    for interval in intervals:
+        score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data}, interval)
+        print(score)
+        print(' ')
+        pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
+        if pred:
+            mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
+            {'$set': 
+                { "prediction": data, "mse_score_" + str(interval): score }
+            })
+        else:
+            mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score_" + str(interval): score })
 
 
 def get_user_prediction(username, category):
@@ -280,7 +284,7 @@ def us_mse():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts)
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 'overall')
     return us_mse
 
 @app.route('/user-mse')
@@ -288,7 +292,7 @@ def user_mse():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction)
+    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction, 'overall')
     return json.dumps(mse)
 
 
