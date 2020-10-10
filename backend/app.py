@@ -33,9 +33,6 @@ us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 us_inc_forecasts_cases = get_daily_forecasts_cases()
 print("case count forecast fetched")
 print(us_inc_forecasts_cases)
-# Get aggregate data
-#us_aggregates = get_aggregates(forecast_data)
-#us_aggregates_daily = get_aggregates(us_inc_forecasts)
 us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
@@ -47,7 +44,7 @@ mongo = PyMongo(app)
 data = {}
 
 
-''' Functions to update variables and database on daily basis '''
+'''-----Functions to update variables and database on daily basis with background scheduler-----'''
 def load_us_inc_confirmed():
     us_inc_confirmed = get_us_new_deaths()
 
@@ -71,6 +68,8 @@ def update_errors():
                 {'$set': 
                     { "mse_score_" + str(interval): list(mse.values())[0] }
                 })
+
+
 
 def save_daily_cases():
     confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-08')
@@ -215,13 +214,16 @@ def home():
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
 
+
+
+'''-----Data collection routes-----'''
+
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
     return forecast_data
 
 @app.route("/us-inc-deaths-forecasts")
 def us_inc_deaths_forecasts():
-    #us_inc_forecasts = get_daily_forecasts()
     return us_inc_forecasts
 
 @app.route("/us-cum-deaths-confirmed")
@@ -230,12 +232,10 @@ def us_cum_deaths_confirmed():
 
 @app.route('/us-inc-deaths-confirmed')
 def us_inc_deaths_confirmed():
-    #us_inc_confirmed = get_us_new_deaths()
     return us_inc_confirmed
 
 @app.route('/us-inc-deaths-confirmed-wk-avg')
 def us_inc_deaths_confirmed_wk_avg():
-    #us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_deaths_confirmed)
     return us_inc_confirmed_wk_avg
 
 @app.route('/us-agg-cum-deaths')
@@ -279,6 +279,8 @@ def us_daily_cases_forecast():
 
 
 
+'''-----Forecast evaluation routes-----'''
+
 @app.route('/us-mse')
 def us_mse():
     user_prediction = {}
@@ -295,6 +297,9 @@ def user_mse():
     mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction, 'overall')
     return json.dumps(mse)
 
+
+
+'''-----User updating routes-----'''
 
 @app.route('/update/', methods=['GET', 'POST'])
 def update():
@@ -319,6 +324,8 @@ def delete():
     return "None"
     
 
+'''-----Authentication routes-----'''
+
 @app.route('/login/', methods=['POST','GET'])
 def login():
     if (request.method == 'POST'):
@@ -336,11 +343,9 @@ def login():
         if 'id' in session:
             print("True")
             return dumps({'status': True})
-            #return "Already logged in"
         else: 
             print("False")
             return dumps({'status': False})
-    #return 'None'
 
 @app.route('/signup/', methods=['POST'])
 def signup():
@@ -387,10 +392,35 @@ def user_status():
         return dumps({'logged in': False})
 
 
-@app.route('/user-data')
+
+'''-----User score routes-----'''
+
+@app.route('/user-data-overall')
 def leaderboard():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score': 1, 'date': 1, 'prediction': 1}).sort('mse_score',1))
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_overall': 1, 'date': 1, 'prediction': 1}).sort('mse_score_overall',1))
     return dumps(all_users)
+
+@app.route('/user-data-1-week-ahead')
+def leaderboard1():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_1': 1, 'date': 1, 'prediction': 1}).sort('mse_score_1',1))
+    return dumps(all_users)
+
+@app.route('/user-data-2-week-ahead')
+def leaderboard2():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_2': 1, 'date': 1, 'prediction': 1}).sort('mse_score_2',1))
+    return dumps(all_users)
+
+@app.route('/user-data-4-week-ahead')
+def leaderboard4():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_4': 1, 'date': 1, 'prediction': 1}).sort('mse_score_4',1))
+    return dumps(all_users)
+
+@app.route('/user-data-8-week-ahead')
+def leaderboard8():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_8': 1, 'date': 1, 'prediction': 1}).sort('mse_score_8',1))
+    return dumps(all_users)
+
+
 
 @app.route('/user')
 def profile():
@@ -418,7 +448,8 @@ def total():
     return json.dumps(results)
 
 
-''' Schedule jobs to perform functions once a day '''
+
+'''-----Schedule jobs to perform functions once a day-----'''
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
@@ -428,6 +459,7 @@ scheduler.start()
 
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)

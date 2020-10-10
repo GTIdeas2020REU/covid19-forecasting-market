@@ -82,14 +82,14 @@ function createOrgChart(org, confirmed, id) {
 function RenderUsersTable({ users, confirmed }) {
   return users.map((user, index) => {
     // ignore null MSE values
-    if (user.mse_score == null) {
+    if (user.mse_score_overall == null) {
       return;
     }
     return (
        <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
-          <td>{parseFloat(user.mse_score).toFixed(2)}</td>
+          <td>{parseFloat(user.mse_score_overall).toFixed(2)}</td>
        </tr>
     );
  });
@@ -130,7 +130,7 @@ class Leaderboard extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/user-data').then(res => res.json()).then(data => {
+    fetch('/user-data-overall').then(res => res.json()).then(data => {
       this.setState({ users: data });
       console.log(data);
     });
@@ -149,7 +149,7 @@ class Leaderboard extends React.Component {
         },
         {
           Header: 'MSE',
-          accesor: 'mse_score',
+          accesor: 'mse_score_overall',
         }
       ]
     });
