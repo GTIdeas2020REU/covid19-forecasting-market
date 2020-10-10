@@ -208,7 +208,7 @@ class Leaderboard extends React.Component {
       position: "fixed",
       width: "50%",
       left: "50%",
-      top: "60%"
+      top: "30%"
     };
 
     $("#delete-btn").remove();
