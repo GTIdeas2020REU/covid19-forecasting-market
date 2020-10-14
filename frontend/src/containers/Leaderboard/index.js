@@ -149,7 +149,7 @@ class Leaderboard extends React.Component {
           accesor: 'date',
         },
         {
-          Header: 'MSE',
+          Header: 'Score',
           accesor: 'mse_score',
         }
       ]
@@ -168,7 +168,7 @@ class Leaderboard extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     // Table should sort by error when MSE header is clicked on
-    $('#MSE').click(function() {
+    $('#Score').click(function() {
       if (this.asc === undefined) {
           this.asc = true;
       }
@@ -194,8 +194,8 @@ class Leaderboard extends React.Component {
     }
 
     // Trigger click events to get orgs and users sorted together
-    $('#MSE').trigger("click");
-    $('#MSE').trigger("click");
+    $('#Score').trigger("click");
+    $('#Score').trigger("click");
   }
 
   handleSelect = (e) => {
