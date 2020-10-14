@@ -3,7 +3,7 @@ import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
 import { Dropdown } from 'react-bootstrap';
-import LeaderboardChart from '../LeaderboardChart';
+import LeaderboardChart from '../../components/LeaderboardChart';
 import colors from '../../constants/colors';
 
 
@@ -228,7 +228,7 @@ class Leaderboard extends React.Component {
 
     const { users, columns, confirmed, orgs, forecasts } = this.state;
     if (!users || !columns || !confirmed || !orgs || !forecasts) return 'Loading...';
-    var dropdownTitle = this.state.predictionLength <= 1 ? ' week ahead' : 'weeks ahead'
+    //var dropdownTitle = this.state.predictionLength <= 1 ? ' week ahead' : 'weeks ahead'
 
     return (
       <div>
