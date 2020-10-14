@@ -81,15 +81,17 @@ function createOrgChart(org, confirmed, id) {
 // Add rows with user data to the leaderboard table
 function RenderUsersTable({ users, confirmed }) {
   return users.map((user, index) => {
+    // score is always last key
+    var score = Object.values(user)[Object.keys(user).length - 1];
     // ignore null MSE values
-    if (user.mse_score_overall == null) {
+    if (score == null || typeof(score) != "number") {
       return;
     }
     return (
        <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
-          <td>{parseFloat(user.mse_score_overall).toFixed(2)}</td>
+          <td>{parseFloat(score).toFixed(2)}</td>
        </tr>
     );
  });
@@ -132,9 +134,8 @@ class Leaderboard extends React.Component {
   componentDidMount() {
     fetch('/user-data-overall').then(res => res.json()).then(data => {
       this.setState({ users: data });
-      console.log(data);
     });
-    fetch('/us-mse').then(res => res.json()).then(data => {
+    fetch('/us-mse-overall').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
     });
 
@@ -149,7 +150,7 @@ class Leaderboard extends React.Component {
         },
         {
           Header: 'MSE',
-          accesor: 'mse_score_overall',
+          accesor: 'mse_score',
         }
       ]
     });
@@ -198,9 +199,14 @@ class Leaderboard extends React.Component {
   }
 
   handleSelect = (e) => {
-    console.log(e);
-    //this.setState({category: e})
-    this.setState({dropDownTitle: e})
+    this.setState({dropDownTitle: e});
+    fetch('/user-data-' + e).then(res => res.json()).then(data => {
+      this.setState({ users: data });
+    });
+    fetch('/us-mse-' + e).then(res => res.json()).then(data => {
+      this.setState({ orgs: data });
+      console.log(data);
+    });
   }
 
 
