@@ -125,7 +125,7 @@ class Leaderboard extends React.Component {
       orgs: null,
       forecasts: null,
       predictionLength: 1,
-      dropDownTitle: '1-week-ahead'
+      dropDownTitle: 'overall'
     }
   }
 
@@ -197,8 +197,10 @@ class Leaderboard extends React.Component {
     $('#MSE').trigger("click");
   }
 
-  onClick = (e) => {
-    this.setState({category: e})
+  handleSelect = (e) => {
+    console.log(e);
+    //this.setState({category: e})
+    this.setState({dropDownTitle: e})
   }
 
 
@@ -227,16 +229,16 @@ class Leaderboard extends React.Component {
         <br></br>
         <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
         <small>* indicates an official forecaster as labelled by the CDC</small>
-        <Dropdown>
+        <Dropdown onSelect={this.handleSelect}>
           <Dropdown.Toggle variant="success" id="dropdown-basic">
             {this.state.dropDownTitle}
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <Dropdown.Item href="#/action-1">1-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-2">2-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">4-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">8-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">overall</Dropdown.Item>
+            <Dropdown.Item eventKey="overall">overall</Dropdown.Item>
+            <Dropdown.Item eventKey="1-week-ahead">1-week-ahead</Dropdown.Item>
+            <Dropdown.Item eventKey="2-week-ahead">2-week-ahead</Dropdown.Item>
+            <Dropdown.Item eventKey="4-week-ahead">4-week-ahead</Dropdown.Item>
+            <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
         <br></br>
