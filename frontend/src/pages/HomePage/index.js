@@ -25,7 +25,7 @@ const data = [
     },
     {
       "name": "mse",
-      "data": "/us-mse"
+      "data": "/us-mse-overall"
     },
   ]
 
@@ -48,7 +48,7 @@ const data = [
     },
     {
       "name": "mse",
-      "data": "/us-mse"
+      "data": "/us-mse-overall"
     },
   ]
 class HomePage extends Component {

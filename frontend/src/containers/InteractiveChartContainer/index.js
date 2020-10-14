@@ -58,12 +58,12 @@ class InteractiveChartContainer extends Component {
             this.setState({ aggregate: data });
             //console.log(data);
         });
-        fetch('/us-mse').then(res => res.json()).then(data => {
+        fetch('/us-mse-overall').then(res => res.json()).then(data => {
             console.log("FORECAST MSE");
             console.log(data);
             this.setState({ mse: data });
         });
-        fetch('/user-mse').then(res => res.json()).then(data => {
+        fetch('/user-mse-overall').then(res => res.json()).then(data => {
             this.setState({ user_mse: data });
             console.log("USER MSE");
             console.log(data);

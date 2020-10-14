@@ -85,7 +85,7 @@ class MainChart extends Component {
         const forecast = compiled["forecast"];
         const aggregate = compiled["aggregate"];
         const userPrediction = compiled["user_prediction"];
-        const mse = compiled["mse"];
+        //const mse = compiled["mse"];
         if (!loggedIn) {this.appendModal()}
         const orgs = []
         forecast.forEach(d => {
