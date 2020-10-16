@@ -284,12 +284,30 @@ def us_daily_cases_forecast():
     return dumps(us_inc_forecasts_cases)
     # return json.dumps(confirmed_cases)
 
-@app.route('/us-mse')
+
+@app.route('/us-mse-overall')
 def us_mse():
-    user_prediction = {}
-    if 'id' in session:
-        user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts)
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 'overall')
+    return us_mse
+
+@app.route('/us-mse-1-week-ahead')
+def us_mse1():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 1)
+    return us_mse
+
+@app.route('/us-mse-2-week-ahead')
+def us_mse2():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 2)
+    return us_mse
+
+@app.route('/us-mse-4-week-ahead')
+def us_mse4():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 4)
+    return us_mse
+
+@app.route('/us-mse-8-week-ahead')
+def us_mse8():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 8)
     return us_mse
 
 @app.route('/user-mse')
