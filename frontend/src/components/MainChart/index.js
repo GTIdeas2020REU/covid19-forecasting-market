@@ -5,7 +5,7 @@ import { clamp, createDefaultPrediction, getAllDataPoints, getDataPointsFromPath
 import { elementType } from 'prop-types';
 import { addDays, formatDate } from '../../utils/date';
 import { timeDay } from 'd3';
-import { titles } from '../../constants/data';
+import { titles, forecastIdentifiers } from '../../constants/data';
 
 class MainChart extends Component {
     constructor(props) {
@@ -88,9 +88,6 @@ class MainChart extends Component {
         //const mse = compiled["mse"];
         if (!loggedIn) {this.appendModal()}
         const orgs = []
-        forecast.forEach(d => {
-            orgs.push(d.name);
-        })
         // correct order of forecasts
         var predictionData = [];//where we will store formatted userPrediction
         const savePrediction = this.savePrediction;
@@ -148,30 +145,46 @@ class MainChart extends Component {
         var confirmedData = reformatData(confirmed);
         const confirmedLastDate = getLastDate(confirmedData);
         const confirmedLastVal = getLastValue(confirmedData);        
-        let temp = forecast.map(f => {
-            return reformatData(f.data);
-        }); 
-        let forecastData = forecast.map(f => {
-            return reformatData(f.data);
-        }); 
-        let tempNames = []
-        let forecastDataTemp = []
-        console.log(temp)
-        let todayD3 = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
-        temp.forEach((forecast, index) => {
-            if (forecast.length > 0) {
-                let filtered = forecast.filter(d => +d.date > +confirmedLastDate)
+        let forecastLabels = [];
+        let forecastData = [];
+        let forecastIds = [];
+        forecast.forEach(f => {
+            console.log(f.data)
+            if (Object.keys(f.data).length > 0) {
+                let formattedData = reformatData(f.data);
+                console.log(formattedData);
+                let filtered = formattedData.filter(d => +d.date > +confirmedLastDate)
                 if (filtered.length > 0) {
+                    console.log(filtered, f.name)
                     filtered.unshift({"date": confirmedLastDate, "value": confirmedLastVal})
-                    console.log(filtered)
-                    forecastDataTemp.push(filtered);
-                    tempNames.push(orgs[index]);
+                    forecastData.push(filtered);
+                    forecastLabels.push(f.name);
+                    forecastIds.push(forecastIdentifiers[f.name]);
                 }
             }
         })
-
-        console.log(forecastDataTemp, tempNames)
+        // let temp = forecast.map(f => {
+        //     return reformatData(f.data);
+        // }); 
+        
+        // let tempNames = []
+        // let forecastDataTemp = []
+        // console.log(temp)
+        // let todayD3 = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
+        // temp.forEach((forecast, index) => {
+        //     if (forecast.length > 0) {
+        //         let filtered = forecast.filter(d => +d.date > +confirmedLastDate)
+        //         if (filtered.length > 0) {
+        //             filtered.unshift({"date": confirmedLastDate, "value": confirmedLastVal})
+        //             console.log(filtered)
+        //             forecastDataTemp.push(filtered);
+        //             tempNames.push(orgs[index]);
+        //         }
+        //     }
+        // })
+        // console.log(forecastDataTemp, tempNames)
         var aggregateData = reformatData(aggregate);
+        console.log(forecastData, forecastLabels, forecastIds)
 
         //store userPrediction in predictionData if it exists
         if(Object.keys(userPrediction).length > 0) {
@@ -218,16 +231,18 @@ class MainChart extends Component {
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         
-        var legendString = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(orgs);
+        var legendString = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(forecastLabels);
         var models = [];
         orgs.map((o, i) => {
             //var idx = o.indexOf("(");
             //models.push(o.substring(0, idx - 1));
             models.push(o);
         })
-        var names = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(models)
+        // var names = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(models)
+        // let dataTitles = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(models);
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
-        const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
+        // const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
+        const compiledIds = ["confirmed", "aggregate", "prediction"].concat(forecastIds);
         //color function that assigns random colors to each data
         var color = d3
                         .scaleOrdinal()
@@ -242,7 +257,7 @@ class MainChart extends Component {
         var size = 10;
         const legendMarginL = 30;
         legend.selectAll("rect")
-            .data(names)
+            .data(legendString)
             .enter()
             .append("circle")
                 .attr('cx', 10)
@@ -250,7 +265,7 @@ class MainChart extends Component {
                 .attr("r", 6)
                 //.attr("width", size)
                 //.attr("height", size)
-                .style("fill", (function(d){ return color(d)}))
+                .style("fill", (function(d, i){ return color(compiledIds[i])}));
 
         
         legend.selectAll("labels")
@@ -311,7 +326,7 @@ class MainChart extends Component {
                                     .attr("class", "line")    
                                     .datum(confirmedData)    
                                     .attr('d', line)
-                                    .attr("stroke", color(names[0]))
+                                    .attr("stroke", color(compiledIds[0]))
                                     .style("stroke-width", "3px")
         var confirmedAreaEndX = x(confirmedData[confirmedData.length - 1].date);
         var confirmedAreaEndY = y(confirmedData[confirmedData.length - 1].value);
@@ -348,7 +363,7 @@ class MainChart extends Component {
                                     .attr("class", "line")        
                                     .datum(aggregateData)    
                                     .attr('d', line)
-                                    .attr("stroke", color(names[1]))
+                                    .attr("stroke", color(compiledIds[1]))
                                     .style("stroke-width", "2px")
         //display user prediction
         //function that generates the prediction curve
@@ -369,34 +384,40 @@ class MainChart extends Component {
         console.log(forecastData)
         forecastData.map((f, index) => {
             console.log(f)
-            //make sure they all stem from the confirmed curve!
-            //var temp = d3.timeParse("%Y-%m-%d")("2020-07-18")
-            if (f.length != 0) {
-                console.log(predStartDate)
-                var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
-                console.log(idxOfStartDate)
-                console.log(f[idxOfStartDate])
-
-                //check if predStartDate exists in f
-                if (f.length > 0 && idxOfStartDate < f.length && +f[idxOfStartDate].date === +predStartDate) {
-                    f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
-                }
-                else {//add data point to forecastData array
-                    f.splice(idxOfStartDate, 0, {
-                        date: predStartDate,
-                        value: confirmedData[confirmedData.length - 1].value
-                    });
-                    f = f.slice(idxOfStartDate, f.length);
-                }
-                console.log(f)
-                forecastData[index] = f;
-                predictionArea.append("path")
+            predictionArea.append("path")
                             .attr("class", "forecast line")
-                            .attr("id", modelClassNames[index])
-                            .style("stroke", color(models[index]))
+                            .attr("id", forecastIds[index])
+                            .style("stroke", color(forecastIds[index]))
                             .datum(f)
                                 .attr("d", line);
-            }
+            //make sure they all stem from the confirmed curve!
+            //var temp = d3.timeParse("%Y-%m-%d")("2020-07-18")
+            // if (f.length != 0) {
+            //     console.log(predStartDate)
+            //     var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
+            //     console.log(idxOfStartDate)
+            //     console.log(f[idxOfStartDate])
+
+            //     //check if predStartDate exists in f
+            //     if (f.length > 0 && idxOfStartDate < f.length && +f[idxOfStartDate].date === +predStartDate) {
+            //         f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
+            //     }
+            //     else {//add data point to forecastData array
+            //         f.splice(idxOfStartDate, 0, {
+            //             date: predStartDate,
+            //             value: confirmedData[confirmedData.length - 1].value
+            //         });
+            //         f = f.slice(idxOfStartDate, f.length);
+            //     }
+            //     console.log(f)
+            //     forecastData[index] = f;
+            //     predictionArea.append("path")
+            //                 .attr("class", "forecast line")
+            //                 .attr("id", modelClassNames[index])
+            //                 .style("stroke", color(models[index]))
+            //                 .datum(f)
+            //                     .attr("d", line);
+            // }
             
         })
         
@@ -430,7 +451,7 @@ class MainChart extends Component {
         const aggregatePath = document.querySelector("#aggregate");
         confirmedData = getAllDataPoints(confirmedPath, x, y, confirmedStartDate, predStartDate);
         compiledData.push({
-            name: labels[0],
+            name: compiledIds[0],
             data: confirmedData
         })
         console.log(confirmedData);
@@ -438,14 +459,14 @@ class MainChart extends Component {
         var lastDate = aggregateData[aggregateData.length - 1].date;
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
         compiledData.push({
-            name: labels[1],
+            name: compiledIds[1],
             data: aggregateData
         })
         compiledData.push({
-            name: labels[2],
+            name: compiledIds[2],
             data: predictionData
         })
-        modelClassNames.map((m, index) => {
+        forecastIds.map((m, index) => {
             console.log(m, forecastData[index])
             if (forecastData[index].length > 1) {
                 var lastDate = forecastData[index][forecastData[index].length - 1].date;
@@ -460,7 +481,7 @@ class MainChart extends Component {
         filteredData = predictionData.filter(predLine.defined())
         yourLine.datum(filteredData)
                 .attr('d', predLine)
-                .style("stroke", color(names[2]))
+                .style("stroke", color(compiledIds[2]))
                 .style("stroke-width", "2px")
         //append new rect  
         const mouseArea = svg.append("rect")
@@ -620,7 +641,7 @@ class MainChart extends Component {
         mousePerLine.append("circle")
                         .attr("r", 2)
                         .style("stroke", function(d, i) {
-                            return color(names[i]);
+                            return color(compiledIds[i]);
                         })
                         .style("fill", "none")
                         .style("stroke-width", "1px")
@@ -688,12 +709,12 @@ class MainChart extends Component {
                                                                      .attr("class", d.name)
                                                                      .style("padding-left", "10px")
                                                                      .style("padding-right", "10px")
-                                                                     .style("background-color", color(names[i]))
+                                                                     .style("background-color", color(compiledIds[i]))
                                                                      .style("color", "white");
 
                                             }
                                             else {
-                                                textBox.html(`${names[i]}: ${Math.round(value)}`)
+                                                textBox.html(`${legendString[i]}: ${Math.round(value)}`)
                                             }
                                             element.select("circle")
                                                     .style("opacity", "1");
@@ -787,19 +808,19 @@ class MainChart extends Component {
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(names[0]))
+            .attr("stroke", color(compiledIds[0]))
         
         focus.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
-            .attr("stroke", color(names[1]))
+            .attr("stroke", color(compiledIds[1]))
 
         var focusPredCurve = focus.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
                                     .attr("class", "context-curve")
-                                    .attr("stroke", color(names[2]))
+                                    .attr("stroke", color(compiledIds[2]))
         
         forecastData.map((f, index) => {
             focus
@@ -807,7 +828,7 @@ class MainChart extends Component {
                     .datum(f)
                     .attr("d", focusLine)
                     .attr("class", "context-curve")
-                    .attr("stroke", color(models[index]));
+                    .attr("stroke", color(forecastIds[index]));
 
         })
         function brushed() {
@@ -953,67 +974,67 @@ class MainChart extends Component {
 
         legendConfirmed.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#confirmed").style("stroke", color(names[0]));
+                            svg.select("#confirmed").style("stroke", color(compiledIds[0]));
                         })
                         .on("mouseout", function() {
                             svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(names[i]))
+                                .style("stroke", (d, i) => color(compiledIds[i]))
                         })
         legendAggregate.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#aggregate").style("stroke", color(names[1]));
+                            svg.select("#aggregate").style("stroke", color(compiledIds[1]));
                          })
                          .on("mouseout", function() {
                             svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(names[i]))
+                                .style("stroke", (d, i) => color(compiledIds[i]))
                         })
         legendPrediction.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#your-line").style("stroke", color(names[2]));
+                            svg.select("#your-line").style("stroke", color(compiledIds[2]));
                         })
                         .on("mouseout", function() {
                             svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(names[i]))
+                                .style("stroke", (d, i) => color(compiledIds[i]))
                         })
         legendGeorgiaTech.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#gt").style("stroke", color(names[3]));
+                            svg.select("#gt").style("stroke", color(compiledIds[3]));
                         })
                         .on("mouseout", function() {
                             svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(names[i]))
+                                .style("stroke", (d, i) => color(compiledIds[i]))
                         })
         legendIhme.on("mouseover", function() {
                         svg.selectAll(".line").style("stroke", "#ddd");
-                        svg.select("#ihme").style("stroke", color(names[4]));
+                        svg.select("#ihme").style("stroke", color(compiledIds[4]));
                     })
                     .on("mouseout", function() {
                         svg.selectAll(".line")
-                            .style("stroke", (d, i) => color(names[i]))
+                            .style("stroke", (d, i) => color(compiledIds[i]))
                     })
         legendYouyang.on("mouseover", function() {
                         svg.selectAll(".line").style("stroke", "#ddd");
-                        svg.select("#youyang").style("stroke", color(names[5]));
+                        svg.select("#youyang").style("stroke", color(compiledIds[5]));
                     })
                     .on("mouseout", function() {
                         svg.selectAll(".line")
-                            .style("stroke", (d, i) => color(names[i]))
+                            .style("stroke", (d, i) => color(compiledIds[i]))
                     })
         legendColumbia.on("mouseover", function() {
                             svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#columbia").style("stroke", color(names[6]));
+                            svg.select("#columbia").style("stroke", color(compiledIds[6]));
                         })
                         .on("mouseout", function() {
                             svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(names[i]))
+                                .style("stroke", (d, i) => color(compiledIds[i]))
                         })
         legendUcla.on("mouseover", function() {
                         svg.selectAll(".line").style("stroke", "#ddd");
-                        svg.select("#ucla").style("stroke", color(names[7]));
+                        svg.select("#ucla").style("stroke", color(compiledIds[7]));
                     })
                     .on("mouseout", function() {
                         svg.selectAll(".line")
-                            .style("stroke", (d, i) => color(names[i]))
+                            .style("stroke", (d, i) => color(compiledIds[i]))
                     })
     }
     renderOldChart() {
@@ -1082,7 +1103,7 @@ class MainChart extends Component {
                             .attr("fill", "none")
                             .attr("stroke", "steelblue")
                             .attr("stroke-width", 1.5)
-                            var legend = d3.select(".legend-container")
+        var legend = d3.select(".legend-container")
                             .attr("viewBox", "0 0 400 500")
                             .append('g')
                             .attr("id", "legend")
@@ -1264,10 +1285,10 @@ class MainChart extends Component {
                 <div className="third-column">
                     <svg className="legend-container"></svg>
                     <button className="btn btn-primary " id="delete-btn">Reset</button>
-                    <div class="speech-bubble left">shift or resize the gray box to change the zoom level</div>
+                    <div className="speech-bubble left">shift or resize the gray box to change the zoom level</div>
                 </div>
             </div>
-            <div class="tooltip-box"></div>
+            <div className="tooltip-box"></div>
         </div>);
     }
 }
