@@ -72,7 +72,7 @@ def update_errors():
 
 
 def save_daily_cases():
-    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-08')
+    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-15')
     confirmed_df['date'] = confirmed_df['date'].astype(str) 
     dates = confirmed_df['date'].to_list()[1:]
     confirmed = confirmed_df['confirmed'].diff()[1:]

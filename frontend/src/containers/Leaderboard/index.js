@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import { Dropdown } from 'react-bootstrap';
 import LeaderboardChart from '../../components/LeaderboardChart';
 import colors from '../../constants/colors';
+import './Leaderboard.css'
 
 
 // Create leaderboard table, consisting of user predictions and official forecasts
@@ -196,6 +197,19 @@ class Leaderboard extends React.Component {
     // Trigger click events to get orgs and users sorted together
     $('#Score').trigger("click");
     $('#Score').trigger("click");
+    if (document.querySelector('#Score')) {
+      document.querySelector('#Score').addEventListener("mousemove", function mouseOver(event) {
+        let hoverText = document.querySelector(".score-hover");
+        console.log(event.clientX);
+        document.querySelector(".score-hover").style.left = `${event.clientX + 15}px`;
+        document.querySelector(".score-hover").style.top = `${event.clientY -250}px`;
+        document.querySelector(".score-hover").style.display = "block";
+      })
+      document.querySelector('#Score').addEventListener("mouseout", function mouseOut() {
+        console.log("mouseout");
+        document.querySelector(".score-hover").style.display = "none";
+      })
+    }
   }
 
   handleSelect = (e) => {
@@ -248,10 +262,17 @@ class Leaderboard extends React.Component {
           </Dropdown.Menu>
         </Dropdown>
         <br></br>
-        <div className="d-flex flex-row">
-          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} style={tableStyle} />
-          <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
+        <div className="main">
+          <div className="table">
+            <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts}  />
+            {/* style={tableStyle} */}
+            <div className="score-hover">Mean Squared Error</div>
+          </div>
+          <div className="chart">
+            <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
+          </div>
         </div>
+      
       </div>
     );
   }
