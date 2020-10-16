@@ -1953,7 +1953,9 @@ class InteractiveChart extends Component {
                         <p>> Click Reset to erase your prediction</p>
                         {/* <br/> */}
                         <p>> Navigate to <b>Top Forecasts</b> to view the accuracy of various forecasts and user predictions</p>
+                       
                     </div>
+                   
                 </div>
                 <div ref={this.chartRef} className="second-column">
                     <svg className="main-chart"></svg>

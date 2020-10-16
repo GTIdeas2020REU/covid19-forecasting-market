@@ -52,9 +52,10 @@ class ProfilePage extends React.Component {
   }
   
   async handleLogout(event) {
-    console.log("logging out");
+    console.log("logging out button");
     event.preventDefault();
     await this.saveLogout();
+    console.log(this.loginStatus)
     await this.updateLoginState();
     
   }
@@ -67,6 +68,8 @@ class ProfilePage extends React.Component {
       
       window.location.href ='/';
     }
+    console.log('beforelg')
+    console.log(this.loginStatus)
     return (
       
       <div>
