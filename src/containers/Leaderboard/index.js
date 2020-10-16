@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom';
 
 import LeaderboardChart from '../../components/LeaderboardChart';
 import colors from '../../constants/colors';
+import './Leaderboard.css';
 
 
 // Create leaderboard table, consisting of user predictions and official forecasts
@@ -150,7 +151,7 @@ class Leaderboard extends React.Component {
           accesor: 'date',
         },
         {
-          Header: 'MSE',
+          Header: 'Score',
           accesor: 'mse_score',
         }
       ]
