@@ -25,7 +25,7 @@ class ChartContainer extends React.Component {
       const data = d.data;
       fetch(data).then(res => res.json()).then(data => {
         console.log(d.name, data)
-        if (name == "forecast") {
+        if (name === "forecast") {
           console.log("forecast")
           data = cleanForecastData(data)
         }
@@ -48,7 +48,7 @@ class ChartContainer extends React.Component {
       const data = await fetch(d.data);
       let jsonData = await data.json();
       console.log(jsonData);
-      if (d.name == "forecast") {
+      if (d.name === "forecast") {
         console.log("forecast")
         jsonData = cleanForecastData(jsonData)
         console.log("forecast!! ", jsonData)
@@ -65,7 +65,7 @@ class ChartContainer extends React.Component {
     const {compiledData, length, loggedIn, category} = this.state;
     console.log(compiledData, loggedIn, length);
 
-    if (!compiledData || length != 5 || loggedIn == null) return "Loading..."
+    if (!compiledData || length !== 5 || loggedIn == null) return "Loading..."
     else {
       console.log(compiledData, loggedIn, length);
     }

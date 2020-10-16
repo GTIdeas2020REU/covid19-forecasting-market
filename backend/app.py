@@ -33,9 +33,6 @@ us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 us_inc_forecasts_cases = get_daily_forecasts_cases()
 print("case count forecast fetched")
 print(us_inc_forecasts_cases)
-# Get aggregate data
-#us_aggregates = get_aggregates(forecast_data)
-#us_aggregates_daily = get_aggregates(us_inc_forecasts)
 us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
@@ -47,7 +44,7 @@ mongo = PyMongo(app)
 data = {}
 
 
-''' Functions to update variables and database on daily basis '''
+'''-----Functions to update variables and database on daily basis with background scheduler-----'''
 def load_us_inc_confirmed():
     us_inc_confirmed = get_us_new_deaths()
 
@@ -62,13 +59,17 @@ def update_errors():
     for p in prediction:
         temp = dict()
         temp[p['date']] = p['prediction']
-        mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
-        if mse == None:
-            continue
-        mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-            {'$set': 
-                { "mse_score": list(mse.values())[0] }
-            })
+        intervals = ['overall', 1, 2, 4, 8]
+        for interval in intervals:
+            mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp, interval)
+            if mse == None:
+                continue
+            mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
+                {'$set': 
+                    { "mse_score_" + str(interval): list(mse.values())[0] }
+                })
+
+
 
 def save_daily_cases():
     confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-08')
@@ -128,17 +129,19 @@ def update_user_prediction(username, data, category, a=None, higher=False, index
     print("DATA: ")
     print(data)
     print("SCORE:")
-    score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
-    print(score)
-    print(' ')
-    pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
-    if pred:
-        mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
-        {'$set': 
-            { "prediction": data, "mse_score": score }
-        })
-    else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score": score })
+    intervals = ['overall', 1, 2, 4, 8]
+    for interval in intervals:
+        score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data}, interval)
+        print(score)
+        print(' ')
+        pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
+        if pred:
+            mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
+            {'$set': 
+                { "prediction": data, "mse_score_" + str(interval): score }
+            })
+        else:
+            mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score_" + str(interval): score })
 
 
 def get_user_prediction(username, category):
@@ -211,13 +214,16 @@ def home():
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
 
+
+
+'''-----Data collection routes-----'''
+
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
     return forecast_data
 
 @app.route("/us-inc-deaths-forecasts")
 def us_inc_deaths_forecasts():
-    #us_inc_forecasts = get_daily_forecasts()
     return us_inc_forecasts
 
 @app.route("/us-cum-deaths-confirmed")
@@ -226,12 +232,10 @@ def us_cum_deaths_confirmed():
 
 @app.route('/us-inc-deaths-confirmed')
 def us_inc_deaths_confirmed():
-    #us_inc_confirmed = get_us_new_deaths()
     return us_inc_confirmed
 
 @app.route('/us-inc-deaths-confirmed-wk-avg')
 def us_inc_deaths_confirmed_wk_avg():
-    #us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_deaths_confirmed)
     return us_inc_confirmed_wk_avg
 
 @app.route('/us-agg-cum-deaths')
@@ -275,12 +279,31 @@ def us_daily_cases_forecast():
 
 
 
-@app.route('/us-mse')
+'''-----Forecast evaluation routes-----'''
+
+@app.route('/us-mse-overall')
 def us_mse():
-    user_prediction = {}
-    if 'id' in session:
-        user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts)
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 'overall')
+    return us_mse
+
+@app.route('/us-mse-1-week-ahead')
+def us_mse1():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 1)
+    return us_mse
+
+@app.route('/us-mse-2-week-ahead')
+def us_mse2():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 2)
+    return us_mse
+
+@app.route('/us-mse-4-week-ahead')
+def us_mse4():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 4)
+    return us_mse
+
+@app.route('/us-mse-8-week-ahead')
+def us_mse8():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 8)
     return us_mse
 
 @app.route('/user-mse')
@@ -288,9 +311,12 @@ def user_mse():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction)
+    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction, 'overall')
     return json.dumps(mse)
 
+
+
+'''-----User updating routes-----'''
 
 @app.route('/update/', methods=['GET', 'POST'])
 def update():
@@ -315,6 +341,9 @@ def delete():
     return "None"
     
 
+
+'''-----Authentication routes-----'''
+
 @app.route('/login/', methods=['POST','GET'])
 def login():
     if (request.method == 'POST'):
@@ -332,11 +361,9 @@ def login():
         if 'id' in session:
             print("True")
             return dumps({'status': True})
-            #return "Already logged in"
         else: 
             print("False")
             return dumps({'status': False})
-    #return 'None'
 
 @app.route('/signup/', methods=['POST'])
 def signup():
@@ -383,10 +410,35 @@ def user_status():
         return dumps({'logged in': False})
 
 
-@app.route('/user-data')
+
+'''-----User score routes-----'''
+
+@app.route('/user-data-overall')
 def leaderboard():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score': 1, 'date': 1, 'prediction': 1}).sort('mse_score',1))
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_overall': 1, 'date': 1, 'prediction': 1}).sort('mse_score_overall',1))
     return dumps(all_users)
+
+@app.route('/user-data-1-week-ahead')
+def leaderboard1():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_1': 1, 'date': 1, 'prediction': 1}).sort('mse_score_1',1))
+    return dumps(all_users)
+
+@app.route('/user-data-2-week-ahead')
+def leaderboard2():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_2': 1, 'date': 1, 'prediction': 1}).sort('mse_score_2',1))
+    return dumps(all_users)
+
+@app.route('/user-data-4-week-ahead')
+def leaderboard4():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_4': 1, 'date': 1, 'prediction': 1}).sort('mse_score_4',1))
+    return dumps(all_users)
+
+@app.route('/user-data-8-week-ahead')
+def leaderboard8():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_8': 1, 'date': 1, 'prediction': 1}).sort('mse_score_8',1))
+    return dumps(all_users)
+
+
 
 @app.route('/user')
 def profile():
@@ -414,7 +466,8 @@ def total():
     return json.dumps(results)
 
 
-''' Schedule jobs to perform functions once a day '''
+
+'''-----Schedule jobs to perform functions once a day-----'''
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
@@ -424,6 +477,7 @@ scheduler.start()
 
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)

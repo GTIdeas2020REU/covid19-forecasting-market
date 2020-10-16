@@ -3,7 +3,7 @@ import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
 import { Dropdown } from 'react-bootstrap';
-import LeaderboardChart from '../LeaderboardChart';
+import LeaderboardChart from '../../components/LeaderboardChart';
 import colors from '../../constants/colors';
 
 
@@ -81,15 +81,17 @@ function createOrgChart(org, confirmed, id) {
 // Add rows with user data to the leaderboard table
 function RenderUsersTable({ users, confirmed }) {
   return users.map((user, index) => {
+    // score is always last key
+    var score = Object.values(user)[Object.keys(user).length - 1];
     // ignore null MSE values
-    if (user.mse_score == null) {
+    if (score == null || typeof(score) != "number") {
       return;
     }
     return (
        <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
           <td>{user.username}</td>
           <td>{user.date}</td>
-          <td>{parseFloat(user.mse_score).toFixed(2)}</td>
+          <td>{parseFloat(score).toFixed(2)}</td>
        </tr>
     );
  });
@@ -125,15 +127,15 @@ class Leaderboard extends React.Component {
       orgs: null,
       forecasts: null,
       predictionLength: 1,
-      dropDownTitle: '1-week-ahead'
+      dropDownTitle: 'overall'
     }
   }
 
   componentDidMount() {
-    fetch('/user-data').then(res => res.json()).then(data => {
+    fetch('/user-data-overall').then(res => res.json()).then(data => {
       this.setState({ users: data });
     });
-    fetch('/us-mse').then(res => res.json()).then(data => {
+    fetch('/us-mse-overall').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
     });
 
@@ -147,7 +149,7 @@ class Leaderboard extends React.Component {
           accesor: 'date',
         },
         {
-          Header: 'MSE',
+          Header: 'Score',
           accesor: 'mse_score',
         }
       ]
@@ -166,7 +168,7 @@ class Leaderboard extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     // Table should sort by error when MSE header is clicked on
-    $('#MSE').click(function() {
+    $('#Score').click(function() {
       if (this.asc === undefined) {
           this.asc = true;
       }
@@ -192,8 +194,19 @@ class Leaderboard extends React.Component {
     }
 
     // Trigger click events to get orgs and users sorted together
-    $('#MSE').trigger("click");
-    $('#MSE').trigger("click");
+    $('#Score').trigger("click");
+    $('#Score').trigger("click");
+  }
+
+  handleSelect = (e) => {
+    this.setState({dropDownTitle: e});
+    fetch('/user-data-' + e).then(res => res.json()).then(data => {
+      this.setState({ users: data });
+    });
+    fetch('/us-mse-' + e).then(res => res.json()).then(data => {
+      this.setState({ orgs: data });
+      console.log(data);
+    });
   }
 
 
@@ -215,23 +228,23 @@ class Leaderboard extends React.Component {
 
     const { users, columns, confirmed, orgs, forecasts } = this.state;
     if (!users || !columns || !confirmed || !orgs || !forecasts) return 'Loading...';
-    var dropdownTitle = this.state.predictionLength <= 1 ? ' week ahead' : 'weeks ahead'
+    //var dropdownTitle = this.state.predictionLength <= 1 ? ' week ahead' : 'weeks ahead'
 
     return (
       <div>
         <br></br>
         <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
         <small>* indicates an official forecaster as labelled by the CDC</small>
-        <Dropdown>
+        <Dropdown onSelect={this.handleSelect}>
           <Dropdown.Toggle variant="success" id="dropdown-basic">
             {this.state.dropDownTitle}
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <Dropdown.Item href="#/action-1">1-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-2">2-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">4-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">8-week-ahead</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">overall</Dropdown.Item>
+            <Dropdown.Item eventKey="overall">overall</Dropdown.Item>
+            <Dropdown.Item eventKey="1-week-ahead">1-week-ahead</Dropdown.Item>
+            <Dropdown.Item eventKey="2-week-ahead">2-week-ahead</Dropdown.Item>
+            <Dropdown.Item eventKey="4-week-ahead">4-week-ahead</Dropdown.Item>
+            <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
         <br></br>

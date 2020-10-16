@@ -25,7 +25,7 @@ const data = [
     },
     {
       "name": "mse",
-      "data": "/us-mse"
+      "data": "/us-mse-overall"
     },
   ]
 
@@ -48,7 +48,7 @@ const data = [
     },
     {
       "name": "mse",
-      "data": "/us-mse"
+      "data": "/us-mse-overall"
     },
   ]
 class HomePage extends Component {
@@ -64,7 +64,7 @@ class HomePage extends Component {
         let category = this.state.category;
         console.log(category)
         const renderChartContainer = () => {
-            if(category == "US Daily Deaths") {
+            if(category === "US Daily Deaths") {
                 return <ChartContainer key='123' compiledData={data} category="us_daily_deaths"/>
 
             }
