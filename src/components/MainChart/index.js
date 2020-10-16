@@ -218,7 +218,7 @@ class MainChart extends Component {
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         
-        var legendString = [`${title} Confirmed`, "Aggregate Forecast", "User Prediction"].concat(orgs);
+        var legendString = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(orgs);
         var models = [];
         orgs.map((o, i) => {
             //var idx = o.indexOf("(");
