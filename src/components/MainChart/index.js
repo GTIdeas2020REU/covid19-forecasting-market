@@ -212,7 +212,7 @@ class MainChart extends Component {
             //models.push(o.substring(0, idx - 1));
             models.push(o);
         })
-        var names = [`${title} Confirmed`, "Aggregate Forecast", "User Prediction"].concat(models)
+        var names = [`${title}`, "Aggregate Forecast", "User Prediction"].concat(models)
         const modelClassNames = ["gt", "ihme", "youyang", "columbia", "ucla"];
         const labels = ["confirmed", "aggregate", "prediction"].concat(modelClassNames);
         //color function that assigns random colors to each data

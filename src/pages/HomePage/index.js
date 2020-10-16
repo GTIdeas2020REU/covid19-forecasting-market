@@ -54,7 +54,7 @@ const data = [
 class HomePage extends Component {
     constructor(props) {
         super(props);
-        this.state = { category: "US Daily Deaths"};
+        this.state = { category: "US Daily Reported Cases"};
         this.chartRef = React.createRef();
     }
     onClick = (e) => {
@@ -82,7 +82,7 @@ class HomePage extends Component {
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         <Dropdown.Item eventKey="US Daily Deaths" onSelect={this.onClick}>US Daily Deaths</Dropdown.Item>
-                        <Dropdown.Item eventKey="US Daily Cases" onSelect={this.onClick}>US Daily Cases</Dropdown.Item>
+                        <Dropdown.Item eventKey="US Daily Reported Cases" onSelect={this.onClick}>US Daily Cases</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
                 <br/>
