@@ -308,12 +308,33 @@ def us_daily_cases_forecast():
     return dumps(us_inc_forecasts_cases)
     # return json.dumps(confirmed_cases)
 
-@app.route('/us-mse')
+
+
+'''-----Forecast evaluation routes-----'''
+
+@app.route('/us-mse-overall')
 def us_mse():
-    user_prediction = {}
-    if 'id' in session:
-        user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts)
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 'overall')
+    return us_mse
+
+@app.route('/us-mse-1-week-ahead')
+def us_mse1():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 1)
+    return us_mse
+
+@app.route('/us-mse-2-week-ahead')
+def us_mse2():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 2)
+    return us_mse
+
+@app.route('/us-mse-4-week-ahead')
+def us_mse4():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 4)
+    return us_mse
+
+@app.route('/us-mse-8-week-ahead')
+def us_mse8():
+    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 8)
     return us_mse
 
 @app.route('/user-mse')
@@ -323,6 +344,7 @@ def user_mse():
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
     mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction)
     return json.dumps(mse)
+
 
 
 @app.route('/update/', methods=['GET', 'POST'])
@@ -420,10 +442,35 @@ def user_status():
         return dumps({'logged in': False})
 
 
-@app.route('/user-data')
+
+'''-----User score routes-----'''
+
+@app.route('/user-data-overall')
 def leaderboard():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score': 1, 'date': 1, 'prediction': 1}).sort('mse_score',1))
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_overall': 1, 'date': 1, 'prediction': 1}).sort('mse_score_overall',1))
     return dumps(all_users)
+
+@app.route('/user-data-1-week-ahead')
+def leaderboard1():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_1': 1, 'date': 1, 'prediction': 1}).sort('mse_score_1',1))
+    return dumps(all_users)
+
+@app.route('/user-data-2-week-ahead')
+def leaderboard2():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_2': 1, 'date': 1, 'prediction': 1}).sort('mse_score_2',1))
+    return dumps(all_users)
+
+@app.route('/user-data-4-week-ahead')
+def leaderboard4():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_4': 1, 'date': 1, 'prediction': 1}).sort('mse_score_4',1))
+    return dumps(all_users)
+
+@app.route('/user-data-8-week-ahead')
+def leaderboard8():
+    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_8': 1, 'date': 1, 'prediction': 1}).sort('mse_score_8',1))
+    return dumps(all_users)
+
+
 
 @app.route('/user')
 def profile():
