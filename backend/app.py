@@ -72,18 +72,26 @@ def update_errors():
 
 
 def save_daily_cases():
-    confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-10-15')
+    today = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+    confirmed_df = get_daily_confirmed_df('2020-04-12', today)
     confirmed_df['date'] = confirmed_df['date'].astype(str) 
     dates = confirmed_df['date'].to_list()[1:]
     confirmed = confirmed_df['confirmed'].diff()[1:]
     confirmed_cases = dict(zip(dates, confirmed))
-    # confirmed_df = get_daily_confirmed_df('2020-04-12', '2020-09-17')
-    # confirmed_df['date'] = confirmed_df['date'].astype(str) 
-    # confirmed_cases = confirmed_df.set_index('date').diff().to_dict()['confirmed']
-    mongo.db.confirmed.insert_one({
-        'category': 'daily_cases',
-        'data': confirmed_cases
-    })
+    confirmed_doc = mongo.db.confirmed.find({'category': 'daily_cases'})
+    if confirmed_doc:
+        print("data exists")
+        mongo.db.confirmed.update_one({'category': 'daily_cases'}, 
+            {'$set': 
+                { "data": confirmed_cases }
+            })
+        print("data updated")
+    else: 
+        mongo.db.confirmed.insert_one({
+            'category': 'daily_cases',
+            'data': confirmed_cases
+        })
+        print("data inserted")
     print('success')
 
 def add_vote(id, pred_model):
@@ -473,6 +481,7 @@ scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
 scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
+scheduler.add_job(func=save_daily_cases, trigger="interval", seconds=86400)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app
