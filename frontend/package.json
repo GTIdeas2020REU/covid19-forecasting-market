@@ -42,7 +42,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000",
+  "proxy": "http://localhost:backend",
   "devDependencies": {
     "react-test-renderer": "^16.13.1"
   }

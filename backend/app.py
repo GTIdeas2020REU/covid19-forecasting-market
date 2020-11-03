@@ -15,7 +15,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='')
 # Talisman(app)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
@@ -42,6 +42,13 @@ us_mse = None
 app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 data = {}
+
+
+@app.route('/', defaults={'u_path': ''})
+@app.route('/<path:u_path>')
+def catch_all(u_path):
+    print(repr(u_path))
+    return app.send_static_file('index.html')
 
 
 '''-----Functions to update variables and database on daily basis with background scheduler-----'''
@@ -489,4 +496,4 @@ atexit.register(lambda: scheduler.shutdown())
 
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
