@@ -147,42 +147,22 @@ class MainChart extends Component {
         const confirmedLastVal = getLastValue(confirmedData);        
         let forecastLabels = [];
         let forecastData = [];
+        let forecastDict = [];
+        let temp = [];
+        console.log(forecastData)
         let forecastIds = [];
         forecast.forEach(f => {
             console.log(f.data)
-            if (Object.keys(f.data).length > 0) {
-                let formattedData = reformatData(f.data);
-                console.log(formattedData);
-                let filtered = formattedData.filter(d => +d.date > +confirmedLastDate)
-                if (filtered.length > 0) {
-                    console.log(filtered, f.name)
-                    filtered.unshift({"date": confirmedLastDate, "value": confirmedLastVal})
-                    forecastData.push(filtered);
-                    forecastLabels.push(f.name);
-                    forecastIds.push(forecastIdentifiers[f.name]);
-                }
+            let formattedData = reformatData(f.data);
+            let filtered = formattedData.filter(d => +d.date > +confirmedLastDate)
+            if (filtered.length > 0) {
+                forecastData.push(filtered)
+                forecastLabels.push(f.name);
+                forecastIds.push(forecastIdentifiers[f.name]);
             }
         })
-        // let temp = forecast.map(f => {
-        //     return reformatData(f.data);
-        // }); 
-        
-        // let tempNames = []
-        // let forecastDataTemp = []
-        // console.log(temp)
-        // let todayD3 = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
-        // temp.forEach((forecast, index) => {
-        //     if (forecast.length > 0) {
-        //         let filtered = forecast.filter(d => +d.date > +confirmedLastDate)
-        //         if (filtered.length > 0) {
-        //             filtered.unshift({"date": confirmedLastDate, "value": confirmedLastVal})
-        //             console.log(filtered)
-        //             forecastDataTemp.push(filtered);
-        //             tempNames.push(orgs[index]);
-        //         }
-        //     }
-        // })
-        // console.log(forecastDataTemp, tempNames)
+
+        console.log(forecastData)
         var aggregateData = reformatData(aggregate);
         console.log(forecastData, forecastLabels, forecastIds)
 
@@ -256,31 +236,33 @@ class MainChart extends Component {
                         .attr("id", "legend")
         var size = 10;
         const legendMarginL = 30;
-        legend.selectAll("rect")
+        legend.selectAll("legend")
             .data(legendString)
             .enter()
             .append("circle")
                 .attr('cx', 10)
                 .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                 .attr("r", 6)
-                //.attr("width", size)
-                //.attr("height", size)
-                .style("fill", (function(d, i){ return color(compiledIds[i])}));
+                .style("fill", (function(d, i){ return color(compiledIds[i])}))
+                // .attr('class', (function(d, i){ return compiledIds[i]}));
 
-        
         legend.selectAll("labels")
             .data(legendString)
             .enter()
             .append("text")
                 .attr("x", 30)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                // .style("fill", function(d, index){ return color(names[index])})
                 .text(function(d){console.log("D TEXT"); console.log(d); return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
+                // .attr('class', (function(d, i){ return compiledIds[i]}));
         var legendElement = document.querySelector("#legend");
         const legendCompleteWidth = legendElement.getBoundingClientRect().width;
         const legendSingleHeight = 25;
+        console.log(svg.select('.ucla'))
+        svg.select('.ucla').on("mouseover", function() {
+            console.log('text');
+        })
         /*var legendArea = legend.append("rect")
                                 .attr("width", legendCompleteWidth)
                                 .attr("height", legendCompleteHeight)
@@ -346,15 +328,15 @@ class MainChart extends Component {
         //make sure aggregateData curve stems from confiremData curve
         var idxOfStartDate = d3.bisector(f => f.date).left(aggregateData, predStartDate);
         //check if predStartDate exists in AD
-        if (aggregateData.length > 0 && +aggregateData[idxOfStartDate].date === +predStartDate) {
-            aggregateData[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
-        }
-        else {
-            aggregateData.splice(idxOfStartDate, 0, {
-                date: predStartDate,
-                value: confirmedData[confirmedData.length - 1].value
-            });
-        }
+        // if (aggregateData.length > 0 && +aggregateData[idxOfStartDate].date === +predStartDate) {
+        //     aggregateData[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
+        // }
+        // else {
+        //     aggregateData.splice(idxOfStartDate, 0, {
+        //         date: predStartDate,
+        //         value: confirmedData[confirmedData.length - 1].value
+        //     });
+        // }
         aggregateData = aggregateData.splice(idxOfStartDate, aggregateData.length);
 
         //display aggregate data
@@ -390,35 +372,6 @@ class MainChart extends Component {
                             .style("stroke", color(forecastIds[index]))
                             .datum(f)
                                 .attr("d", line);
-            //make sure they all stem from the confirmed curve!
-            //var temp = d3.timeParse("%Y-%m-%d")("2020-07-18")
-            // if (f.length != 0) {
-            //     console.log(predStartDate)
-            //     var idxOfStartDate = d3.bisector(f => f.date).left(f, predStartDate);
-            //     console.log(idxOfStartDate)
-            //     console.log(f[idxOfStartDate])
-
-            //     //check if predStartDate exists in f
-            //     if (f.length > 0 && idxOfStartDate < f.length && +f[idxOfStartDate].date === +predStartDate) {
-            //         f[idxOfStartDate].value = confirmedData[confirmedData.length - 1].value;
-            //     }
-            //     else {//add data point to forecastData array
-            //         f.splice(idxOfStartDate, 0, {
-            //             date: predStartDate,
-            //             value: confirmedData[confirmedData.length - 1].value
-            //         });
-            //         f = f.slice(idxOfStartDate, f.length);
-            //     }
-            //     console.log(f)
-            //     forecastData[index] = f;
-            //     predictionArea.append("path")
-            //                 .attr("class", "forecast line")
-            //                 .attr("id", modelClassNames[index])
-            //                 .style("stroke", color(models[index]))
-            //                 .datum(f)
-            //                     .attr("d", line);
-            // }
-            
         })
         
         var lines = document.getElementsByClassName('line');        
@@ -466,17 +419,20 @@ class MainChart extends Component {
             name: compiledIds[2],
             data: predictionData
         })
+        console.log("add forecast to compiled")
         forecastIds.map((m, index) => {
             console.log(m, forecastData[index])
             if (forecastData[index].length > 1) {
                 var lastDate = forecastData[index][forecastData[index].length - 1].date;
-                forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, predStartDate, lastDate);
+                let startDate = forecastData[index][0].date;
+                forecastData[index] = getAllDataPoints(forecastPaths[index], x, y, startDate, lastDate);
                 compiledData.push({
                     name: m,
                     data: forecastData[index]
                 })
             }
         })
+        console.log(compiledData);
         //join data to yourLine
         filteredData = predictionData.filter(predLine.defined())
         yourLine.datum(filteredData)
@@ -908,134 +864,140 @@ class MainChart extends Component {
                 .style("opacity", "1");
             compiledData[2].data = predictionData;
         };
-        var legendConfirmed = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendConfirmed = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendAggregate = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendAggregate = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendPrediction = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight * 2)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendPrediction = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight * 2)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendGeorgiaTech = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight * 3)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendGeorgiaTech = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight * 3)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendIhme = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight * 4)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendIhme = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight * 4)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendYouyang = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight * 5)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendYouyang = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight * 5)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendColumbia = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight * 6)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendColumbia = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight * 6)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        var legendUcla = legend.append("rect")
-                .attr("width", legendCompleteWidth)
-                .attr("height", legendSingleHeight)
-                .attr("x", 0)
-                .attr("y", 10 + legendSingleHeight * 7)
-                .attr("fill", "none")
-                .style("pointer-events","visible");
+        // var legendUcla = legend.append("rect")
+        //         .attr("width", legendCompleteWidth)
+        //         .attr("height", legendSingleHeight)
+        //         .attr("x", 0)
+        //         .attr("y", 10 + legendSingleHeight * 7)
+        //         .attr("fill", "none")
+        //         .style("pointer-events","visible");
 
-        legendConfirmed.on("mouseover", function() {
-                            svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#confirmed").style("stroke", color(compiledIds[0]));
-                        })
-                        .on("mouseout", function() {
-                            svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(compiledIds[i]))
-                        })
-        legendAggregate.on("mouseover", function() {
-                            svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#aggregate").style("stroke", color(compiledIds[1]));
-                         })
-                         .on("mouseout", function() {
-                            svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(compiledIds[i]))
-                        })
-        legendPrediction.on("mouseover", function() {
-                            svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#your-line").style("stroke", color(compiledIds[2]));
-                        })
-                        .on("mouseout", function() {
-                            svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(compiledIds[i]))
-                        })
-        legendGeorgiaTech.on("mouseover", function() {
-                            svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#gt").style("stroke", color(compiledIds[3]));
-                        })
-                        .on("mouseout", function() {
-                            svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(compiledIds[i]))
-                        })
-        legendIhme.on("mouseover", function() {
-                        svg.selectAll(".line").style("stroke", "#ddd");
-                        svg.select("#ihme").style("stroke", color(compiledIds[4]));
-                    })
-                    .on("mouseout", function() {
-                        svg.selectAll(".line")
-                            .style("stroke", (d, i) => color(compiledIds[i]))
-                    })
-        legendYouyang.on("mouseover", function() {
-                        svg.selectAll(".line").style("stroke", "#ddd");
-                        svg.select("#youyang").style("stroke", color(compiledIds[5]));
-                    })
-                    .on("mouseout", function() {
-                        svg.selectAll(".line")
-                            .style("stroke", (d, i) => color(compiledIds[i]))
-                    })
-        legendColumbia.on("mouseover", function() {
-                            svg.selectAll(".line").style("stroke", "#ddd");
-                            svg.select("#columbia").style("stroke", color(compiledIds[6]));
-                        })
-                        .on("mouseout", function() {
-                            svg.selectAll(".line")
-                                .style("stroke", (d, i) => color(compiledIds[i]))
-                        })
-        legendUcla.on("mouseover", function() {
-                        svg.selectAll(".line").style("stroke", "#ddd");
-                        svg.select("#ucla").style("stroke", color(compiledIds[7]));
-                    })
-                    .on("mouseout", function() {
-                        svg.selectAll(".line")
-                            .style("stroke", (d, i) => color(compiledIds[i]))
-                    })
+        svg.select('text').on("mouseover", function() {
+            console.log('text');
+        })
+        
+        // legendConfirmed.on("mouseover", function() {
+        //                     svg.selectAll(".line").style("stroke", "#ddd");
+        //                     svg.select("#confirmed").style("stroke", color(compiledIds[0]));
+        //                 })
+        //                 .on("mouseout", function() {
+        //                     svg.selectAll(".line")
+        //                         .style("stroke", (d, i) => color(compiledIds[i]))
+        //                 })
+        // legendAggregate.on("mouseover", function() {
+        //                     svg.selectAll(".line").style("stroke", "#ddd");
+        //                     svg.select("#aggregate").style("stroke", color(compiledIds[1]));
+        //                  })
+        //                  .on("mouseout", function() {
+        //                     svg.selectAll(".line")
+        //                         .style("stroke", (d, i) => color(compiledIds[i]))
+        //                 })
+        // legendPrediction.on("mouseover", function() {
+        //                     svg.selectAll(".line").style("stroke", "#ddd");
+        //                     svg.select("#your-line").style("stroke", color(compiledIds[2]));
+        //                 })
+        //                 .on("mouseout", function() {
+        //                     svg.selectAll(".line")
+        //                         .style("stroke", (d, i) => color(compiledIds[i]))
+        //                 })
+        // legendGeorgiaTech.on("mouseover", function() {
+        //                     svg.selectAll(".line").style("stroke", "#ddd");
+        //                     svg.select("#georgia-tech").style("stroke", color(compiledIds[3]));
+        //                 })
+        //                 .on("mouseout", function() {
+        //                     svg.selectAll(".line")
+        //                         .style("stroke", (d, i) => color(compiledIds[i]))
+        //                 })
+        // legendIhme.on("mouseover", function() {
+        //                 svg.selectAll(".line").style("stroke", "#ddd");
+        //                 svg.select("#ihme").style("stroke", color(compiledIds[4]));
+        //             })
+        //             .on("mouseout", function() {
+        //                 svg.selectAll(".line")
+        //                     .style("stroke", (d, i) => color(compiledIds[i]))
+        //             })
+        // legendYouyang.on("mouseover", function() {
+        //                 svg.selectAll(".line").style("stroke", "#ddd");
+        //                 svg.select("#youyang").style("stroke", color(compiledIds[5]));
+        //             })
+        //             .on("mouseout", function() {
+        //                 svg.selectAll(".line")
+        //                     .style("stroke", (d, i) => color(compiledIds[i]))
+        //             })
+        // legendColumbia.on("mouseover", function() {
+        //     console.log("on columbia")
+        //     console.log(svg.select("#columbia"))
+        //                     svg.selectAll(".line").style("stroke", "#ddd");
+        //                     svg.select("#columbia").style("stroke", color(compiledIds[6]));
+        //                 })
+        //                 .on("mouseout", function() {
+        //                     svg.selectAll(".line")
+        //                         .style("stroke", (d, i) => color(compiledIds[i]))
+        //                 })
+        // legendUcla.on("mouseover", function() {
+        //                 svg.selectAll(".line").style("stroke", "#ddd");
+        //                 svg.select("#ucla").style("stroke", color(compiledIds[7]));
+        //             })
+        //             .on("mouseout", function() {
+        //                 svg.selectAll(".line")
+        //                     .style("stroke", (d, i) => color(compiledIds[i]))
+        //             })
     }
     renderOldChart() {
         const {compiled, loggedIn} = this.props;
