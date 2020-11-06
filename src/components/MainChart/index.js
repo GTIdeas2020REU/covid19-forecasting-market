@@ -1236,6 +1236,11 @@ class MainChart extends Component {
                         <p>> Click Reset to erase your prediction</p>
                         {/* <br/> */}
                         <p>> Navigate to <b>Top Forecasts</b> to view the accuracy of various forecasts and user predictions</p>
+
+                        <br></br>
+                         <p>
+                             <b>After you are done exploring our site, we would appreciiate it if you could fill out <a href='https://docs.google.com/forms/d/e/1FAIpQLSe0-op5rJmW0aimj59Pj76cE0p9v3PQ9FtOSyHMLmfQhgo6PA/viewform?usp=sf_link'>this form</a> with any feedback or thoughts, thank you for visiting COVIDforecasts.</b>
+                         </p>
                     </div>
                 </div>
                 <div ref={this.chartRef} className="second-column">
