@@ -481,14 +481,13 @@ def total():
     return json.dumps(results)
 
 
-
 '''-----Schedule jobs to perform functions once a day-----'''
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
 scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
 scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
-scheduler.add_job(func=save_daily_cases, trigger="interval", seconds=86400)
+scheduler.add_job(func=save_daily_cases, trigger="interval", seconds=43200)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app
