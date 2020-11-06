@@ -255,22 +255,36 @@ class MainChart extends Component {
                 .text(function(d){console.log("D TEXT"); console.log(d); return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
+            
                 // .attr('class', (function(d, i){ return compiledIds[i]}));
         var legendElement = document.querySelector("#legend");
         const legendCompleteWidth = legendElement.getBoundingClientRect().width;
         const legendSingleHeight = 25;
         console.log(svg.select('.ucla'))
-        svg.select('.ucla').on("mouseover", function() {
-            console.log('text');
-        })
-        /*var legendArea = legend.append("rect")
-                                .attr("width", legendCompleteWidth)
-                                .attr("height", legendCompleteHeight)
-                                .attr("x", width + 40)
-                                .attr("y", 10)
-                                .attr("fill", "none")
-                                .style("pointer-events","visible");*/
 
+        legend.selectAll("rectangles")
+            .data(legendString)  
+            .enter()      
+            .append("rect")
+                .attr("width", legendCompleteWidth)
+                .attr("height", legendSingleHeight)
+                .attr("x", 0)
+                .attr("y", function(d, i) {return legendSingleHeight * i + 5})
+                .attr("fill", "none")
+                .style("pointer-events","visible")
+                .attr('class', (function(d, i){ return compiledIds[i]}));
+
+        legend.selectAll('rect').on("mousemove", function() {
+            let identifier = d3.select(this).attr('class')
+            console.log(identifier)
+            svg.selectAll(".line").style("stroke", "#ddd");
+            svg.select(`#${identifier}`).style("stroke", color(identifier));
+        })
+        .on("mouseout", function() {
+            console.log('out')
+            svg.selectAll(".line")
+                .style("stroke", (d, i) => color(compiledIds[i]))
+        })
         //create line generator for confirmed/forecast data and prediction data
         var lineGenerator = d3.line()
             //.curve(d3.curveBasis);
@@ -1236,11 +1250,6 @@ class MainChart extends Component {
                         <p>> Click Reset to erase your prediction</p>
                         {/* <br/> */}
                         <p>> Navigate to <b>Top Forecasts</b> to view the accuracy of various forecasts and user predictions</p>
-
-                        <br></br>
-                         <p>
-                             <b>After you are done exploring our site, we would appreciiate it if you could fill out <a href='https://docs.google.com/forms/d/e/1FAIpQLSe0-op5rJmW0aimj59Pj76cE0p9v3PQ9FtOSyHMLmfQhgo6PA/viewform?usp=sf_link'>this form</a> with any feedback or thoughts, thank you for visiting COVIDforecasts.</b>
-                         </p>
                     </div>
                 </div>
                 <div ref={this.chartRef} className="second-column">
