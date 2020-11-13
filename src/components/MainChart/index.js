@@ -387,7 +387,62 @@ class MainChart extends Component {
                             .datum(f)
                                 .attr("d", line);
         })
+        //animate curves
+        let confirmedCurveLength = confirmedLine.node().getTotalLength();
+        let aggregateCurveLength = aggregateLine.node().getTotalLength();
+        let predictionCurveLength = yourLine.node().getTotalLength();
+        console.log(predictionCurveLength, yourLine.node())
+
+        confirmedLine
+            .attr("stroke-dasharray", confirmedCurveLength + " " + confirmedCurveLength)
+            .attr("stroke-dashoffset", confirmedCurveLength)
+            .transition()
+            .delay(2000)
+            .duration(3000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0)
+            .on("end", function() { confirmedLine.attr("stroke-dasharray", 0)
+            });
+
+        svg.select('#aggregate')
+            .attr("stroke-dasharray", aggregateCurveLength + " " + aggregateCurveLength)
+            .attr("stroke-dashoffset", aggregateCurveLength)
+            .transition()
+            .delay(5000)
+            .duration(2000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0)
+            .on("end", function() { aggregateLine.attr("stroke-dasharray", 0)
+            });
+        // yourLine
+        //     .attr("stroke-dasharray", predictionCurveLength + " " + predictionCurveLength)
+        //     .attr("stroke-dashoffset", predictionCurveLength)
+        //     .transition()
+        //     .delay(5000)
+        //     .duration(2000)
+        //     .ease(d3.easeLinear)
+        //     .attr("stroke-dashoffset", 0)
+        //     .on("end", function() { yourLine.attr("stroke-dasharray", 0)
+        //     });
         
+        forecastIds.forEach(f => {
+            let curve = d3.select(`#${f}`)
+            let curveTotalLength = curve.node().getTotalLength();
+            curve
+                .attr("stroke-dasharray", curveTotalLength + " " + curveTotalLength)
+                .attr("stroke-dashoffset", curveTotalLength)
+                .transition()
+                .delay(5000)
+                .duration(2000)
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0)
+                .on("end", function() { curve.attr("stroke-dasharray", 0)
+                });
+        })
+
+    
+        
+
         var lines = document.getElementsByClassName('line');        
         
         //variables used to initialize user prediction data if it doesn't exist in the db
@@ -760,8 +815,10 @@ class MainChart extends Component {
                         .on("brush", brushed)
                         .on("end", brushended);
 
+        const firstSelection = [x.range()[0], x.range()[1]];
         const defaultSelection = [x(d3.timeMonth.offset(x.domain()[1], -8)), x.range()[1]];
-    
+        // const defaultSelection = [x(d3.timeMonth.offset(x.domain()[1], -10)), x.range()[1]];
+
         /*context.append("g")
                 .call(xAxis, x, focusHeight);*/
         const focusLine = d3.line()
@@ -804,11 +861,10 @@ class MainChart extends Component {
         function brushed() {
             if (d3.event.selection) {
                 var extent = d3.event.selection;
-                //console.log([ contextX.invert(extent[0]), contextX.invert(extent[1]) ]);
                 x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
                 xAxis
-                        //.transition()
-                        //.duration(1000)
+                        // .transition()
+                        // .duration(400)
                         .call(d3.axisBottom(x))
                 var newX = x(confirmedData[confirmedData.length - 1].date);
                 newX = newX < 0 ? 0 : newX;
@@ -844,20 +900,26 @@ class MainChart extends Component {
 
             }
         }
-        
+        let first = true;
         function brushended() {
             if (!d3.event.selection) {
                 gb.call(brush.move, defaultSelection);
-                
             }
 
         }
         const gb = focus
                         .call(brush)
-                        .call(brush.move, defaultSelection)
+                        .call(brush.move, firstSelection)
                         .on("click", function() {
                             d3.select(".speech-bubble").style("display", "none");
                         })
+        
+        gb
+            .transition()
+            .delay(7000)
+            .duration(2500)
+            .call(brush.move, defaultSelection)
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         var deleteButton = d3.select("#delete-btn").node()
         deleteButton.onclick = () => {
@@ -878,140 +940,6 @@ class MainChart extends Component {
                 .style("opacity", "1");
             compiledData[2].data = predictionData;
         };
-        // var legendConfirmed = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendAggregate = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendPrediction = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight * 2)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendGeorgiaTech = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight * 3)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendIhme = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight * 4)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendYouyang = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight * 5)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendColumbia = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight * 6)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        // var legendUcla = legend.append("rect")
-        //         .attr("width", legendCompleteWidth)
-        //         .attr("height", legendSingleHeight)
-        //         .attr("x", 0)
-        //         .attr("y", 10 + legendSingleHeight * 7)
-        //         .attr("fill", "none")
-        //         .style("pointer-events","visible");
-
-        svg.select('text').on("mouseover", function() {
-            console.log('text');
-        })
-        
-        // legendConfirmed.on("mouseover", function() {
-        //                     svg.selectAll(".line").style("stroke", "#ddd");
-        //                     svg.select("#confirmed").style("stroke", color(compiledIds[0]));
-        //                 })
-        //                 .on("mouseout", function() {
-        //                     svg.selectAll(".line")
-        //                         .style("stroke", (d, i) => color(compiledIds[i]))
-        //                 })
-        // legendAggregate.on("mouseover", function() {
-        //                     svg.selectAll(".line").style("stroke", "#ddd");
-        //                     svg.select("#aggregate").style("stroke", color(compiledIds[1]));
-        //                  })
-        //                  .on("mouseout", function() {
-        //                     svg.selectAll(".line")
-        //                         .style("stroke", (d, i) => color(compiledIds[i]))
-        //                 })
-        // legendPrediction.on("mouseover", function() {
-        //                     svg.selectAll(".line").style("stroke", "#ddd");
-        //                     svg.select("#your-line").style("stroke", color(compiledIds[2]));
-        //                 })
-        //                 .on("mouseout", function() {
-        //                     svg.selectAll(".line")
-        //                         .style("stroke", (d, i) => color(compiledIds[i]))
-        //                 })
-        // legendGeorgiaTech.on("mouseover", function() {
-        //                     svg.selectAll(".line").style("stroke", "#ddd");
-        //                     svg.select("#georgia-tech").style("stroke", color(compiledIds[3]));
-        //                 })
-        //                 .on("mouseout", function() {
-        //                     svg.selectAll(".line")
-        //                         .style("stroke", (d, i) => color(compiledIds[i]))
-        //                 })
-        // legendIhme.on("mouseover", function() {
-        //                 svg.selectAll(".line").style("stroke", "#ddd");
-        //                 svg.select("#ihme").style("stroke", color(compiledIds[4]));
-        //             })
-        //             .on("mouseout", function() {
-        //                 svg.selectAll(".line")
-        //                     .style("stroke", (d, i) => color(compiledIds[i]))
-        //             })
-        // legendYouyang.on("mouseover", function() {
-        //                 svg.selectAll(".line").style("stroke", "#ddd");
-        //                 svg.select("#youyang").style("stroke", color(compiledIds[5]));
-        //             })
-        //             .on("mouseout", function() {
-        //                 svg.selectAll(".line")
-        //                     .style("stroke", (d, i) => color(compiledIds[i]))
-        //             })
-        // legendColumbia.on("mouseover", function() {
-        //     console.log("on columbia")
-        //     console.log(svg.select("#columbia"))
-        //                     svg.selectAll(".line").style("stroke", "#ddd");
-        //                     svg.select("#columbia").style("stroke", color(compiledIds[6]));
-        //                 })
-        //                 .on("mouseout", function() {
-        //                     svg.selectAll(".line")
-        //                         .style("stroke", (d, i) => color(compiledIds[i]))
-        //                 })
-        // legendUcla.on("mouseover", function() {
-        //                 svg.selectAll(".line").style("stroke", "#ddd");
-        //                 svg.select("#ucla").style("stroke", color(compiledIds[7]));
-        //             })
-        //             .on("mouseout", function() {
-        //                 svg.selectAll(".line")
-        //                     .style("stroke", (d, i) => color(compiledIds[i]))
-        //             })
     }
     renderOldChart() {
         const {compiled, loggedIn} = this.props;
