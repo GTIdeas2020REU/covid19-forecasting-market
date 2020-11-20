@@ -22,7 +22,7 @@
     "react-table": "^7.5.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cd frontend && react-scripts start",
     "build": "react-scripts build",
     "heroku-postbuild": "cd frontend && npm i && npm start",
     "test": "react-scripts test",
