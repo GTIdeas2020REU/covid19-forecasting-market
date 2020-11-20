@@ -135,6 +135,8 @@ class Leaderboard extends React.Component {
 
   componentDidMount() {
     fetch('/user-data-overall').then(res => res.json()).then(data => {
+      console.log("USER DATA OVERALL");
+      console.log(data);
       this.setState({ users: data });
     });
     fetch('/us-mse-overall').then(res => res.json()).then(data => {

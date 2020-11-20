@@ -117,8 +117,5 @@ for p in prediction:
         mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp, interval)
         if mse == None:
             continue
-        mycol.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-            {'$set': 
-                { "mse_score_" + str(interval): list(mse.values())[0] }
-            })
+        mycol.update({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, {'$set': {"mse_score_" + str(interval): list(mse.values())[0]}})
 '''

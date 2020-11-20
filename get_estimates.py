@@ -123,7 +123,7 @@ def get_aggregates(forecast_data, user_prediction):
     return aggregate_json
 
 def filter_undefined(prediction):
-    print(prediction)
+    #print(prediction)
     return prediction['defined'] is True
 
 #pass in the df containing confirmed and predicted values
@@ -140,7 +140,7 @@ def get_accuracy_for_all_models():
     confirmed = get_daily_confirmed_df(start_date, end_date)
     data = requests.get('http://localhost:5000/forecasts').json()
     for model in data:
-        print(model)
+        #print(model)
         df = pd.DataFrame.from_records(data[model])
         df = df[df['target_end_date'] >= start_date]
         df = df[df['target_end_date'] <= end_date]
@@ -155,7 +155,7 @@ def get_accuracy_for_all_models():
             #list.append(get_daily_confirmed(d))
         df['confirmed'] = ls
         error = get_mse(df)
-        print(error)
+        #print(error)
         errors.append({'model': model, 'error':error})
     return json.dumps(errors)
 

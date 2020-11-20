@@ -55,7 +55,7 @@ def get_us_new_deaths_weekly_avg(data):
         # print(tempSum)
         result[currDate] = tempSum / 7
     result = dict(sorted(result.items()))
-    print(result)
+    #print(result)
     return json.dumps(result)
         
 # get_us_new_deaths_weekly_avg(get_us_new_deaths())

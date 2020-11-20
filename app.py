@@ -62,13 +62,12 @@ def update_errors():
     for p in prediction:
         temp = dict()
         temp[p['date']] = p['prediction']
-        mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
-        if mse == None:
-            continue
-        mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-            {'$set': 
-                { "mse_score": list(mse.values())[0] }
-            })
+        intervals = ['overall', 1, 2, 4, 8]
+        for interval in intervals:
+            mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp, interval)
+            if mse == None:
+                continue
+            mycol.update({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, {'$set': {"mse_score_" + str(interval): list(mse.values())[0]}})
 
 
 @app.route('/', defaults={'u_path': ''})
@@ -447,8 +446,29 @@ def user_status():
 
 @app.route('/user-data-overall')
 def leaderboard():
+    # 1. old method
     all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_overall': 1, 'date': 1, 'prediction': 1}).sort('mse_score_overall',1))
-    return dumps(all_users)
+
+    # 2. average scores
+    avg_scores = list(mongo.db.predictions.aggregate(
+        [
+            {
+            '$group':
+                {
+                '_id': "$username",
+                'avgScore': { '$avg': "$mse_score_overall" }
+                }
+            }
+        ]
+    ))
+
+    # 3. getting most recent predictions for each user only
+    usernames = list(mongo.db.predictions.distinct('username'))
+    users = []
+    for user in usernames:
+        users.append(list(mongo.db.predictions.find({"username": user}).sort([('date',-1)]).limit(1))[0])
+    print(users)
+    return dumps(users)
 
 @app.route('/user-data-1-week-ahead')
 def leaderboard1():
@@ -512,4 +532,5 @@ scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=False, port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    #app.run(debug=True, use_reloader=False)
