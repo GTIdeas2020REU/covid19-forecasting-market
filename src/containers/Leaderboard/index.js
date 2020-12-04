@@ -81,7 +81,6 @@ function createOrgChart(org, confirmed, id) {
 }
 
 
-//var interval = "overall"
 // Add rows with user data to the leaderboard table
 function RenderUsersTable({ users, confirmed, interval }) {
   return users.map((user, index) => {
@@ -167,7 +166,6 @@ class Leaderboard extends React.Component {
 
 
   componentDidUpdate(prevProps, prevState) {
-    //console.log(this.state.interval);
     // Table should sort by error when MSE header is clicked on
     $('#Score').click(function() {
       if (this.asc === undefined) {
@@ -203,6 +201,9 @@ class Leaderboard extends React.Component {
     this.setState({dropDownTitle: e});
     const score_map = {'overall': 'overall', '1-week-ahead': '1', '2-week-ahead': '2', '4-week-ahead': '4', '8-week-ahead': '8'};
     this.setState({interval: score_map[e]});
+    fetch('/us-mse-' + e).then(res => res.json()).then(data => {
+      this.setState({ orgs: data });
+    });
     /*fetch('/user-data-' + e).then(res => res.json()).then(data => {
       this.setState({ users: data });
     });
@@ -210,7 +211,6 @@ class Leaderboard extends React.Component {
       this.setState({ orgs: data });
       console.log(data);
     });*/
-    //interval = e;
   }
 
 
@@ -221,11 +221,12 @@ class Leaderboard extends React.Component {
       overflowY: "scroll"
     };
     
-    const chartStyle = {
+    var chartStyle = {
       position: "fixed",
       width: "50%",
       left: "50%",
-      top: "30%"
+      top: "45%",
+      bottom: 0
     };
 
     $("#delete-btn").remove();
