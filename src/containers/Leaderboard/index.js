@@ -133,8 +133,8 @@ class Leaderboard extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/user-data-overall').then(res => res.json()).then(data => {
-      console.log("USER DATA OVERALL");
+    fetch('/user-data').then(res => res.json()).then(data => {
+      console.log("USER DATA");
       console.log(data);
       this.setState({ users: data });
     });
@@ -204,13 +204,6 @@ class Leaderboard extends React.Component {
     fetch('/us-mse-' + e).then(res => res.json()).then(data => {
       this.setState({ orgs: data });
     });
-    /*fetch('/user-data-' + e).then(res => res.json()).then(data => {
-      this.setState({ users: data });
-    });
-    fetch('/us-mse-' + e).then(res => res.json()).then(data => {
-      this.setState({ orgs: data });
-      console.log(data);
-    });*/
   }
 
 
