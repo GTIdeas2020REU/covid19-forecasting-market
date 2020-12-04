@@ -1,15 +1,16 @@
 import React from 'react';
+import { Dropdown } from 'react-bootstrap';
 import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
-import { Dropdown } from 'react-bootstrap';
+
 import LeaderboardChart from '../../components/LeaderboardChart';
 import colors from '../../constants/colors';
-import './Leaderboard.css'
+import './Leaderboard.css';
 
 
 // Create leaderboard table, consisting of user predictions and official forecasts
-function Table({ columns, data, confirmed, orgs, forecasts, style }) {
+function Table({ columns, data, confirmed, orgs, forecasts, interval, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
     getTableProps,
@@ -23,6 +24,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, style }) {
     confirmed,
     orgs,
     forecasts,
+    interval,
     style
   });
 
@@ -40,7 +42,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, style }) {
       </thead>
       <tbody {...getTableBodyProps()}>
         {<RenderOrgsTable orgs={orgs} forecasts={forecasts} confirmed={confirmed} />}
-        {<RenderUsersTable users={data} confirmed={confirmed} />}
+        {<RenderUsersTable users={data} confirmed={confirmed} interval={interval} />}
       </tbody>
     </table>
   )
@@ -80,18 +82,16 @@ function createOrgChart(org, confirmed, id) {
 
 
 // Add rows with user data to the leaderboard table
-function RenderUsersTable({ users, confirmed }) {
+function RenderUsersTable({ users, confirmed, interval }) {
   return users.map((user, index) => {
-    // score is always last key
-    var score = Object.values(user)[Object.keys(user).length - 1];
+    var score = user["mse_score_" + interval];
     // ignore null MSE values
     if (score == null || typeof(score) != "number") {
       return;
     }
     return (
-       <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
+       <tr id={user.username} onClick={() => createUserChart(user, confirmed, user.username)}>
           <td>{user.username}</td>
-          <td>{user.date}</td>
           <td>{parseFloat(score).toFixed(2)}</td>
        </tr>
     );
@@ -109,7 +109,6 @@ function RenderOrgsTable({ orgs, forecasts, confirmed }) {
     return (
       <tr id={key} style={{backgroundColor: colors[key]}} onClick={() => createOrgChart(forecasts[key], confirmed, key)}>
           <td>{key}*</td>
-          <td>Ongoing</td>
           <td>{parseFloat(value).toFixed(2)}</td>
       </tr>
     );
@@ -127,6 +126,7 @@ class Leaderboard extends React.Component {
       confirmed: null,
       orgs: null,
       forecasts: null,
+      interval: 'overall',
       predictionLength: 1,
       dropDownTitle: 'overall'
     }
@@ -134,6 +134,8 @@ class Leaderboard extends React.Component {
 
   componentDidMount() {
     fetch('/user-data-overall').then(res => res.json()).then(data => {
+      console.log("USER DATA OVERALL");
+      console.log(data);
       this.setState({ users: data });
     });
     fetch('/us-mse-overall').then(res => res.json()).then(data => {
@@ -144,10 +146,6 @@ class Leaderboard extends React.Component {
         {
           Header: 'Username/Official Forecaster',
           accesor: 'username',
-        },
-        {
-          Header: 'Prediction Date/Status',
-          accesor: 'date',
         },
         {
           Header: 'Score',
@@ -197,30 +195,22 @@ class Leaderboard extends React.Component {
     // Trigger click events to get orgs and users sorted together
     $('#Score').trigger("click");
     $('#Score').trigger("click");
-    if (document.querySelector('#Score')) {
-      document.querySelector('#Score').addEventListener("mousemove", function mouseOver(event) {
-        let hoverText = document.querySelector(".score-hover");
-        console.log(event.clientX);
-        document.querySelector(".score-hover").style.left = `${event.clientX + 15}px`;
-        document.querySelector(".score-hover").style.top = `${event.clientY -250}px`;
-        document.querySelector(".score-hover").style.display = "block";
-      })
-      document.querySelector('#Score').addEventListener("mouseout", function mouseOut() {
-        console.log("mouseout");
-        document.querySelector(".score-hover").style.display = "none";
-      })
-    }
   }
 
   handleSelect = (e) => {
     this.setState({dropDownTitle: e});
-    fetch('/user-data-' + e).then(res => res.json()).then(data => {
+    const score_map = {'overall': 'overall', '1-week-ahead': '1', '2-week-ahead': '2', '4-week-ahead': '4', '8-week-ahead': '8'};
+    this.setState({interval: score_map[e]});
+    fetch('/us-mse-' + e).then(res => res.json()).then(data => {
+      this.setState({ orgs: data });
+    });
+    /*fetch('/user-data-' + e).then(res => res.json()).then(data => {
       this.setState({ users: data });
     });
     fetch('/us-mse-' + e).then(res => res.json()).then(data => {
       this.setState({ orgs: data });
       console.log(data);
-    });
+    });*/
   }
 
 
@@ -231,48 +221,62 @@ class Leaderboard extends React.Component {
       overflowY: "scroll"
     };
     
-    const chartStyle = {
+    var chartStyle = {
       position: "fixed",
       width: "50%",
       left: "50%",
-      top: "30%"
+      top: "45%",
+      bottom: 0
     };
 
     $("#delete-btn").remove();
 
-    const { users, columns, confirmed, orgs, forecasts } = this.state;
+    const { users, columns, confirmed, orgs, forecasts, interval } = this.state;
     if (!users || !columns || !confirmed || !orgs || !forecasts) return 'Loading...';
-    //var dropdownTitle = this.state.predictionLength <= 1 ? ' week ahead' : 'weeks ahead'
 
     return (
       <div>
         <br></br>
         <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
         <small>* indicates an official forecaster as labelled by the CDC</small>
-        <Dropdown onSelect={this.handleSelect}>
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
-            {this.state.dropDownTitle}
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item eventKey="overall">overall</Dropdown.Item>
-            <Dropdown.Item eventKey="1-week-ahead">1-week-ahead</Dropdown.Item>
-            <Dropdown.Item eventKey="2-week-ahead">2-week-ahead</Dropdown.Item>
-            <Dropdown.Item eventKey="4-week-ahead">4-week-ahead</Dropdown.Item>
-            <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
         <br></br>
-        <div className="main">
-          <div className="table">
-            <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts}  />
-            {/* style={tableStyle} */}
-            <div className="score-hover">Mean Squared Error</div>
+        <br></br>
+        <div>
+          <div className="main-instruction">
+            <p>
+              <b>
+                The Top Forecasts page showcases the best predictions by all users of the site, ranked by Mean Squared Error. Each 
+                row on the chart is an entry given by either a single user, or from a University source.
+               </b>
+             </p>
+            <p>Click on a row to view a user's prediction</p>
+            <p>Hover over the prediction chart to see the exact value of the user's prediction</p>
+            <p>Click on the 'MSE' chart header to toggle forecasts rank</p>
+            </div>
           </div>
-          <div className="chart">
-            <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
-          </div>
+
+        <div>
+          <br></br>
+          <Dropdown onSelect={this.handleSelect}>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+              {this.state.dropDownTitle}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item eventKey="overall">overall</Dropdown.Item>
+              <Dropdown.Item eventKey="1-week-ahead">1-week-ahead</Dropdown.Item>
+              <Dropdown.Item eventKey="2-week-ahead">2-week-ahead</Dropdown.Item>
+              <Dropdown.Item eventKey="4-week-ahead">4-week-ahead</Dropdown.Item>
+              <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+          <br></br>
+          <br></br>
         </div>
-      
+
+        <div className="d-flex flex-row">
+          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} interval={interval} style={tableStyle} />
+          <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
+        </div>
       </div>
     );
   }

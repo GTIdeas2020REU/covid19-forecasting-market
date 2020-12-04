@@ -4,6 +4,8 @@ from get_estimates import get_daily_forecasts
 import json
 import pymongo
 from sklearn.metrics import mean_squared_error
+import pandas as pd
+from datetime import datetime,timedelta
 
 def get_mse(confirmed, forecasts, interval):
     result = dict()
@@ -34,7 +36,6 @@ def get_mse(confirmed, forecasts, interval):
 def get_user_mse(confirmed, user_prediction, interval):
     user_dates = []
     user_values = []
-
     result = dict()
     
     for date in list(user_prediction.keys()):
@@ -45,7 +46,10 @@ def get_user_mse(confirmed, user_prediction, interval):
             user_dates.append(d['date'].split('T')[0])
             user_values.append(d['value'])
             user_pred_daily[d['date'].split('T')[0]] = d['value']
-        user_pred_weekly = json.loads(get_us_new_deaths_weekly_avg(json.dumps(user_pred_daily)))
+        if interval != 'overall':
+            user_pred_weekly = user_pred_daily
+        else:
+            user_pred_weekly = json.loads(get_us_new_deaths_weekly_avg(json.dumps(user_pred_daily)))
 
         confirmed_values = []
         prediction_values = []
@@ -53,17 +57,14 @@ def get_user_mse(confirmed, user_prediction, interval):
         user_values = list(user_pred_weekly.values())
         for d in user_dates:
             try:
-                confirmed_values.append(confirmed[d])
-                prediction_values.append(user_values[user_dates.index(d)])
+                if d in confirmed:
+                    confirmed_values.append(confirmed[d])
+                    prediction_values.append(user_values[user_dates.index(d)])
             except:
                 break
 
         if confirmed_values == []:
             continue
-
-        if interval != 'overall':
-            confirmed_values = confirmed_values[::-1][:interval]
-            prediction_values = prediction_values[::-1][:interval]
 
         mse = mean_squared_error(confirmed_values, prediction_values)
         result[date] = mse
@@ -73,55 +74,3 @@ def get_user_mse(confirmed, user_prediction, interval):
     
     return result
 
-
-
-'''
-myClient = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
-client = pymongo.MongoClient(myClient)
-mydb = client['covid19-forecast']
-mycol = mydb['predictions']
-
-user_prediction = {}
-#prediction = mycol.find({})
-prediction = mycol.find({"category": "us_daily_deaths"})
-for p in prediction:
-    #print("inside")
-    #(date, prediction)
-    #print(p)
-    #print(p['prediction'])
-    #user_prediction[p['date']] = p['prediction']
-    temp = dict()
-    temp[p['date']] = p['prediction']
-    mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
-    print(mse)
-    if mse == None:
-        continue
-    mycol.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-        {'$set': 
-            { "mse_score": list(mse.values())[0] }
-        })
-
-#print(user_prediction)
-#print(get_user_mse(get_us_new_deaths_weekly_avg(get_us_new_deaths()), user_prediction))
-'''
-
-'''
-myClient = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
-client = pymongo.MongoClient(myClient)
-mydb = client['covid19-forecast']
-mycol = mydb['predictions']
-
-prediction = mycol.find({"category": "us_daily_deaths"})
-for p in prediction:
-    temp = dict()
-    temp[p['date']] = p['prediction']
-    intervals = ['overall', 1, 2, 4, 8]
-    for interval in intervals:
-        mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp, interval)
-        if mse == None:
-            continue
-        mycol.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-            {'$set': 
-                { "mse_score_" + str(interval): list(mse.values())[0] }
-            })
-'''
