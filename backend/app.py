@@ -197,22 +197,19 @@ def delete_user_prediction(username, category):
 
 def update_user_prediction(username, data, category, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
-    print("DATA: ")
-    print(data)
-    print("SCORE:")
-    intervals = ['overall', 1, 2, 4, 8]
-    for interval in intervals:
-        score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data}, interval)
-        print(score)
-        print(' ')
-        pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
-        if pred:
-            mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
-            {'$set': 
-                { "prediction": data, "mse_score_" + str(interval): score }
-            })
-        else:
-            mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score_" + str(interval): score })
+    '''print(curr_date)
+    print('DATA:')
+    print(data)'''
+    pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
+    #print(pred)
+    if pred:
+        #print("already exists")
+        mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
+        {'$set': 
+            { "prediction": data }
+        })
+    else:
+        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data })
 
 
 def get_user_prediction(username, category):
@@ -484,32 +481,12 @@ def user_status():
 
 '''-----User score routes-----'''
 
-@app.route('/user-data-overall')
+@app.route('/user-data')
 def leaderboard():
     usernames = list(mongo.db.predictions.distinct('username'))
     users = []
     for user in usernames:
         users.append(list(mongo.db.users.find({"username": user}).limit(1))[0])
-    return dumps(all_users)
-
-@app.route('/user-data-1-week-ahead')
-def leaderboard1():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_1': 1, 'date': 1, 'prediction': 1}).sort('mse_score_1',1))
-    return dumps(all_users)
-
-@app.route('/user-data-2-week-ahead')
-def leaderboard2():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_2': 1, 'date': 1, 'prediction': 1}).sort('mse_score_2',1))
-    return dumps(all_users)
-
-@app.route('/user-data-4-week-ahead')
-def leaderboard4():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_4': 1, 'date': 1, 'prediction': 1}).sort('mse_score_4',1))
-    return dumps(all_users)
-
-@app.route('/user-data-8-week-ahead')
-def leaderboard8():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_8': 1, 'date': 1, 'prediction': 1}).sort('mse_score_8',1))
     return dumps(all_users)
 
 
