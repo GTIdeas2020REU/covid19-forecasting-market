@@ -10,7 +10,7 @@ import './Leaderboard.css';
 
 
 // Create leaderboard table, consisting of user predictions and official forecasts
-function Table({ columns, data, confirmed, orgs, forecasts, style }) {
+function Table({ columns, data, confirmed, orgs, forecasts, interval, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
     getTableProps,
@@ -24,6 +24,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, style }) {
     confirmed,
     orgs,
     forecasts,
+    interval,
     style
   });
 
@@ -41,7 +42,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, style }) {
       </thead>
       <tbody {...getTableBodyProps()}>
         {<RenderOrgsTable orgs={orgs} forecasts={forecasts} confirmed={confirmed} />}
-        {<RenderUsersTable users={data} confirmed={confirmed} />}
+        {<RenderUsersTable users={data} confirmed={confirmed} interval={interval} />}
       </tbody>
     </table>
   )
@@ -80,19 +81,18 @@ function createOrgChart(org, confirmed, id) {
 }
 
 
+//var interval = "overall"
 // Add rows with user data to the leaderboard table
-function RenderUsersTable({ users, confirmed }) {
+function RenderUsersTable({ users, confirmed, interval }) {
   return users.map((user, index) => {
-    // score is always last key
-    var score = Object.values(user)[Object.keys(user).length - 1];
+    var score = user["mse_score_" + interval];
     // ignore null MSE values
     if (score == null || typeof(score) != "number") {
       return;
     }
     return (
-       <tr id={user.username + user.date} onClick={() => createUserChart(user, confirmed, user.username + user.date)}>
+       <tr id={user.username} onClick={() => createUserChart(user, confirmed, user.username)}>
           <td>{user.username}</td>
-          <td>{user.date}</td>
           <td>{parseFloat(score).toFixed(2)}</td>
        </tr>
     );
@@ -110,7 +110,6 @@ function RenderOrgsTable({ orgs, forecasts, confirmed }) {
     return (
       <tr id={key} style={{backgroundColor: colors[key]}} onClick={() => createOrgChart(forecasts[key], confirmed, key)}>
           <td>{key}*</td>
-          <td>Ongoing</td>
           <td>{parseFloat(value).toFixed(2)}</td>
       </tr>
     );
@@ -128,6 +127,7 @@ class Leaderboard extends React.Component {
       confirmed: null,
       orgs: null,
       forecasts: null,
+      interval: 'overall',
       predictionLength: 1,
       dropDownTitle: 'overall'
     }
@@ -149,10 +149,6 @@ class Leaderboard extends React.Component {
           accesor: 'username',
         },
         {
-          Header: 'Prediction Date/Status',
-          accesor: 'date',
-        },
-        {
           Header: 'Score',
           accesor: 'mse_score',
         }
@@ -171,6 +167,7 @@ class Leaderboard extends React.Component {
 
 
   componentDidUpdate(prevProps, prevState) {
+    //console.log(this.state.interval);
     // Table should sort by error when MSE header is clicked on
     $('#Score').click(function() {
       if (this.asc === undefined) {
@@ -204,13 +201,16 @@ class Leaderboard extends React.Component {
 
   handleSelect = (e) => {
     this.setState({dropDownTitle: e});
-    fetch('/user-data-' + e).then(res => res.json()).then(data => {
+    const score_map = {'overall': 'overall', '1-week-ahead': '1', '2-week-ahead': '2', '4-week-ahead': '4', '8-week-ahead': '8'};
+    this.setState({interval: score_map[e]});
+    /*fetch('/user-data-' + e).then(res => res.json()).then(data => {
       this.setState({ users: data });
     });
     fetch('/us-mse-' + e).then(res => res.json()).then(data => {
       this.setState({ orgs: data });
       console.log(data);
-    });
+    });*/
+    //interval = e;
   }
 
 
@@ -230,7 +230,7 @@ class Leaderboard extends React.Component {
 
     $("#delete-btn").remove();
 
-    const { users, columns, confirmed, orgs, forecasts } = this.state;
+    const { users, columns, confirmed, orgs, forecasts, interval } = this.state;
     if (!users || !columns || !confirmed || !orgs || !forecasts) return 'Loading...';
 
     return (
@@ -273,7 +273,7 @@ class Leaderboard extends React.Component {
         </div>
 
         <div className="d-flex flex-row">
-          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} style={tableStyle} />
+          <Table id="leaderboard" columns={columns} data={users} confirmed={confirmed} orgs={orgs} forecasts={forecasts} interval={interval} style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
         </div>
       </div>

@@ -59,15 +59,74 @@ def load_us_inc_forecasts():
     
 def update_errors():
     prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
-    for p in prediction:
+    totdays = 150
+    nowdate = datetime.now().date()
+    startdate = nowdate - pd.Timedelta(days=totdays)
+    usernames = list(prediction.distinct('username'))
+    confirmed = json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
+    users = mongo.db.users
+
+
+    for interval in [1, 2, 4, 8]:
+        checkdates = [(nowdate - pd.Timedelta(days=7*interval*j)).strftime('%Y-%m-%d') for j in range(int(totdays/7*interval))
+                        if nowdate - pd.Timedelta(days=7*interval*j) >= startdate]
+        for user in usernames:
+            predictions = mycol.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+            dates_to_check = checkdates.copy()
+            latest_user_preds = []
+
+            # Loop through all the user's predictions
+            for pred in predictions:
+                datemade = pred['date']
+                # User's prediction array for a single prediction
+                for p in pred['prediction']:
+                    fordate = p['date'].split('T')[0]
+                    date_diff = (datetime.strptime(fordate, '%Y-%m-%d').date() - datetime.strptime(datemade, '%Y-%m-%d').date()).days
+                    # If for date is one of the check dates and meets interval requirement
+                    if fordate in dates_to_check and date_diff >= 7*interval:
+                        dates_to_check.remove(fordate)
+                        latest_user_preds.append(p)
+                        break
+                if len(dates_to_check) == 0:
+                    break
+
+            temp = dict()
+            temp['date'] = latest_user_preds
+            mse = get_user_mse(confirmed, temp, interval)
+            if mse != None:
+                users.update({"username": user}, {'$set': {"mse_score_" + str(interval): list(mse.values())[0]}})
+            else:
+                users.update({"username": user}, {'$set': {"mse_score_" + str(interval): None}})
+
+
+    for user in usernames:
+        checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
+                        if nowdate - pd.Timedelta(days=j) >= startdate]
+        predictions = mycol.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+        dates_to_check = checkdates.copy()
+        latest_user_preds = []
+
+        # Loop through all the user's predictions
+        for pred in predictions:
+            datemade = pred['date']
+            # User's prediction array for a single prediction
+            for p in pred['prediction']:
+                fordate = p['date'].split('T')[0]
+                # If for date is one of the check dates
+                if fordate in dates_to_check and (datetime.strptime(fordate, '%Y-%m-%d').date() - datetime.strptime(datemade, '%Y-%m-%d').date()).days >= 1:
+                    dates_to_check.remove(fordate)
+                    latest_user_preds.append(p)
+            if len(dates_to_check) == 0:
+                break
+
         temp = dict()
-        temp[p['date']] = p['prediction']
-        intervals = ['overall', 1, 2, 4, 8]
-        for interval in intervals:
-            mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp, interval)
-            if mse == None:
-                continue
-            mycol.update({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, {'$set': {"mse_score_" + str(interval): list(mse.values())[0]}})
+        temp['date'] = latest_user_preds
+        mse = get_user_mse(confirmed, temp, 'overall')
+        if mse != None:
+            users.update({"username": user}, {'$set': {"mse_score_overall": list(mse.values())[0]}})
+        else:
+            users.update({"username": user}, {'$set': {"mse_score_overall": None}})
+        users.update({"username": user}, {'$set': {"prediction": latest_user_preds}})
 
 
 @app.route('/', defaults={'u_path': ''})
@@ -446,28 +505,10 @@ def user_status():
 
 @app.route('/user-data-overall')
 def leaderboard():
-    # 1. old method
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_overall': 1, 'date': 1, 'prediction': 1}).sort('mse_score_overall',1))
-
-    # 2. average scores
-    avg_scores = list(mongo.db.predictions.aggregate(
-        [
-            {
-            '$group':
-                {
-                '_id': "$username",
-                'avgScore': { '$avg': "$mse_score_overall" }
-                }
-            }
-        ]
-    ))
-
-    # 3. getting most recent predictions for each user only
     usernames = list(mongo.db.predictions.distinct('username'))
     users = []
     for user in usernames:
-        users.append(list(mongo.db.predictions.find({"username": user}).sort([('date',-1)]).limit(1))[0])
-    print(users)
+        users.append(list(mongo.db.users.find({"username": user}).limit(1))[0])
     return dumps(users)
 
 @app.route('/user-data-1-week-ahead')
@@ -532,5 +573,5 @@ scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False)
