@@ -303,6 +303,15 @@ def home():
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
 
+@app.route("/all-prediction", methods=['POST','GET'])
+def user_all_prediction():
+    user_predictions = {}
+    usernames = list(mongo.db.predictions.distinct('username'))
+    pred_category = request.args.get('category')
+    for username in usernames:
+        user_predictions[username] = get_user_prediction(username, pred_category)
+    return json.dumps(user_predictions)
+
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
     return forecast_data
