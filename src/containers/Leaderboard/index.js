@@ -5,6 +5,7 @@ import $ from 'jquery';
 import ReactDOM from 'react-dom';
 
 import LeaderboardChart from '../../components/LeaderboardChart';
+import UserPredictionChart from '../../components/UserPredictionChart';
 import colors from '../../constants/colors';
 import './Leaderboard.css';
 
@@ -128,7 +129,8 @@ class Leaderboard extends React.Component {
       forecasts: null,
       interval: 'overall',
       predictionLength: 1,
-      dropDownTitle: 'overall'
+      dropDownTitle: 'overall',
+      aggregate: null
     }
   }
 
@@ -162,12 +164,30 @@ class Leaderboard extends React.Component {
       this.setState({ forecasts: data });
     });
 
+    fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
+      this.setState({ aggregate: data });
+    });
   }
 
 
   componentDidUpdate(prevProps, prevState) {
     // Table should sort by error when MSE header is clicked on
+    if ($('#Score').asc === undefined) {
+        $('#Score').asc = true;
+    }
+    var table = $('#Score').parents('table').eq(0)
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($('#Score').index()))
+    $('#Score').asc = !$('#Score').asc
+    
+    if (!$('#Score').asc){
+        //rows = rows.reverse()
+    }
+    for (var i = 0; i < rows.length; i++) {
+        table.append(rows[i])
+    }
+    /*
     $('#Score').click(function() {
+      console.log(this);
       if (this.asc === undefined) {
           this.asc = true;
       }
@@ -181,7 +201,7 @@ class Leaderboard extends React.Component {
       for (var i = 0; i < rows.length; i++) {
           table.append(rows[i])
       }
-    })
+    })*/
     function comparer(index) {
         return function(a, b) {
             var valA = getCellValue(a, index), valB = getCellValue(b, index)
@@ -193,8 +213,8 @@ class Leaderboard extends React.Component {
     }
 
     // Trigger click events to get orgs and users sorted together
-    $('#Score').trigger("click");
-    $('#Score').trigger("click");
+    //$('#Score').trigger("click");
+    //$('#Score').trigger("click");
   }
 
   handleSelect = (e) => {
