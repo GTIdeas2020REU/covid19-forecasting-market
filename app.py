@@ -3,7 +3,8 @@ from flask_pymongo import PyMongo
 from pymongo import MongoClient, DESCENDING
 from flask_talisman import Talisman
 from passlib.hash import pbkdf2_sha256
-from datetime import timedelta, date
+import pandas as pd
+from datetime import timedelta, date, datetime
 from bson.json_util import dumps, loads
 import json
 import os
@@ -71,7 +72,7 @@ def update_errors():
         checkdates = [(nowdate - pd.Timedelta(days=7*interval*j)).strftime('%Y-%m-%d') for j in range(int(totdays/7*interval))
                         if nowdate - pd.Timedelta(days=7*interval*j) >= startdate]
         for user in usernames:
-            predictions = mycol.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+            predictions = mongo.db.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
             dates_to_check = checkdates.copy()
             latest_user_preds = []
 
@@ -102,7 +103,7 @@ def update_errors():
     for user in usernames:
         checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
                         if nowdate - pd.Timedelta(days=j) >= startdate]
-        predictions = mycol.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+        predictions = mongo.db.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
         dates_to_check = checkdates.copy()
         latest_user_preds = []
 
@@ -538,19 +539,21 @@ def total():
     return json.dumps(results)
 
 
-# Schedule jobs to perform functions once a day 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
-scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
-scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
-scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
-scheduler.add_job(func=save_daily_cases, trigger="interval", seconds=86400)
-scheduler.start()
+
 
 
 # Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+#atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
+    # Schedule jobs to perform functions once a day 
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", days=1)
+    scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1)
+    scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1)
+    scheduler.add_job(func=update_errors, trigger="interval", days=1)
+    scheduler.add_job(func=save_daily_cases, trigger="interval", days=1)
+    scheduler.start()
+
     app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
     #app.run(debug=True, use_reloader=False)
