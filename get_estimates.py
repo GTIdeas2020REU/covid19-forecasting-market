@@ -53,6 +53,37 @@ def get_daily_forecasts():
         models[orgs.pop()] = df.to_dict('list')
     return models
 
+
+def get_all_forecasts():
+    file = open('orgs.csv', 'r')
+    orgs = []
+    for line in file:
+        orgs.append(line.strip())
+    orgs = orgs[::-1]
+
+    file = open('model-links.csv', 'r')
+    all_forecasts = dict()
+    for line in file:
+        df = pd.read_csv(line.strip())
+        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc death"))]
+        df = df.groupby('forecast_date')
+        model = orgs.pop()
+        all_forecasts[model] = {}
+        for date, group in df:
+            group = group[['target_end_date', 'value']]
+            data = []
+            # Each prediction made on a day
+            for i in range(len(group)):
+                temp = {}
+                temp['date'] = group['target_end_date'].iloc[i]
+                temp['value'] = float(group['value'].iloc[i])/7
+                temp['defined'] = True
+                data.append(temp)
+            all_forecasts[model][date] = data
+    
+    return all_forecasts
+
+
 def get_daily_forecasts_cases():
     file = open('orgs.csv', 'r')
     orgs = []

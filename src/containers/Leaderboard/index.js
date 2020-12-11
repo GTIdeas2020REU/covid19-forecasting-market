@@ -11,7 +11,7 @@ import './Leaderboard.css';
 
 
 // Create leaderboard table, consisting of user predictions and official forecasts
-function Table({ columns, data, confirmed, orgs, forecasts, interval, allPredictions, style }) {
+function Table({ columns, data, confirmed, orgs, forecasts, interval, allUserPredictions, allOrgPredictions, style }) {
   // Use the state and functions returned from useTable to build UI
   const {
     getTableProps,
@@ -26,7 +26,8 @@ function Table({ columns, data, confirmed, orgs, forecasts, interval, allPredict
     orgs,
     forecasts,
     interval,
-    allPredictions,
+    allUserPredictions,
+    allOrgPredictions,
     style
   });
 
@@ -43,8 +44,8 @@ function Table({ columns, data, confirmed, orgs, forecasts, interval, allPredict
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {<RenderOrgsTable orgs={orgs} forecasts={forecasts} confirmed={confirmed} />}
-        {<RenderUsersTable users={data} confirmed={confirmed} interval={interval} allPredictions={allPredictions} />}
+        {<RenderOrgsTable orgs={orgs} forecasts={forecasts} confirmed={confirmed} allOrgPredictions={allOrgPredictions} />}
+        {<RenderUsersTable users={data} confirmed={confirmed} interval={interval} allUserPredictions={allUserPredictions} />}
       </tbody>
     </table>
   )
@@ -53,7 +54,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, interval, allPredict
 
 var selectedID = ""; // var used to keep chart in place if same row was clicked
 // Display user's prediction when user's row is clicked on
-function createUserChart(user, confirmed, id, allPredictions) {
+function createUserChart(user, confirmed, id, allUserPredictions) {
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
   if (selectedID !== id) {
@@ -65,7 +66,7 @@ function createUserChart(user, confirmed, id, allPredictions) {
     <UserPredictionChart 
       forecast={null} 
       orgs={null} 
-      userPrediction={allPredictions} 
+      userPrediction={allUserPredictions} 
       confirmed={confirmed} 
       aggregate={null} 
       profilePage={false} 
@@ -75,7 +76,7 @@ function createUserChart(user, confirmed, id, allPredictions) {
 }
 
 // Display official forecaster's prediction when its row is clicked on
-function createOrgChart(org, confirmed, id) {
+function createOrgChart(org, confirmed, id, allOrgPredictions) {
   var data = [];
   for (var i = 0; i < org['target_end_date'].length; i++) {
     var temp = {}
@@ -83,6 +84,9 @@ function createOrgChart(org, confirmed, id) {
     temp['value'] = org['value'][i];
     data.push(temp);
   }
+
+  console.log("ORG PREDICTIONS")
+  console.log(allOrgPredictions);
   
   $('tr').removeClass('clicked');
   $('#' + id).addClass('clicked');
@@ -90,23 +94,31 @@ function createOrgChart(org, confirmed, id) {
     $('#predictionChart div').empty(); // reset predictionChart
   }
   selectedID = id;
-  ReactDOM.render(<LeaderboardChart userPrediction={data} confirmed={confirmed} />, document.getElementById('predictionChart'));
+  //ReactDOM.render(<LeaderboardChart userPrediction={data} confirmed={confirmed} />, document.getElementById('predictionChart'));
+  ReactDOM.render(
+    <UserPredictionChart 
+      forecast={null} 
+      orgs={null} 
+      userPrediction={allOrgPredictions} 
+      confirmed={confirmed} 
+      aggregate={null} 
+      profilePage={false} 
+    />, 
+    document.getElementById('predictionChart')
+  );
 }
 
 
 // Add rows with user data to the leaderboard table
-function RenderUsersTable({ users, confirmed, interval, allPredictions }) {
-  //console.log("ALL PREDICTIONS");
-  //console.log(allPredictions);
+function RenderUsersTable({ users, confirmed, interval, allUserPredictions }) {
   return users.map((user, index) => {
     var score = user["mse_score_" + interval];
     // ignore null MSE values
     if (score == null || typeof(score) != "number") {
       return;
     }
-    //console.log(allPredictions[user]);
     return (
-       <tr id={user.username} onClick={() => createUserChart(user, confirmed, user.username, allPredictions[user.username])}>
+       <tr id={user.username} onClick={() => createUserChart(user, confirmed, user.username, allUserPredictions[user.username])}>
           <td>{user.username}</td>
           <td>{parseFloat(score).toFixed(2)}</td>
        </tr>
@@ -116,14 +128,14 @@ function RenderUsersTable({ users, confirmed, interval, allPredictions }) {
 
 
 // Add rows with official forecast data to the leaderboard table
-function RenderOrgsTable({ orgs, forecasts, confirmed }) {
+function RenderOrgsTable({ orgs, forecasts, confirmed, allOrgPredictions }) {
   return Object.entries(orgs).map( ([key, value]) => {
     // ignore null MSE values
     if (value == null) {
       return;
     }
     return (
-      <tr id={key} style={{backgroundColor: colors[key]}} onClick={() => createOrgChart(forecasts[key], confirmed, key)}>
+      <tr id={key} style={{backgroundColor: colors[key]}} onClick={() => createOrgChart(forecasts[key], confirmed, key, allOrgPredictions[key])}>
           <td>{key}*</td>
           <td>{parseFloat(value).toFixed(2)}</td>
       </tr>
@@ -146,7 +158,8 @@ class Leaderboard extends React.Component {
       predictionLength: 1,
       dropDownTitle: 'overall',
       aggregate: null,
-      allPredictions: null
+      allUserPredictions: null,
+      allOrgPredictions: null
     }
   }
 
@@ -156,9 +169,18 @@ class Leaderboard extends React.Component {
     });
     fetch('/us-mse-overall').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
+      console.log("ORGS");
+      console.log(data);
     });
-    fetch('/all-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
-      this.setState({ allPredictions: data });
+    fetch('/all-user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
+      //console.log("ALL USER PREDICTIONS");
+      //console.log(data);
+      this.setState({ allUserPredictions: data });
+    });
+    fetch('/all-org-prediction').then(res => res.json()).then(data => {
+      //console.log("ALL ORG PREDICTIONS");
+      //console.log(data);
+      this.setState({ allOrgPredictions: data });
     });
 
     this.setState({ columns: [
@@ -238,8 +260,8 @@ class Leaderboard extends React.Component {
 
     $("#delete-btn").remove();
 
-    const { users, columns, confirmed, orgs, forecasts, interval, allPredictions } = this.state;
-    if (!users || !columns || !confirmed || !orgs || !forecasts || !allPredictions) return 'Loading...';
+    const { users, columns, confirmed, orgs, forecasts, interval, allUserPredictions, allOrgPredictions } = this.state;
+    if (!users || !columns || !confirmed || !orgs || !forecasts || !allUserPredictions || !allOrgPredictions) return 'Loading...';
 
     return (
       <div>
@@ -288,7 +310,8 @@ class Leaderboard extends React.Component {
             orgs={orgs} 
             forecasts={forecasts} 
             interval={interval} 
-            allPredictions={allPredictions} 
+            allUserPredictions={allUserPredictions} 
+            allOrgPredictions={allOrgPredictions}
             style={tableStyle} />
           <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
         </div>

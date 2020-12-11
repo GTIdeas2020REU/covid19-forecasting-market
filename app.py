@@ -8,7 +8,8 @@ from datetime import timedelta, date, datetime
 from bson.json_util import dumps, loads
 import json
 import os
-from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
+
+from get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
 from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
@@ -23,7 +24,7 @@ Talisman(app, content_security_policy=None)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
 
-# Get forecasts data when initially launching website6
+# Get forecasts data when initially launching website
 forecast_data = get_forecasts()
 
 # Get confirmed cases in US
@@ -33,6 +34,7 @@ us_inc_forecasts = get_daily_forecasts()
 us_inc_confirmed = get_us_new_deaths()
 us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 us_inc_forecasts_cases = get_daily_forecasts_cases()
+all_org_forecasts = get_all_forecasts()
 
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
@@ -40,6 +42,7 @@ us_inc_forecasts_cases = get_daily_forecasts_cases()
 us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
+
 
 # set up pymongo
 #app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
@@ -57,6 +60,9 @@ def load_us_inc_confirmed_wk_avg():
 
 def load_us_inc_forecasts():
     us_inc_forecasts = get_daily_forecasts()
+
+def load_all_org_forecasts():
+    all_org_forecasts = get_all_forecasts()
     
 def update_errors():
     prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
@@ -303,7 +309,7 @@ def home():
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
 
-@app.route("/all-prediction", methods=['POST','GET'])
+@app.route("/all-user-prediction", methods=['POST','GET'])
 def user_all_prediction():
     user_predictions = {}
     usernames = list(mongo.db.predictions.distinct('username'))
@@ -311,6 +317,11 @@ def user_all_prediction():
     for username in usernames:
         user_predictions[username] = get_user_prediction(username, pred_category)
     return json.dumps(user_predictions)
+
+@app.route("/all-org-prediction")
+def org_all_prediction():
+    org_predictions = all_org_forecasts
+    return json.dumps(org_predictions)
 
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
@@ -560,9 +571,10 @@ if __name__ == "__main__":
     scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", days=1)
     scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1)
     scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1)
+    scheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1)
     scheduler.add_job(func=update_errors, trigger="interval", days=1)
     scheduler.add_job(func=save_daily_cases, trigger="interval", days=1)
     scheduler.start()
 
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False)
