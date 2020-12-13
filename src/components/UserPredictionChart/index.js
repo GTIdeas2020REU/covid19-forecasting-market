@@ -134,7 +134,7 @@ class UserPredictionChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("circle")
-                    .attr('cx', width*4/5 - 15)
+                    .attr('cx', width + 30)
                     .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .attr("r", 6)
                     //.attr("width", size)
@@ -145,7 +145,7 @@ class UserPredictionChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("text")
-                    .attr("x", width*4/5)
+                    .attr("x", width + 45)
                     .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .style("fill", function(d){ return color(d)})
                     .text(function(d){ return d})
@@ -163,7 +163,7 @@ class UserPredictionChart extends Component {
                     .attr("id", "today-line")
                     .attr("x1", x(today))
                     .attr("x2", x(today))
-                    .attr("y1", height/5)
+                    .attr("y1", 0)
                     .attr("y2", height)
                     .attr("stroke", "black")
                     .attr("stroke-width", 1)
@@ -171,7 +171,7 @@ class UserPredictionChart extends Component {
         todayMarker
                     .append("text")
                     .attr("id", "today-text")
-                    .attr("transform", `translate(${x(today) + 17}, ${height/5}) rotate(-90)`)
+                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
                     .text("Today")
                     .style("text-anchor", "end")
 
