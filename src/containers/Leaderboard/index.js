@@ -56,7 +56,7 @@ var selectedID = ""; // var used to keep chart in place if same row was clicked
 // Display user's prediction when user's row is clicked on
 function createUserChart(user, confirmed, id, allUserPredictions) {
   $('tr').removeClass('clicked');
-  $('#' + id).addClass('clicked');
+  $("[id='" + id + "']").addClass('clicked');
   if (selectedID !== id) {
     $('#predictionChart div').empty(); // reset predictionChart
   }
@@ -75,6 +75,7 @@ function createUserChart(user, confirmed, id, allUserPredictions) {
   );
 }
 
+
 // Display official forecaster's prediction when its row is clicked on
 function createOrgChart(org, confirmed, id, allOrgPredictions) {
   var data = [];
@@ -84,17 +85,13 @@ function createOrgChart(org, confirmed, id, allOrgPredictions) {
     temp['value'] = org['value'][i];
     data.push(temp);
   }
-
-  console.log("ORG PREDICTIONS")
-  console.log(allOrgPredictions);
   
   $('tr').removeClass('clicked');
-  $('#' + id).addClass('clicked');
+  $("[id='" + id + "']").addClass('clicked');
   if (selectedID !== id) {
     $('#predictionChart div').empty(); // reset predictionChart
   }
   selectedID = id;
-  //ReactDOM.render(<LeaderboardChart userPrediction={data} confirmed={confirmed} />, document.getElementById('predictionChart'));
   ReactDOM.render(
     <UserPredictionChart 
       forecast={null} 
@@ -135,7 +132,7 @@ function RenderOrgsTable({ orgs, forecasts, confirmed, allOrgPredictions }) {
       return;
     }
     return (
-      <tr id={key} style={{backgroundColor: colors[key]}} onClick={() => createOrgChart(forecasts[key], confirmed, key, allOrgPredictions[key])}>
+      <tr id={key} style={{backgroundColor: colors[key], color: 'black'}} onClick={() => createOrgChart(forecasts[key], confirmed, key, allOrgPredictions[key])}>
           <td>{key}*</td>
           <td>{parseFloat(value).toFixed(2)}</td>
       </tr>
@@ -169,17 +166,11 @@ class Leaderboard extends React.Component {
     });
     fetch('/us-mse-overall').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
-      console.log("ORGS");
-      console.log(data);
     });
     fetch('/all-user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
-      //console.log("ALL USER PREDICTIONS");
-      //console.log(data);
       this.setState({ allUserPredictions: data });
     });
     fetch('/all-org-prediction').then(res => res.json()).then(data => {
-      //console.log("ALL ORG PREDICTIONS");
-      //console.log(data);
       this.setState({ allOrgPredictions: data });
     });
 
@@ -245,20 +236,20 @@ class Leaderboard extends React.Component {
 
   render() {
     const tableStyle = {
-      width: "50%",
+      width: "48%",
       textAlign: "center",
-      overflowY: "scroll"
+      overflowY: "scroll",
+      marginLeft: "12px"
     };
     
     var chartStyle = {
       position: "fixed",
       width: "50%",
       left: "50%",
-      top: "45%",
-      bottom: 0
+      marginLeft: "10px",
     };
 
-    $("#delete-btn").remove();
+    //$("#delete-btn").remove();
 
     const { users, columns, confirmed, orgs, forecasts, interval, allUserPredictions, allOrgPredictions } = this.state;
     if (!users || !columns || !confirmed || !orgs || !forecasts || !allUserPredictions || !allOrgPredictions) return 'Loading...';
@@ -269,23 +260,19 @@ class Leaderboard extends React.Component {
         <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
         <small>* indicates an official forecaster as labelled by the CDC</small>
         <br></br>
-        <br></br>
         <div>
           <div className="main-instruction">
             <p>
               <b>
-                The Top Forecasts page showcases the best predictions by all users of the site, ranked by Mean Squared Error. Each 
-                row on the chart is an entry given by either a single user, or from a University source.
+                The Top Forecasts page showcases the best predictions by all users of the site, ranked using our own scoring scheme. Each 
+                row on the chart shows a user or University source along with a calculated score. 
                </b>
              </p>
-            <p>Click on a row to view a user's prediction</p>
-            <p>Hover over the prediction chart to see the exact value of the user's prediction</p>
-            <p>Click on the 'MSE' chart header to toggle forecasts rank</p>
+            <p>Click on a row to view all predictions from a user. Hover over the prediction chart to see the exact values of the user's prediction.</p>
             </div>
           </div>
 
         <div>
-          <br></br>
           <Dropdown onSelect={this.handleSelect}>
             <Dropdown.Toggle variant="success" id="dropdown-basic">
               {this.state.dropDownTitle}
@@ -298,7 +285,6 @@ class Leaderboard extends React.Component {
               <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
-          <br></br>
           <br></br>
         </div>
 
@@ -313,7 +299,7 @@ class Leaderboard extends React.Component {
             allUserPredictions={allUserPredictions} 
             allOrgPredictions={allOrgPredictions}
             style={tableStyle} />
-          <div id="predictionChart" className="text-center" style={chartStyle}>Click on a row to display a user's prediction!</div>
+          <div id="predictionChart" className="text-center" style={chartStyle}><br></br>Click on a row to display all predictions from a user!</div>
         </div>
       </div>
     );
