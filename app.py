@@ -32,7 +32,7 @@ us_data = get_us_confirmed()
 
 us_inc_forecasts = get_daily_forecasts()
 us_inc_confirmed = get_us_new_deaths()
-us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
+us_inc_confirmed_wk_avg = json.loads(get_us_new_deaths_weekly_avg(us_inc_confirmed))
 us_inc_forecasts_cases = get_daily_forecasts_cases()
 all_org_forecasts = get_all_forecasts()
 
@@ -56,7 +56,7 @@ def load_us_inc_confirmed():
     us_inc_confirmed = get_us_new_deaths()
 
 def load_us_inc_confirmed_wk_avg():
-    us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
+    us_inc_confirmed_wk_avg = json.loads(get_us_new_deaths_weekly_avg(us_inc_confirmed))
 
 def load_us_inc_forecasts():
     us_inc_forecasts = get_daily_forecasts()
@@ -392,27 +392,27 @@ def us_daily_cases_forecast():
 
 @app.route('/us-mse-overall')
 def us_mse():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 'overall')
+    us_mse = get_mse(us_inc_confirmed_wk_avg, us_inc_forecasts, 'overall')
     return us_mse
 
 @app.route('/us-mse-1-week-ahead')
 def us_mse1():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 1)
+    us_mse = get_mse(us_inc_confirmed_wk_avg, us_inc_forecasts, 1)
     return us_mse
 
 @app.route('/us-mse-2-week-ahead')
 def us_mse2():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 2)
+    us_mse = get_mse(us_inc_confirmed_wk_avg, us_inc_forecasts, 2)
     return us_mse
 
 @app.route('/us-mse-4-week-ahead')
 def us_mse4():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 4)
+    us_mse = get_mse(us_inc_confirmed_wk_avg, us_inc_forecasts, 4)
     return us_mse
 
 @app.route('/us-mse-8-week-ahead')
 def us_mse8():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 8)
+    us_mse = get_mse(us_inc_confirmed_wk_avg, us_inc_forecasts, 8)
     return us_mse
 
 @app.route('/user-mse')
@@ -420,7 +420,7 @@ def user_mse():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction, 'overall')
+    mse = get_user_mse(us_inc_confirmed_wk_avg, user_prediction, 'overall')
     return json.dumps(mse)
 
 
@@ -576,5 +576,5 @@ if __name__ == "__main__":
     scheduler.add_job(func=save_daily_cases, trigger="interval", days=1)
     scheduler.start()
 
-    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    #app.run(debug=True, use_reloader=False)
