@@ -13,6 +13,7 @@ def get_us_data():
 def get_us_new_deaths():
     df = get_us_data()
     df = df[['date', 'new_deaths']]
+    df = df[df['new_deaths'].notna()]
     df.reset_index(drop=True, inplace=True)
     return json.dumps(pd.Series(df.new_deaths.values,index=df.date).to_dict())
 
