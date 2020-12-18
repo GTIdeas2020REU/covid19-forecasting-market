@@ -99,7 +99,7 @@ class MainChart extends Component {
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
         const focusHeight = 100;
         const titleHeight = 20;
-        var margin = {top: 20, right: 30, bottom: 20, left: 60},
+        var margin = {top: 20, right: 30, bottom: 30, left: 80},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
         var svg = d3.select(".main-chart")
@@ -110,7 +110,8 @@ class MainChart extends Component {
                 // .attr("width", width)
                 // .attr("height", height)
             .append("g")
-            .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
+            .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`)
+            .style("width", width)
 
         // add title
         svg.append("text")
@@ -128,14 +129,14 @@ class MainChart extends Component {
         //Create X axis label   
         svg.append("text")
             .attr("x", w/2 + margin.right)
-            .attr("y", h + 4*margin.bottom)
+            .attr("y", h + margin.bottom + 50)
             .style("text-anchor", "middle")
             .text("Date");
             
         //Create Y axis label
         svg.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left)
+            .attr("y", 0 - (margin.left))
             .attr("x", 0 - (h/2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
@@ -149,12 +150,11 @@ class MainChart extends Component {
         let forecastData = [];
         let forecastDict = [];
         let temp = [];
-        console.log(forecastData)
         let forecastIds = [];
+        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
         forecast.forEach(f => {
-            console.log(f.data)
             let formattedData = reformatData(f.data);
-            let filtered = formattedData.filter(d => +d.date > +confirmedLastDate)
+            let filtered = formattedData.filter(d => +d.date >= +today)
             if (filtered.length > 0) {
                 forecastData.push(filtered)
                 forecastLabels.push(f.name);
@@ -162,21 +162,26 @@ class MainChart extends Component {
             }
         })
 
-        console.log(forecastData)
         var aggregateData = reformatData(aggregate);
-        console.log(forecastData, forecastLabels, forecastIds)
+        aggregateData = aggregateData.filter(d => +d.date >= +today)
 
+  
+        //set other dates
+        const confirmedStartDate = confirmedData[4].date;
+        const predStartDate = today; //last date of confirmedData
+        const predLength = 155;
+        const absMaxDate = d3.timeYear.offset(today, 2);
+        let predEndDate = d3.timeDay.offset(predStartDate, predLength)
+        
+        
         //store userPrediction in predictionData if it exists
         if(Object.keys(userPrediction).length > 0) {
             const mostRecentPred = getMostRecentPrediction(userPrediction);
             predictionData = reformatPredData(mostRecentPred);
+            predictionData = predictionData.filter(d => +d.date >= +today)
+            console.log(predictionData);
+            predEndDate = +d3.timeDay.offset(getLastDate(predictionData), 60) < +absMaxDate ? d3.timeDay.offset(getLastDate(predictionData), 60) : absMaxDate;
         }
-  
-        //set other dates
-        const confirmedStartDate = confirmedData[4].date;
-        const predStartDate = confirmedLastDate; //last date of confirmedData
-        const predLength = 155;
-        const predEndDate = d3.timeDay.offset(predStartDate, predLength)
         
         //get confirmedData starting from confirmedStartDate
         confirmedData = confirmedData.filter(d => +d.date >= +confirmedStartDate);
@@ -186,28 +191,58 @@ class MainChart extends Component {
             .domain([confirmedStartDate, predEndDate])
             .range([ 0, width ])
             //.nice(); //rounds up/down the max and mind of x axis
-        var xAxis = svg
+        let xAxisD3 = d3.axisBottom(x);
+        let xAxis = svg
                         .append("g")
                         .attr("transform", "translate(0," + height + ")")
-                        .call(d3.axisBottom(x));
+                        .attr("id", "x-axis")
+                        .style("user-select", "none")
+                        .call(xAxisD3);
         
         //find max val in confirmedData and forecastData to determine the max of y-axis
         var confirmedMax = d3.max(confirmedData, function(d) { return +d.value; });
         var forecastMax = 0;
         forecastData.map(f => {
-            var currMax = d3.max(f, d => {return d.value;})
+            let currMax = d3.max(f, d => {return d.value;})
             forecastMax = currMax > forecastMax ? currMax : forecastMax;
         })
-        var yAxisMax = Math.max(confirmedMax, forecastMax);
+        if (predictionData.length > 0) {
+            let predictionMax = d3.max(predictionData, d => {return d.value;})
+            forecastMax = Math.max(forecastMax, predictionMax);
+        }
+        let yAxisMax = Math.max(confirmedMax, forecastMax);
         //draw y-axis
         var y = d3.scaleLinear()
-            .domain([0, yAxisMax])
+            .domain([0, yAxisMax * 1.05])
             .range([ height, 0 ])
             .nice();
-        svg
-            .append("g")
-            .call(d3.axisLeft(y));
+        let yAxisD3 = d3.axisLeft(y);
+        let yAxis = svg
+                    .append("g")
+                    .attr("id", "y-axis")
+                    .style("user-select", "none")
+                    .attr('pointer-events', 'visible')
+                    .call(yAxisD3);
    
+
+        let yAxisDragRect = svg.append("rect")
+            .attr("class", "y-axis-drag")
+            .attr("width", 55)
+            .attr("height", height)
+            .attr("x", -55)
+            .attr("y", 0)
+            .attr("fill", "none")
+            .attr('pointer-events', 'visible');
+
+        let xAxisDragRect = svg.append("rect")
+            .attr("class", "x-axis-drag")
+            .attr("width", width)
+            .attr("height", margin.bottom)
+            .attr("x", 0)
+            .attr("y", height)
+            .attr("fill", "none")
+            .attr('pointer-events', 'visible');
+            
         //list of data displayed in graph - for legend
         //var legendString = orgs.concat(["Daily Confirmed Deaths", "Aggregate Forecast", "User Prediction"]);
         
@@ -252,7 +287,7 @@ class MainChart extends Component {
             .append("text")
                 .attr("x", 30)
                 .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                .text(function(d){console.log("D TEXT"); console.log(d); return d})
+                .text(function(d){ return d})
                     .attr("text-anchor", "left")
                     .style("alignment-baseline", "middle")
             
@@ -260,7 +295,6 @@ class MainChart extends Component {
         var legendElement = document.querySelector("#legend");
         const legendCompleteWidth = legendElement.getBoundingClientRect().width;
         const legendSingleHeight = 25;
-        console.log(svg.select('.ucla'))
 
         legend.selectAll("rectangles")
             .data(legendString)  
@@ -276,12 +310,10 @@ class MainChart extends Component {
 
         legend.selectAll('rect').on("mousemove", function() {
             let identifier = d3.select(this).attr('class')
-            console.log(identifier)
             svg.selectAll(".line").style("stroke", "#ddd");
             svg.select(`#${identifier}`).style("stroke", color(identifier));
         })
         .on("mouseout", function() {
-            console.log('out')
             svg.selectAll(".line")
                 .style("stroke", (d, i) => color(compiledIds[i]))
         })
@@ -371,15 +403,13 @@ class MainChart extends Component {
         //append path for prediction data
         var yourLine = predictionArea
                                         .append("path")
-                                        .attr("id", "your-line")
+                                        .attr("id", "prediction")
                                         .attr("class", "prediction line");
 
         
         //display forecast data
         let forecastNames = [];
-        console.log(forecastData)
         forecastData.map((f, index) => {
-            console.log(f)
             predictionArea.append("path")
                             .attr("class", "forecast line")
                             .attr("id", forecastIds[index])
@@ -391,7 +421,6 @@ class MainChart extends Component {
         let confirmedCurveLength = confirmedLine.node().getTotalLength();
         let aggregateCurveLength = aggregateLine.node().getTotalLength();
         let predictionCurveLength = yourLine.node().getTotalLength();
-        console.log(predictionCurveLength, yourLine.node())
 
         confirmedLine
             .attr("stroke-dasharray", confirmedCurveLength + " " + confirmedCurveLength)
@@ -476,8 +505,6 @@ class MainChart extends Component {
             name: compiledIds[0],
             data: confirmedData
         })
-        console.log(confirmedData);
-        console.log(confirmed)
         var lastDate = aggregateData[aggregateData.length - 1].date;
         aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, lastDate)
         compiledData.push({
@@ -488,9 +515,7 @@ class MainChart extends Component {
             name: compiledIds[2],
             data: predictionData
         })
-        console.log("add forecast to compiled")
         forecastIds.map((m, index) => {
-            console.log(m, forecastData[index])
             if (forecastData[index].length > 1) {
                 var lastDate = forecastData[index][forecastData[index].length - 1].date;
                 let startDate = forecastData[index][0].date;
@@ -501,7 +526,6 @@ class MainChart extends Component {
                 })
             }
         })
-        console.log(compiledData);
         //join data to yourLine
         filteredData = predictionData.filter(predLine.defined())
         yourLine.datum(filteredData)
@@ -548,10 +572,10 @@ class MainChart extends Component {
                                                 .attr("id", "pointer");
         var pointerCircles = ["pulse-disk", "pulse-circle", "pulse-circle-2"];
         pointerCircles.map((c) => {
-        selectCircle.append("circle")
-            .attr("class", c)
-            .attr("cx", confirmedAreaEndX)
-            .attr("cy", confirmedAreaEndY)
+            selectCircle.append("circle")
+                .attr("class", `${c} red-circle`)
+                .attr("cx", confirmedAreaEndX)
+                .attr("cy", confirmedAreaEndY)
         })
 
         if(Object.keys(userPrediction).length === 0) {
@@ -573,15 +597,30 @@ class MainChart extends Component {
                         d3.select(".tooltip-box")
                             .style("display", "none")
                         var pos = d3.mouse(this);
-                        var date = clamp(predStartDate, predEndDate, x.invert(pos[0]));
+                        //var date = clamp(predStartDate, x.domain()[1], x.invert(pos[0]));
+                        let date = x.invert(pos[0]);
+                        yAxisMax = y.domain()[1];
                         var value = clamp(0, yAxisMax, y.invert(pos[1]));
-                        
-                        predictionData.forEach(function(d){
-                            if (+d3.timeDay.round(d.date) === +d3.timeDay.round(date)){
-                                d.value = value;
-                                d.defined = true
+
+                        if (+getLastDate(predictionData) < +date) {//append new date
+                            predictionData.push({"date": date, "value": value, "defined": true});
+                        }
+                        else {
+                            predictionData.forEach(function(d){
+                                if (+d3.timeDay.round(d.date) === +d3.timeDay.round(date)){
+                                    d.value = value;
+                                    d.defined = true
+                                }
+                            });
+                        }
+                        if (predictionData[0].defined == 0) {
+                            predictionData[0].defined = true;
+                            let secondVal = confirmedLastVal;
+                            if (predictionData.length > 1) {
+                                secondVal = predictionData[1].value
                             }
-                        predictionData[0].value = confirmedLastVal;//make sure the prediction curve is always connected to the confirmed curve
+                            predictionData[0].value = secondVal;
+                        }
                         //update totalData everytime predictionData is updated
                         compiledData[2].data = predictionData;
                         //console.log(compiledData)
@@ -594,8 +633,8 @@ class MainChart extends Component {
                                 // .style("stroke-width", "2px")
                         focusPredCurve.datum(filteredData)
                                         .attr("d", focusPredLine);
-
-                        });
+                        console.log(predictionData);
+                    ////////////////////////////////////////////////////
                     })
                     .on("end", function () {
                         d3.select("#tooltip-line")
@@ -618,9 +657,10 @@ class MainChart extends Component {
                             d3.select(".tooltip-box")
                                 .style("display", "block")
                         }
-                    });
-        
+                    })
+
         svg.call(drag)
+
         var modal = document.getElementById("modal");
 
         window.onclick = function(event) {
@@ -758,7 +798,6 @@ class MainChart extends Component {
                                 });
                             })
         ////ADD TODAY LINE/////////////////////////////////////////////////////
-        const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
         var todayMarker = svg
                             .append("g")
                             .attr("id", "today-marker")
@@ -790,7 +829,20 @@ class MainChart extends Component {
                                 //.attr("height", height)
                                 .style("display", "block")
 
-
+        var focusClip = focus
+                        .append("defs")
+                        .append("svg:clipPath")
+                            .attr("id", "focus-clip")
+                            .append("svg:rect")
+                                .attr("width", width )
+                                .attr("height", focusHeight )
+                                .attr("x", 0)
+                                .attr("y", 0);
+    
+            // Create the confirmed area variable
+        const focusArea = focus
+                            .append('g')
+                            .attr("clip-path", "url(#focus-clip)");
 
         /*const xAxis = (g, x, height) => g
                                             .attr("transform", `translate(0,${height - margin.bottom})`)
@@ -798,7 +850,7 @@ class MainChart extends Component {
 
         var focusX = d3
                             .scaleTime()
-                            .domain([confirmedStartDate, predEndDate])
+                            .domain([confirmedStartDate, d3.timeYear.offset(today, 2)])
                             .range([0, width]);
         const focusY = d3
                         .scaleLinear()
@@ -814,16 +866,16 @@ class MainChart extends Component {
                         .extent([[0, 0], [width, focusHeight - margin.bottom]])
                         .on("brush", brushed)
                         .on("end", brushended);
-
-        const firstSelection = [x.range()[0], x.range()[1]];
-        const defaultSelection = [x(d3.timeMonth.offset(x.domain()[1], -8)), x.range()[1]];
+        const firstSelectionMax = +d3.timeMonth.offset(predEndDate, 6) < +focusX.domain()[1] ? d3.timeMonth.offset(predEndDate, 6) : focusX.domain()[1];
+        const firstSelection = [focusX.range()[0], focusX(firstSelectionMax)];
+        const defaultSelection = [focusX(d3.timeMonth.offset(predStartDate, -3)), focusX(x.domain()[1])];
         // const defaultSelection = [x(d3.timeMonth.offset(x.domain()[1], -10)), x.range()[1]];
 
         /*context.append("g")
                 .call(xAxis, x, focusHeight);*/
         const focusLine = d3.line()
                             .curve(d3.curveCatmullRom)
-                            .x(function(d) {return x(d.date)})
+                            .x(function(d) {return focusX(d.date)})
                             .y(function (d) {return focusY(d.value)})
         
         const focusPredLine = d3.line()
@@ -831,30 +883,33 @@ class MainChart extends Component {
                                 .defined(d => d.defined)
                                 .x(function(d) { return focusX(d.date) })
                                 .y(function(d) { return focusY(d.value) })        
-        focus.append("path")
+        focusArea.append("path")
             .datum(confirmedData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
+            .attr("id", "context-confirmed")
             .attr("stroke", color(compiledIds[0]))
         
-        focus.append("path")
+        focusArea.append("path")
             .datum(aggregateData)
             .attr("d", focusLine)
             .attr("class", "context-curve")
+            .attr("id", "context-aggregate")
             .attr("stroke", color(compiledIds[1]))
 
-        var focusPredCurve = focus.append("path")
+        var focusPredCurve = focusArea.append("path")
                                     .datum(predictionData)
                                     .attr("d", focusPredLine)
-                                    .attr("class", "context-curve")
+                                    .attr("id", "context-prediction")
                                     .attr("stroke", color(compiledIds[2]))
         
         forecastData.map((f, index) => {
-            focus
+            focusArea
                     .append("path")
                     .datum(f)
                     .attr("d", focusLine)
                     .attr("class", "context-curve")
+                    .attr("id", "context-forecast")
                     .attr("stroke", color(forecastIds[index]));
 
         })
@@ -863,25 +918,22 @@ class MainChart extends Component {
                 var extent = d3.event.selection;
                 x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
                 xAxis
-                        // .transition()
-                        // .duration(400)
                         .call(d3.axisBottom(x))
                 var newX = x(confirmedData[confirmedData.length - 1].date);
                 newX = newX < 0 ? 0 : newX;
+                let newWidth = width - newX < 0 ? 0 : width - newX;
                 d3
                     .select("#prediction-clip")
                     .select("rect")
-                        .attr("width", width - newX)
+                        .attr("width", newWidth)
                         .attr("x", newX);
 
                 svg
                     .selectAll(".line")
-                    //.transition()
-                    //.duration(1000)
                     .attr('d', line)
 
                 svg
-                    .select("#your-line")
+                    .select("#prediction")
                     .attr("d", predLine)
                 
                 //reposition draw your guess text and pointer
@@ -892,11 +944,18 @@ class MainChart extends Component {
                     .select("#pointer")
                     .selectAll("circle")
                         .attr("cx", newX);
-                todayMarker.select("line")
+                let xCoord = x(today)
+                if (xCoord < 0) {
+                    todayMarker.style("display", "none");
+                }
+                else {
+                    todayMarker.style("display", "block");
+                    todayMarker.select("line")
                         .attr("x1", x(today))
                         .attr("x2", x(today))
-                todayMarker.select("text")
+                    todayMarker.select("text")
                         .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+                }
 
             }
         }
@@ -924,10 +983,10 @@ class MainChart extends Component {
         var deleteButton = d3.select("#delete-btn").node()
         deleteButton.onclick = () => {
             this.deletePrediction(category)
-            console.log("deleted")
-            predictionData = createDefaultPrediction(predStartDate, predEndDate);
-            predictionData[0].value = confirmedLastVal;
-            predictionData[0].defined = true;
+            predictionData = [{"date": today, "value": 0, defined: 0}];
+            // predictionData = createDefaultPrediction(predStartDate, predEndDate);
+            // predictionData[0].value = confirmedLastVal;
+            // predictionData[0].defined = true;
             //update yourLine
             var filtered = predictionData.filter(predLine.defined())
             yourLine.datum(filtered)
@@ -940,221 +999,108 @@ class MainChart extends Component {
                 .style("opacity", "1");
             compiledData[2].data = predictionData;
         };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        let mousePosY = 0;
+        let mousePosX = 0;
+        let yAxisDrag = d3.drag()
+            .on("start", function() {
+                yAxisDragRect.attr("dragging", "true");
+            })
+            .on("drag", function() {
+                let currPosY = d3.mouse(this)[1];
+                if (currPosY > mousePosY) {
+                    let dy = -y.domain()[1] * 0.005;
+                    let newMax = y.domain()[1] + dy > 500 ? y.domain()[1] + dy : 500;
+                    y.domain([0, newMax]);
+                    yAxis.call(yAxisD3.scale(y));
+                }
+                else {
+                    let dy = y.domain()[1] * 0.005;
+                    let newMax = y.domain()[1] + dy <= 10000000 ? y.domain()[1] + dy : 10000000;
+                    y.domain([0, newMax]);
+                    yAxis.call(yAxisD3.scale(y));
+                }
+                mousePosY = currPosY;
+                updateData();
+            })
+            .on("end", function() {
+                yAxisDragRect.attr("dragging", "false");
+            })
+            
+
+        let xAxisDrag = d3.drag()
+            .on("start", function() {
+                xAxisDragRect.attr("dragging", "true");
+            })
+            .on("drag", function() {
+                let currPosX = d3.mouse(this)[0];
+                if (currPosX > mousePosX) {
+                    let dy = d3.timeDay.offset(x.domain()[1], 14);
+                    let newMax = +dy < +d3.timeYear.offset(today, 2) ? dy : d3.timeYear.offset(today, 2);
+                    x.domain([x.domain()[0], newMax]);
+                    xAxis.call(xAxisD3.scale(x));
+                }
+                else {
+                    let dy = d3.timeDay.offset(x.domain()[1], -14);
+                    let currMin = x.domain()[0];
+                    let newMax = +dy > +d3.timeMonth.offset(currMin, 3) ? dy : d3.timeMonth.offset(currMin, 3);
+                    x.domain([x.domain()[0], newMax]);
+                    xAxis.call(xAxisD3.scale(x));
+                }
+                mousePosX = currPosX;
+                updateData();
+                let newSelection = [focusX(x.domain()[0]), focusX(x.domain()[1])];
+                gb.call(brush.move, newSelection);
+            })
+            .on("end", function() {
+                xAxisDragRect.attr("dragging", "false");
+                let newSelection = [focusX(x.domain()[0]), focusX(x.domain()[1])];
+                gb.call(brush.move, newSelection);
+            })
+
+        const updateData = () => {
+            svg
+                .selectAll(".line")
+                .attr('d', line)
+            svg
+                .select("#prediction")
+                .attr("d", predLine)
+            todayMarker.select("line")
+                .attr("x1", x(today))
+                .attr("x2", x(today))
+            todayMarker.select("text")
+                .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+            
+            let newX = x(confirmedLastDate);
+            newX = newX < 0 ? 0 : newX;
+            let newWidth = width - newX < 0 ? 0 : width - newX;
+            d3
+                .select("#prediction-clip")
+                .select("rect")
+                    .attr("width", newWidth)
+                    .attr("x", newX);
+
+            //reposition draw your guess text and pointer
+            svg
+                .select("#draw-guess")
+                .attr("x", newX + newWidth / 2);
+            svg
+                .select("#pointer")
+                .selectAll("circle")
+                    .attr("cx", newX);
+            predEndDate = x.domain()[1];
+            confirmedAreaEndX = x(confirmedData[confirmedData.length - 1].date);
+            confirmedAreaEndY = y(confirmedData[confirmedData.length - 1].value);
+            svg.selectAll(".red-circle")
+                .attr("cx", confirmedAreaEndX)
+                .attr("cy", confirmedAreaEndY)
+            }
+
+        yAxisDragRect.call(yAxisDrag)
+        xAxisDragRect.call(xAxisDrag)
     }
-    renderOldChart() {
-        const {compiled, loggedIn} = this.props;
-        const confirmed = compiled["confirmed"];
-        const forecast = compiled["forecast"];
-        const aggregate = compiled["aggregate"];
-        const userPrediction = compiled["user_prediction"]
-        var margin = {top: 20, right: 30, bottom: 20, left: 60},
-            width = 800 - margin.left - margin.right,
-            height = 400 - margin.top - margin.bottom;
-        var svg = d3.select(".main-chart")
-                    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + 100}`)
-                    .append("g")
-                    .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`);
-        var confirmedData = reformatData(confirmed);
-        var compiledData = [confirmedData]
 
-        const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-04-12");
-        const confirmedEndDate = d3.timeParse("%Y-%m-%d")("2020-09-17");
-        var x = d3.scaleTime()
-            .domain([confirmedStartDate, confirmedEndDate])
-            .range([ 0, width ])
-
-        var xAxis = svg
-                        .append("g")
-                        .attr("transform", "translate(0," + height + ")")
-                        .call(d3.axisBottom(x));
-        var confirmedMax = d3.max(confirmedData, function(d) { return +d.value; });
-        var y = d3.scaleLinear()
-            .domain([0, confirmedMax])
-            .range([ height, 0 ])
-            .nice();
-        svg
-            .append("g")
-            .call(d3.axisLeft(y));
-        var lineGenerator = d3.line()
-            //.curve(d3.curveBasis);
-            .curve(d3.curveCatmullRom)//curve that goes through all data points
-        var line = lineGenerator
-            .x(function(d) { return x(d.date) })
-            .y(function(d) { return y(d.value) })
-        //area where the confirmed curve will be drawn
-        var mainClip = svg
-                        .append("defs")
-                        .append("svg:clipPath")
-                            .attr("id", "main-clip")
-                            .append("svg:rect")
-                                .attr("width", width )
-                                .attr("height", height )
-                                .attr("x", 0)
-                                .attr("y", 0);
-
-        // Create the confirmed area variable
-        const mainArea = svg
-             .append('g')
-             .attr("clip-path", "url(#main-clip)");
-        
-        // Create the confirmed area variable
-        const names = ["Confirmed Cases"]
-        var confirmedLine = mainArea.append("path")
-                            .attr("id", "confirmed")
-                            .attr("class", "line confirmed")    
-                            .datum(confirmedData)    
-                            .attr('d', line)
-                            .attr("fill", "none")
-                            .attr("stroke", "steelblue")
-                            .attr("stroke-width", 1.5)
-        var legend = d3.select(".legend-container")
-                            .attr("viewBox", "0 0 400 500")
-                            .append('g')
-                            .attr("id", "legend")
-        var size = 10;
-        const legendMarginL = 30;
-        var color = d3
-                        .scaleOrdinal()
-                        .domain(names)
-                        .range(d3.schemeTableau10);
-        legend.selectAll("rect")
-            .data(names)
-            .enter()
-            .append("circle")
-                .attr('cx', 10)
-                .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                .attr("r", 6)
-                //.attr("width", size)
-                //.attr("height", size)
-                .style("fill", (function(d){ return color(d)}))
-        legend.selectAll("labels")
-                .data(names)
-                .enter()
-                .append("text")
-                    .attr("x", 30)
-                    .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-                    // .style("fill", function(d, index){ return color(names[index])})
-                    .text(function(d){return d})
-                        .attr("text-anchor", "left")
-                        .style("alignment-baseline", "middle")
-        ////////////tooltip stuff////////////
-        const tooltipArea = svg
-                                .append("g")
-                                .attr("class", "tooltip")
-
-        tooltipArea.append("path") //vertical line
-                    .attr("id", "tooltip-line")
-                    .style("stroke", "black")
-                    .style("stroke-width", "0.5px")
-                    .style("opacity", "0");
-        //where text will be
-        var tooltipBox = d3.select(".tooltip-box")
-                            .style("position", "absolute")
-                            .style("display", "block")
-                            .style("left", "10px")
-                            .style("top", "10px");
-        var mousePerLine = tooltipArea
-                            .selectAll(".mouse-per-line")
-                            .data(compiledData)
-                            .enter()
-                            .append("g")
-                            .attr("class", "mouse-per-line");
-
-        mousePerLine.append("circle")
-                    .attr("r", 2)
-                    .style("stroke", function(d, i) {
-                        return color(names[i]);
-                    })
-                    .style("fill", "none")
-                    .style("stroke-width", "1px")
-                    .style("opacity", "0");
-
-        var chart = tooltipArea
-                        .append("svg:rect")
-                        .attr('width', width)
-                        .attr('height', height)
-                        .attr('fill', 'none')
-                        .attr('pointer-events', 'all')
-                        //.style("cursor", "pointer")
-                        .on('mouseout', function() { // on mouse out hide line, circles and text
-                            d3.select("#tooltip-line")
-                            .style("opacity", "0");
-                            d3.selectAll(".mouse-per-line circle")
-                            .style("opacity", "0");
-                            d3.selectAll(".mouse-per-line text")
-                            .style("opacity", "0")
-                            tooltipBox.style("display", "none")
-                        })
-                        .on('mouseover', function() { // on mouse in show line, circles and text
-                            d3.select("#tooltip-line")
-                            .style("opacity", "1");
-                            tooltipBox.style("display", "block")
-                        })
-                        .on('mousemove', function() { // mouse moving over canvas
-                            var mouse = d3.mouse(this);
-                            var xCoord = mouse[0];
-                            var yCoord = mouse[1];
-                            const xLowerBoundary = x(confirmedData[confirmedData.length - 1].date)
-                            // if (xCoord > xLowerBoundary && xCoord < width && yCoord > 0 && yCoord < height) {
-                            //     chart.attr("cursor", "pointer");
-                            // }
-                            // else {
-                            //     chart.attr("cursor", "default");
-                            // }
-                            d3
-                                .select("#tooltip-line")
-                                .attr("d", function() {
-                                    var d = "M" + xCoord + "," + height;
-                                    d += " " + xCoord + "," + 0;
-                                    return d;
-                                });
-                            tooltipBox
-                                .style('left', `${d3.event.pageX + 20}px`)
-                                .style('top', `${d3.event.pageY + 20}px`)
-                            d3
-                                .selectAll(".mouse-per-line")
-                                .attr("transform", function(d, i) {
-                                    if (d.length === 0) {return;}
-                                    var date = x.invert(xCoord);
-                                    var value = -1;
-                                    d.map(d => {
-                                        if(+d.date === +d3.timeDay.round(date) && d.defined !== 0) {
-                                            value = d.value;
-                                        }
-                                    })
-                                    var element = d3.select(this);
-                                    var textBox = tooltipBox.select(`.confirmed`);
-
-                                    if (value >= 0) {
-                                        if(textBox.empty()) {
-                                            textBox = tooltipBox.append("div")
-                                                                .attr("class", "confirmed")
-                                                                .style("padding-left", "10px")
-                                                                .style("padding-right", "10px")
-                                                                .style("background-color", color(names[i]))
-                                                                .style("color", "white");
-
-                                        }
-                                        else {
-                                            textBox.html(`${names[i]}: ${Math.round(value)}`)
-                                        }
-                                        element.select("circle")
-                                                .style("opacity", "1");
-                                        return "translate(" + mouse[0] + "," + y(value)+")";
-                                    }
-                                    else {
-                                        if(!textBox.empty()) {
-                                            textBox.remove();
-                                        }
-
-                                        element
-                                                .select("circle")
-                                                .style("opacity", "0");
-                                    }
-                                    
-                            });
-                        })
-    }
     render() {
         const title = titles[this.props.category][0];
         return (

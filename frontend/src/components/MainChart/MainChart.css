@@ -75,7 +75,7 @@ p {
     fill: none
 }
 
-#your-line {
+#prediction {
     stroke-width : 1.5;
     stroke-linejoin: round;
     stroke-linecap: round;
@@ -268,4 +268,14 @@ font-weight: bold;
 .privacy {
     font-size: 13px;
     margin-top: 40px;
+}
+
+.y-axis-drag, .x-axis-drag {
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.y-axis-drag[dragging="true"], .x-axis-drag[dragging="true"] {
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
 }
