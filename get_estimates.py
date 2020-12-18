@@ -224,4 +224,3 @@ def get_new_cases_us():
     df = df[['date', 'United States']]
     df = df.set_index('date')
     return df.to_dict()['United States']
-    
