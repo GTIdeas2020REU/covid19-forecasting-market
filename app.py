@@ -8,7 +8,8 @@ from datetime import timedelta, date, datetime
 from bson.json_util import dumps, loads
 import json
 import os
-from get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
+
+from get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
 from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
@@ -42,7 +43,7 @@ us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
 
-us_daily_cases_confirmed_new = get_new_cases_us()
+
 # set up pymongo
 #app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
 app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
@@ -374,11 +375,10 @@ def us_agg_inc_cases():
 def us_daily_cases_confirmed():
     # save_daily_cases()
     # return 'done'
-    # confirmed_cases = {}
-    # for data in mongo.db.confirmed.find({'category': 'daily_cases'}):
-    #     confirmed_cases = dict(data['data'])
-    # confirmed_cases = get_us_new_deaths_weekly_avg(dumps(confirmed_cases))
-    confirmed_cases = get_us_new_deaths_weekly_avg(dumps(us_daily_cases_confirmed_new))
+    confirmed_cases = {}
+    for data in mongo.db.confirmed.find({'category': 'daily_cases'}):
+        confirmed_cases = dict(data['data'])
+    confirmed_cases = get_us_new_deaths_weekly_avg(dumps(confirmed_cases))
     return confirmed_cases
 
 @app.route('/us-daily-cases-forecast')
@@ -576,5 +576,5 @@ if __name__ == "__main__":
     scheduler.add_job(func=save_daily_cases, trigger="interval", days=1)
     scheduler.start()
 
-    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    #app.run(debug=True, use_reloader=False)

@@ -217,11 +217,3 @@ def get_daily_confirmed(d):
     data = pd.read_csv(file_path)
     return data['Confirmed'].sum()
     # catch error!!
-
-def get_new_cases_us():
-    path = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/new_cases.csv'
-    df = pd.read_csv(path).fillna(0)
-    df = df[['date', 'United States']]
-    df = df.set_index('date')
-    return df.to_dict()['United States']
-    
