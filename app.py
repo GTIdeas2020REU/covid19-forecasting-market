@@ -42,7 +42,11 @@ us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
 
+<<<<<<< HEAD
 us_daily_cases_confirmed_new = get_new_cases_us()
+=======
+>>>>>>> a62035b5c4c8f6fd34c926785f6e1113423a473c
+
 # set up pymongo
 #app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
 app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
