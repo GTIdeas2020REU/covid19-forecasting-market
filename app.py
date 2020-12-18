@@ -3,11 +3,12 @@ from flask_pymongo import PyMongo
 from pymongo import MongoClient, DESCENDING
 from flask_talisman import Talisman
 from passlib.hash import pbkdf2_sha256
-from datetime import timedelta, date
+import pandas as pd
+from datetime import timedelta, date, datetime
 from bson.json_util import dumps, loads
 import json
 import os
-from get_estimates import get_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
+from get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
 from evaluate import get_mse, get_user_mse
 from gaussian import get_gaussian_for_all
@@ -22,7 +23,7 @@ Talisman(app, content_security_policy=None)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
 
-# Get forecasts data when initially launching website6
+# Get forecasts data when initially launching website
 forecast_data = get_forecasts()
 
 # Get confirmed cases in US
@@ -32,6 +33,7 @@ us_inc_forecasts = get_daily_forecasts()
 us_inc_confirmed = get_us_new_deaths()
 us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 us_inc_forecasts_cases = get_daily_forecasts_cases()
+all_org_forecasts = get_all_forecasts()
 
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
@@ -40,7 +42,10 @@ us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
 
+<<<<<<< HEAD
 us_daily_cases_confirmed_new = get_new_cases_us()
+=======
+>>>>>>> a62035b5c4c8f6fd34c926785f6e1113423a473c
 
 # set up pymongo
 #app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
@@ -58,19 +63,80 @@ def load_us_inc_confirmed_wk_avg():
 
 def load_us_inc_forecasts():
     us_inc_forecasts = get_daily_forecasts()
+
+def load_all_org_forecasts():
+    all_org_forecasts = get_all_forecasts()
     
 def update_errors():
     prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
-    for p in prediction:
+    totdays = 150
+    nowdate = datetime.now().date()
+    startdate = nowdate - pd.Timedelta(days=totdays)
+    usernames = list(prediction.distinct('username'))
+    confirmed = json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
+    users = mongo.db.users
+
+
+    for interval in [1, 2, 4, 8]:
+        checkdates = [(nowdate - pd.Timedelta(days=7*interval*j)).strftime('%Y-%m-%d') for j in range(int(totdays/7*interval))
+                        if nowdate - pd.Timedelta(days=7*interval*j) >= startdate]
+        for user in usernames:
+            predictions = mongo.db.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+            dates_to_check = checkdates.copy()
+            latest_user_preds = []
+
+            # Loop through all the user's predictions
+            for pred in predictions:
+                datemade = pred['date']
+                # User's prediction array for a single prediction
+                for p in pred['prediction']:
+                    fordate = p['date'].split('T')[0]
+                    date_diff = (datetime.strptime(fordate, '%Y-%m-%d').date() - datetime.strptime(datemade, '%Y-%m-%d').date()).days
+                    # If for date is one of the check dates and meets interval requirement
+                    if fordate in dates_to_check and date_diff >= 7*interval:
+                        dates_to_check.remove(fordate)
+                        latest_user_preds.append(p)
+                        break
+                if len(dates_to_check) == 0:
+                    break
+
+            temp = dict()
+            temp['date'] = latest_user_preds
+            mse = get_user_mse(confirmed, temp, interval)
+            if mse != None:
+                users.update({"username": user}, {'$set': {"mse_score_" + str(interval): list(mse.values())[0]}})
+            else:
+                users.update({"username": user}, {'$set': {"mse_score_" + str(interval): None}})
+
+
+    for user in usernames:
+        checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
+                        if nowdate - pd.Timedelta(days=j) >= startdate]
+        predictions = mongo.db.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+        dates_to_check = checkdates.copy()
+        latest_user_preds = []
+
+        # Loop through all the user's predictions
+        for pred in predictions:
+            datemade = pred['date']
+            # User's prediction array for a single prediction
+            for p in pred['prediction']:
+                fordate = p['date'].split('T')[0]
+                # If for date is one of the check dates
+                if fordate in dates_to_check and (datetime.strptime(fordate, '%Y-%m-%d').date() - datetime.strptime(datemade, '%Y-%m-%d').date()).days >= 1:
+                    dates_to_check.remove(fordate)
+                    latest_user_preds.append(p)
+            if len(dates_to_check) == 0:
+                break
+
         temp = dict()
-        temp[p['date']] = p['prediction']
-        mse = get_user_mse(json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths())), temp)
-        if mse == None:
-            continue
-        mongo.db.predictions.update_one({"category": "us_daily_deaths", "date": p['date'].split('T')[0], }, 
-            {'$set': 
-                { "mse_score": list(mse.values())[0] }
-            })
+        temp['date'] = latest_user_preds
+        mse = get_user_mse(confirmed, temp, 'overall')
+        if mse != None:
+            users.update({"username": user}, {'$set': {"mse_score_overall": list(mse.values())[0]}})
+        else:
+            users.update({"username": user}, {'$set': {"mse_score_overall": None}})
+        users.update({"username": user}, {'$set': {"prediction": latest_user_preds}})
 
 
 @app.route('/', defaults={'u_path': ''})
@@ -162,17 +228,16 @@ def update_user_prediction(username, data, category, a=None, higher=False, index
     '''print(curr_date)
     print('DATA:')
     print(data)'''
-    score = get_user_mse(json.loads(us_inc_confirmed), {curr_date: data})
     pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
     #print(pred)
     if pred:
         #print("already exists")
         mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
         {'$set': 
-            { "prediction": data, "mse_score": score }
+            { "prediction": data }
         })
     else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data, "mse_score": score })
+        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data })
 
 def get_user_prediction(username, category):
     user_prediction = {}
@@ -246,6 +311,20 @@ def home():
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
+
+@app.route("/all-user-prediction", methods=['POST','GET'])
+def user_all_prediction():
+    user_predictions = {}
+    usernames = list(mongo.db.predictions.distinct('username'))
+    pred_category = request.args.get('category')
+    for username in usernames:
+        user_predictions[username] = get_user_prediction(username, pred_category)
+    return json.dumps(user_predictions)
+
+@app.route("/all-org-prediction")
+def org_all_prediction():
+    org_predictions = all_org_forecasts
+    return json.dumps(org_predictions)
 
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
@@ -345,7 +424,7 @@ def user_mse():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction)
+    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction, 'overall')
     return json.dumps(mse)
 
 
@@ -446,32 +525,15 @@ def user_status():
 
 
 
-'''-----User score routes-----'''
+'''-----User score route-----'''
 
-@app.route('/user-data-overall')
+@app.route('/user-data')
 def leaderboard():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_overall': 1, 'date': 1, 'prediction': 1}).sort('mse_score_overall',1))
-    return dumps(all_users)
-
-@app.route('/user-data-1-week-ahead')
-def leaderboard1():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_1': 1, 'date': 1, 'prediction': 1}).sort('mse_score_1',1))
-    return dumps(all_users)
-
-@app.route('/user-data-2-week-ahead')
-def leaderboard2():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_2': 1, 'date': 1, 'prediction': 1}).sort('mse_score_2',1))
-    return dumps(all_users)
-
-@app.route('/user-data-4-week-ahead')
-def leaderboard4():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_4': 1, 'date': 1, 'prediction': 1}).sort('mse_score_4',1))
-    return dumps(all_users)
-
-@app.route('/user-data-8-week-ahead')
-def leaderboard8():
-    all_users = list(mongo.db.predictions.find({},{'username': 1, 'mse_score_8': 1, 'date': 1, 'prediction': 1}).sort('mse_score_8',1))
-    return dumps(all_users)
+    usernames = list(mongo.db.predictions.distinct('username'))
+    users = []
+    for user in usernames:
+        users.append(list(mongo.db.users.find({"username": user}).limit(1))[0])
+    return dumps(users)
 
 
 
@@ -501,18 +563,22 @@ def total():
     return json.dumps(results)
 
 
-# Schedule jobs to perform functions once a day 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", seconds=86400)
-scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", seconds=86400)
-scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", seconds=86400)
-scheduler.add_job(func=update_errors, trigger="interval", seconds=86400)
-scheduler.add_job(func=save_daily_cases, trigger="interval", seconds=86400)
-scheduler.start()
+
 
 
 # Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+#atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=False, port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    # Schedule jobs to perform functions once a day 
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", days=1)
+    scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1)
+    scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1)
+    scheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1)
+    scheduler.add_job(func=update_errors, trigger="interval", days=1)
+    scheduler.add_job(func=save_daily_cases, trigger="interval", days=1)
+    scheduler.start()
+
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    #app.run(debug=True, use_reloader=False)

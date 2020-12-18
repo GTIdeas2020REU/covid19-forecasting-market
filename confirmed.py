@@ -6,12 +6,14 @@ from datetime import date, datetime, timedelta
 #return dataframe containing confirmed data for US
 def get_us_data():
     df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv')
+    df = df[df['date'] != "2020-01-22"]
     df = df[df['location'] == 'United States']
     return df
 
 def get_us_new_deaths():
     df = get_us_data()
     df = df[['date', 'new_deaths']]
+    df = df[df['new_deaths'].notna()]
     df.reset_index(drop=True, inplace=True)
     return json.dumps(pd.Series(df.new_deaths.values,index=df.date).to_dict())
 
@@ -52,10 +54,8 @@ def get_us_new_deaths_weekly_avg(data):
         currDate = dates[i]
         oldDate = dates[i - 7] #currDate - 7
         tempSum += daily_deaths[currDate] - daily_deaths[oldDate]
-        # print(tempSum)
         result[currDate] = tempSum / 7
     result = dict(sorted(result.items()))
-    print(result)
     return json.dumps(result)
         
 # get_us_new_deaths_weekly_avg(get_us_new_deaths())
