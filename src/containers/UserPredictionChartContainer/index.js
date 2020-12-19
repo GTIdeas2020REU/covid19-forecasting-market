@@ -20,8 +20,10 @@ class UserPredictionChartContainer extends Component {
             const [results, orgs] = organizeData(data);
             this.setState({ forecast: results, orgs });
         });
-            fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
+        fetch('/user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
             this.setState({ userPrediction: data });
+            console.log("USER PREDICTION");
+            console.log(data);
         });
         fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
             //const result = JSON.parse(data);
@@ -32,7 +34,7 @@ class UserPredictionChartContainer extends Component {
         });
         fetch('/login-status/').then(res => res.json()).then(data => {
             this.setState({ userStatus: data });
-            console.log(data);
+            //console.log(data);
         });
     }
     render() {
@@ -48,6 +50,7 @@ class UserPredictionChartContainer extends Component {
                     confirmed={confirmed}
                     aggregate={aggregate}
                     userStatus={userStatus}
+                    profilePage={true}
                 />
             </div>
         );
