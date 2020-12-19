@@ -53,37 +53,6 @@ def get_daily_forecasts():
         models[orgs.pop()] = df.to_dict('list')
     return models
 
-
-def get_all_forecasts():
-    file = open('orgs.csv', 'r')
-    orgs = []
-    for line in file:
-        orgs.append(line.strip())
-    orgs = orgs[::-1]
-
-    file = open('model-links.csv', 'r')
-    all_forecasts = dict()
-    for line in file:
-        df = pd.read_csv(line.strip())
-        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc death"))]
-        df = df.groupby('forecast_date')
-        model = orgs.pop()
-        all_forecasts[model] = {}
-        for date, group in df:
-            group = group[['target_end_date', 'value']]
-            data = []
-            # Each prediction made on a day
-            for i in range(len(group)):
-                temp = {}
-                temp['date'] = group['target_end_date'].iloc[i]
-                temp['value'] = float(group['value'].iloc[i])/7
-                temp['defined'] = True
-                data.append(temp)
-            all_forecasts[model][date] = data
-    
-    return all_forecasts
-
-
 def get_daily_forecasts_cases():
     file = open('orgs.csv', 'r')
     orgs = []
@@ -154,7 +123,7 @@ def get_aggregates(forecast_data, user_prediction):
     return aggregate_json
 
 def filter_undefined(prediction):
-    #print(prediction)
+    print(prediction)
     return prediction['defined'] is True
 
 #pass in the df containing confirmed and predicted values
@@ -171,7 +140,7 @@ def get_accuracy_for_all_models():
     confirmed = get_daily_confirmed_df(start_date, end_date)
     data = requests.get('http://localhost:5000/forecasts').json()
     for model in data:
-        #print(model)
+        print(model)
         df = pd.DataFrame.from_records(data[model])
         df = df[df['target_end_date'] >= start_date]
         df = df[df['target_end_date'] <= end_date]
@@ -186,7 +155,7 @@ def get_accuracy_for_all_models():
             #list.append(get_daily_confirmed(d))
         df['confirmed'] = ls
         error = get_mse(df)
-        #print(error)
+        print(error)
         errors.append({'model': model, 'error':error})
     return json.dumps(errors)
 
@@ -217,12 +186,4 @@ def get_daily_confirmed(d):
     data = pd.read_csv(file_path)
     return data['Confirmed'].sum()
     # catch error!!
-
-
-def get_new_cases_us():
-    path = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/new_cases.csv'
-    df = pd.read_csv(path).fillna(0)
-    df = df[['date', 'United States']]
-    df = df.set_index('date')
-    return df.to_dict()['United States']
 
