@@ -11,21 +11,34 @@ class UserPredictionChart extends Component {
     }
 
     componentDidMount() {
-        const userStatus = this.props.userStatus;
-        console.log(userStatus)
-        if (userStatus['logged in']) {
+        if (this.props.profilePage) {
+            const userStatus = this.props.userStatus;
+            if (userStatus['logged in']) {
+                this.renderChart();
+            }
+            else {
+                this.chartRef.current.innerHTML = "Please log in"
+            }
+        } else {
             this.renderChart();
         }
-        else {
-            this.chartRef.current.innerHTML = "Please log in"
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        // only update chart if the data has changed
+        if (!this.props.profilePage) {
+            if (prevProps.userPrediction !== this.props.userPrediction) {
+                this.renderChart();
+            }
         }
     }
+
     renderChart() {
         const { forecast, orgs, userPrediction, confirmed, aggregate } = this.props;
         var predictionData = {};//where we will store formatted userPrediction
         const category = this.state.category;
         var compiledData = [];
-        console.log(confirmed)
+        //console.log(confirmed)
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-01-01");
         const valueMax = 5000;
         var predEndDate = null;
@@ -121,7 +134,7 @@ class UserPredictionChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("circle")
-                    .attr('cx', width + 30)
+                    .attr('cx', width*4/5 - 15)
                     .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .attr("r", 6)
                     //.attr("width", size)
@@ -132,7 +145,7 @@ class UserPredictionChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("text")
-                    .attr("x", width + 45)
+                    .attr("x", width*4/5)
                     .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .style("fill", function(d){ return color(d)})
                     .text(function(d){ return d})
@@ -141,7 +154,7 @@ class UserPredictionChart extends Component {
         
         //DRAW TODAY LINE//
         const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
-        console.log(today);
+        //console.log(today);
         var todayMarker = svg
                             .append("g")
                             .attr("id", "today-marker")
@@ -150,7 +163,7 @@ class UserPredictionChart extends Component {
                     .attr("id", "today-line")
                     .attr("x1", x(today))
                     .attr("x2", x(today))
-                    .attr("y1", 0)
+                    .attr("y1", height/5)
                     .attr("y2", height)
                     .attr("stroke", "black")
                     .attr("stroke-width", 1)
@@ -158,7 +171,7 @@ class UserPredictionChart extends Component {
         todayMarker
                     .append("text")
                     .attr("id", "today-text")
-                    .attr("transform", `translate(${x(today) + 17}, 0) rotate(-90)`)
+                    .attr("transform", `translate(${x(today) + 17}, ${height/5}) rotate(-90)`)
                     .text("Today")
                     .style("text-anchor", "end")
 
@@ -202,7 +215,7 @@ class UserPredictionChart extends Component {
                                 .attr("class", "line")
         console.log(predictionData, userPrediction)
         if (Object.keys(userPrediction).length != 0) {
-            console.log("yes prediction")
+            //console.log("yes prediction")
             predCurve.datum(mostRecentPred.filter(predLine.defined()))
                     .attr("d", predLine)
                     .attr("stroke",  color(legendString[1]))
@@ -268,7 +281,7 @@ class UserPredictionChart extends Component {
                             }
                             const index = d3.bisectRight(dates, date);
                             if(predictionData[date]) {
-                                console.log("exists")
+                                //console.log("exists")
                                 svg
                                     .select("#prediction")
                                     .datum(predictionData[date].filter(predLine.defined()))
@@ -285,9 +298,9 @@ class UserPredictionChart extends Component {
                                 }
                                 else {
                                     var newDate = dates[index - 1];
-                                    console.log(+predictionData[newDate][0].date, +date);
+                                    //console.log(+predictionData[newDate][0].date, +date);
                                     var pred = predictionData[newDate].filter(d => +d.date >= +date)
-                                    console.log(pred)
+                                    //console.log(pred)
                                     svg
                                         .select("#prediction")
                                         .datum(pred.filter(predLine.defined()))
@@ -364,11 +377,11 @@ class UserPredictionChart extends Component {
                         .on("click", function() {
                             var date = x.invert(d3.mouse(this)[0])
                             const index = d3.bisectRight(dates, date);
-                            console.log(dates)
-                            console.log(date)
-                            console.log(index)
+                            //console.log(dates)
+                            //console.log(date)
+                            //console.log(index)
                             if(predictionData[date]) {
-                                console.log("exists")
+                                //console.log("exists")
                                 svg
                                     .select("#prediction")
                                     .datum(predictionData[date].filter(predLine.defined()))
@@ -385,9 +398,9 @@ class UserPredictionChart extends Component {
                                 }
                                 else {
                                     var newDate = dates[index - 1];
-                                    console.log(+predictionData[newDate][0].date, +date);
+                                    //console.log(+predictionData[newDate][0].date, +date);
                                     var pred = predictionData[newDate].filter(d => +d.date >= +date)
-                                    console.log(pred)
+                                    //console.log(pred)
                                     svg
                                         .select("#prediction")
                                         .datum(pred.filter(predLine.defined()))
