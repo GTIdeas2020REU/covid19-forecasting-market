@@ -10,10 +10,11 @@ import json
 import os
 from get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
 from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
-from evaluate import get_mse, get_user_mse
+from evaluate import get_mse, get_user_mse, org_mse
 from gaussian import get_gaussian_for_all
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask_apscheduler import APScheduler
 import atexit
 
 
@@ -22,6 +23,9 @@ app = Flask(__name__, static_folder='build', static_url_path='')
 Talisman(app, content_security_policy=None)
 app.secret_key = "super secret key"
 app.permanent_session_lifetime = timedelta(days=7)
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 # Get forecasts data when initially launching website
 forecast_data = get_forecasts()
@@ -34,6 +38,7 @@ us_inc_confirmed = get_us_new_deaths()
 us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
 us_inc_forecasts_cases = get_daily_forecasts_cases()
 all_org_forecasts = get_all_forecasts()
+#org_errors = [org_mse(interval) for interval in [7, 14, 28, 56]]
 
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
@@ -63,6 +68,12 @@ def load_us_inc_forecasts():
 
 def load_all_org_forecasts():
     all_org_forecasts = get_all_forecasts()
+
+def update_org_errors():
+    errors = []  # 0th index = 1, 1st = 2, 2nd = 4, 3rd = 8
+    for interval in [7, 14, 28, 56]:
+        errors.append(org_mse(interval))
+    org_errors = errors
     
 def update_errors():
     prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
@@ -399,21 +410,25 @@ def us_mse():
 def us_mse1():
     us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 1)
     return us_mse
+    #return org_errors[0]
 
 @app.route('/us-mse-2-week-ahead')
 def us_mse2():
     us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 2)
     return us_mse
+    #return org_errors[1]
 
 @app.route('/us-mse-4-week-ahead')
 def us_mse4():
     us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 4)
     return us_mse
+    #return org_errors[2]
 
 @app.route('/us-mse-8-week-ahead')
 def us_mse8():
     us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 8)
     return us_mse
+    #return org_errors[3]
 
 @app.route('/user-mse')
 def user_mse():
@@ -567,14 +582,15 @@ def total():
 
 if __name__ == "__main__":
     # Schedule jobs to perform functions once a day 
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(func=load_us_inc_confirmed, trigger="interval", days=1)
-    scheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1)
-    scheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1)
-    scheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1)
-    scheduler.add_job(func=update_errors, trigger="interval", days=1)
-    scheduler.add_job(func=save_daily_cases, trigger="interval", days=1)
-    scheduler.start()
+    #scheduler = BackgroundScheduler()
+    app.apscheduler.add_job(func=load_us_inc_confirmed, trigger="interval", days=1, id='0')
+    app.apscheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1, id='1')
+    app.apscheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1, id='2')
+    app.apscheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1, id='3')
+    #scheduler.add_job(func=update_org_errors, trigger="interval", days=1)
+    app.apscheduler.add_job(func=update_errors, trigger="interval", days=1, id='5')
+    app.apscheduler.add_job(func=save_daily_cases, trigger="interval", days=1, id='6')
+    #scheduler.start()
 
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False)
