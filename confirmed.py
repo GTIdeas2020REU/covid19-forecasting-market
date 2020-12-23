@@ -42,7 +42,7 @@ def get_us_new_deaths():
 #     result = dict(sorted(result.items()))
 #     return json.dumps(result)
         
-def get_us_new_deaths_weekly_avg(data):
+def get_weekly_avg(data):
     daily_deaths = json.loads(data)
     dates = list(daily_deaths.keys())
     result = dict()

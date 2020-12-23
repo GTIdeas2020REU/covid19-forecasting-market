@@ -29,7 +29,7 @@ def get_forecasts():
 
 
 # Get forecast data for all models as linked in model-links.csv
-def get_daily_forecasts():
+def get_daily_forecasts(event):
     file = open('orgs.csv', 'r')
     orgs = []
     for line in file:
@@ -40,11 +40,10 @@ def get_daily_forecasts():
     models = dict()
     for line in file:
         df = pd.read_csv(line.strip())
-
-        #df = df.loc[(df['location'] == 'US') & (df['type'] == 'point') & (df['target'].str.contains("inc death")) & (df['target'].str.contains("wk"))]
-        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc death"))]
-        #mask = df['target'].str.contains('wk')
-        #df.loc[mask, 'value'] /= 7
+        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains(event))]
+        if len(df) == 0:
+            orgs.pop()
+            continue
         df.value = df.value.astype('float')
         df['value'] = df['value'].div(7)
         df = df.sort_values(by=['forecast_date', 'target_end_date'])
@@ -54,7 +53,7 @@ def get_daily_forecasts():
     return models
 
 
-def get_all_forecasts():
+def get_all_forecasts(event):
     file = open('orgs.csv', 'r')
     orgs = []
     for line in file:
@@ -65,7 +64,10 @@ def get_all_forecasts():
     all_forecasts = dict()
     for line in file:
         df = pd.read_csv(line.strip())
-        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc death"))]
+        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains(event))]
+        if len(df) == 0:
+            orgs.pop()
+            continue
         df = df.groupby('forecast_date')
         model = orgs.pop()
         all_forecasts[model] = {}

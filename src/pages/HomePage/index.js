@@ -25,7 +25,7 @@ const data = [
     },
     {
       "name": "mse",
-      "data": "/us-mse-overall"
+      "data": "/us-mse-overall?category=us_daily_deaths"
     },
   ]
 
@@ -48,7 +48,7 @@ const data = [
     },
     {
       "name": "mse",
-      "data": "/us-mse-overall"
+      "data": "/us-mse-overall?category=us_daily_deaths"
     },
   ]
 class HomePage extends Component {

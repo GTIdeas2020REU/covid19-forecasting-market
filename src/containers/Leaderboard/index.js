@@ -164,7 +164,7 @@ class Leaderboard extends React.Component {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
     });
-    fetch('/us-mse-overall').then(res => res.json()).then(data => {
+    fetch('/us-mse-overall?category=us_daily_deaths').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
     });
     fetch('/all-user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
@@ -228,7 +228,7 @@ class Leaderboard extends React.Component {
     this.setState({dropDownTitle: e});
     const score_map = {'overall': 'overall', '1-week-ahead': '1', '2-week-ahead': '2', '4-week-ahead': '4', '8-week-ahead': '8'};
     this.setState({interval: score_map[e]});
-    fetch('/us-mse-' + e).then(res => res.json()).then(data => {
+    fetch('/us-mse-' + e + '?category=us_daily_deaths').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
     });
   }

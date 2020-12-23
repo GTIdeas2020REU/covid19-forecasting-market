@@ -9,7 +9,7 @@ from bson.json_util import dumps, loads
 import json
 import os
 from get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
-from confirmed import get_us_new_deaths, get_us_confirmed, get_us_new_deaths_weekly_avg
+from confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg
 from evaluate import get_mse, get_user_mse, org_mse
 from gaussian import get_gaussian_for_all
 
@@ -33,11 +33,16 @@ forecast_data = get_forecasts()
 # Get confirmed cases in US
 us_data = get_us_confirmed()
 
-us_inc_forecasts = get_daily_forecasts()
-us_inc_confirmed = get_us_new_deaths()
-us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
+us_inc_forecasts_deaths = get_daily_forecasts(event="inc death")
+us_inc_confirmed_deaths = get_us_new_deaths()
+us_inc_confirmed_wk_avg_deaths = get_weekly_avg(us_inc_confirmed_deaths)
+all_org_forecasts_deaths = get_all_forecasts(event="inc death")
+
 us_inc_forecasts_cases = get_daily_forecasts_cases()
-all_org_forecasts = get_all_forecasts()
+us_daily_cases_confirmed_new = get_new_cases_us()
+us_inc_confirmed_wk_avg_cases = get_weekly_avg(json.dumps(us_daily_cases_confirmed_new))
+all_org_forecasts_cases = get_all_forecasts(event="inc case")
+
 #org_errors = [org_mse(interval) for interval in [7, 14, 28, 56]]
 
 # Get aggregate data
@@ -47,7 +52,7 @@ us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
 
-us_daily_cases_confirmed_new = get_new_cases_us()
+
 
 # set up pymongo
 #app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
@@ -58,16 +63,16 @@ data = {}
 
 ''' Functions to update variables and database on daily basis '''
 def load_us_inc_confirmed():
-    us_inc_confirmed = get_us_new_deaths()
+    us_inc_confirmed_deaths = get_us_new_deaths()
 
 def load_us_inc_confirmed_wk_avg():
-    us_inc_confirmed_wk_avg = get_us_new_deaths_weekly_avg(us_inc_confirmed)
+    us_inc_confirmed_wk_avg_deaths = get_weekly_avg(us_inc_confirmed_deaths)
 
 def load_us_inc_forecasts():
-    us_inc_forecasts = get_daily_forecasts()
+    us_inc_forecasts_deaths = get_daily_forecasts(event="inc death")
 
 def load_all_org_forecasts():
-    all_org_forecasts = get_all_forecasts()
+    all_org_forecasts_deaths = get_all_forecasts(event="inc death")
 
 def update_org_errors():
     errors = []  # 0th index = 1, 1st = 2, 2nd = 4, 3rd = 8
@@ -81,7 +86,7 @@ def update_errors():
     nowdate = datetime.now().date()
     startdate = nowdate - pd.Timedelta(days=totdays)
     usernames = list(prediction.distinct('username'))
-    confirmed = json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
+    confirmed = json.loads(get_weekly_avg(get_us_new_deaths()))
     users = mongo.db.users
 
 
@@ -331,7 +336,7 @@ def user_all_prediction():
 
 @app.route("/all-org-prediction")
 def org_all_prediction():
-    org_predictions = all_org_forecasts
+    org_predictions = all_org_forecasts_deaths
     return json.dumps(org_predictions)
 
 @app.route("/us-cum-deaths-forecasts")
@@ -341,7 +346,7 @@ def us_cum_deaths_forecasts():
 
 @app.route("/us-inc-deaths-forecasts")
 def us_inc_deaths_forecasts():
-    return us_inc_forecasts
+    return us_inc_forecasts_deaths
     #return data['us_inc_forecasts']
 
 @app.route("/us-cum-deaths-confirmed")
@@ -351,12 +356,12 @@ def us_cum_deaths_confirmed():
 
 @app.route('/us-inc-deaths-confirmed')
 def us_inc_deaths_confirmed():
-    return us_inc_confirmed
+    return us_inc_confirmed_deaths
     #return data['us_inc_confirmed']
 
 @app.route('/us-inc-deaths-confirmed-wk-avg')
 def us_inc_deaths_confirmed_wk_avg():
-    return us_inc_confirmed_wk_avg
+    return us_inc_confirmed_wk_avg_deaths
 
 @app.route('/us-agg-cum-deaths')
 def us_agg_cum_deaths():
@@ -371,7 +376,7 @@ def us_agg_inc_deaths():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    us_aggregates_daily = get_aggregates(us_inc_forecasts, user_prediction)
+    us_aggregates_daily = get_aggregates(us_inc_forecasts_deaths, user_prediction)
     return us_aggregates_daily
 
 @app.route('/us-agg-inc-cases')
@@ -389,7 +394,7 @@ def us_daily_cases_confirmed():
     confirmed_cases = {}
     for data in mongo.db.confirmed.find({'category': 'daily_cases'}):
         confirmed_cases = dict(data['data'])
-    confirmed_cases = get_us_new_deaths_weekly_avg(dumps(confirmed_cases))
+    confirmed_cases = get_weekly_avg(dumps(confirmed_cases))
     return confirmed_cases
 
 @app.route('/us-daily-cases-forecast')
@@ -401,32 +406,60 @@ def us_daily_cases_forecast():
 
 '''-----Forecast evaluation routes-----'''
 
-@app.route('/us-mse-overall')
+@app.route('/us-mse-overall', methods=['POST','GET'])
 def us_mse():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 'overall')
+    # us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
+    us_mse = None
+    category = request.args.get('category')
+    print(category)
+    if category == "us_daily_deaths":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
+    elif category == "us_daily_cases":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 'overall')
     return us_mse
 
-@app.route('/us-mse-1-week-ahead')
+@app.route('/us-mse-1-week-ahead', methods=['POST','GET'])
 def us_mse1():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 1)
+    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 1)
+    us_mse = None
+    category = request.args.get('category')
+    if category == "us_daily_deaths":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 1)
+    elif category == "us_daily_cases":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 1)
     return us_mse
     #return org_errors[0]
 
-@app.route('/us-mse-2-week-ahead')
+@app.route('/us-mse-2-week-ahead', methods=['POST','GET'])
 def us_mse2():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 2)
+    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 2)
+    us_mse = None
+    if category == "us_daily_deaths":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 2)
+    elif category == "us_daily_cases":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 2)
     return us_mse
     #return org_errors[1]
 
-@app.route('/us-mse-4-week-ahead')
+@app.route('/us-mse-4-week-ahead', methods=['POST','GET'])
 def us_mse4():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 4)
+    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 4)
+    us_mse = None
+    if category == "us_daily_deaths":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 4)
+    elif category == "us_daily_cases":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 4)
     return us_mse
     #return org_errors[2]
 
-@app.route('/us-mse-8-week-ahead')
+@app.route('/us-mse-8-week-ahead', methods=['POST','GET'])
 def us_mse8():
-    us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg), us_inc_forecasts, 8)
+    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 8)
+    us_mse = None
+    if category == "us_daily_deaths":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 8)
+    elif category == "us_daily_cases":
+        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 8)
     return us_mse
     #return org_errors[3]
 
@@ -435,7 +468,7 @@ def user_mse():
     user_prediction = {}
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths') 
-    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg), user_prediction, 'overall')
+    mse = get_user_mse(json.loads(us_inc_confirmed_wk_avg_deaths), user_prediction, 'overall')
     return json.dumps(mse)
 
 
@@ -592,5 +625,5 @@ if __name__ == "__main__":
     app.apscheduler.add_job(func=save_daily_cases, trigger="interval", days=1, id='6')
     #scheduler.start()
 
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False)

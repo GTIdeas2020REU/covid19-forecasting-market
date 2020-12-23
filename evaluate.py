@@ -1,4 +1,4 @@
-from confirmed import get_us_new_deaths_weekly_avg, get_us_new_deaths
+from confirmed import get_weekly_avg, get_us_new_deaths
 from get_estimates import get_daily_forecasts
 
 import json
