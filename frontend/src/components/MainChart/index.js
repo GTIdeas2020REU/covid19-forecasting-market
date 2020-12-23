@@ -776,10 +776,16 @@ class MainChart extends Component {
                 //reposition draw your guess text and pointer
                 svg.select("#draw-guess")
                         .attr("x", newX + (width - newX) / 2);
-                svg.select("#pointer")
-                   .selectAll("circle")
-                        .attr("cx", x(confirmedLastDate));
-                if (newX < 0) {
+                if (x(confirmedLastDate) <= x.range()[0]) {
+                    svg.select("#pointer")
+                       .attr("opacity", "0")
+                } else {
+                    svg.select("#pointer")
+                            .attr("opacity", "1")
+                       .selectAll("circle")
+                            .attr("cx", x(confirmedLastDate));
+                }
+                if (x(today) < x.range()[0]) {
                     todayMarker.style("display", "none");
                 }
                 else {
