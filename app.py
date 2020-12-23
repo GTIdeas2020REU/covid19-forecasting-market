@@ -40,7 +40,7 @@ all_org_forecasts_deaths = get_all_forecasts(event="inc death")
 
 us_inc_forecasts_cases = get_daily_forecasts_cases()
 us_daily_cases_confirmed_new = get_new_cases_us()
-us_inc_confirmed_wk_avg_cases = get_weekly_avg(json.dumps(us_daily_cases_confirmed_new))
+us_inc_confirmed_wk_avg_cases = get_weekly_avg(dumps(us_daily_cases_confirmed_new))
 all_org_forecasts_cases = get_all_forecasts(event="inc case")
 
 #org_errors = [org_mse(interval) for interval in [7, 14, 28, 56]]
@@ -389,13 +389,7 @@ def us_agg_inc_cases():
 
 @app.route('/us-daily-cases-confirmed')
 def us_daily_cases_confirmed():
-    # save_daily_cases()
-    # return 'done'
-    confirmed_cases = {}
-    for data in mongo.db.confirmed.find({'category': 'daily_cases'}):
-        confirmed_cases = dict(data['data'])
-    confirmed_cases = get_weekly_avg(dumps(confirmed_cases))
-    return confirmed_cases
+    return us_inc_confirmed_wk_avg_cases
 
 @app.route('/us-daily-cases-forecast')
 def us_daily_cases_forecast():
