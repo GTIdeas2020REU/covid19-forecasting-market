@@ -11,7 +11,7 @@ import './Leaderboard.css';
 
 
 // Create leaderboard table, consisting of user predictions and official forecasts
-function Table({ columns, data, confirmed, orgs, forecasts, interval, allUserPredictions, allOrgPredictions, style }) {
+function Table({ columns, data, confirmed, orgs, forecasts, interval, allUserPredictions, allOrgPredictions, style, category }) {
   // Use the state and functions returned from useTable to build UI
   const {
     getTableProps,
@@ -28,7 +28,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, interval, allUserPre
     interval,
     allUserPredictions,
     allOrgPredictions,
-    style
+    style, category
   });
 
   // Render the UI for table
@@ -44,8 +44,8 @@ function Table({ columns, data, confirmed, orgs, forecasts, interval, allUserPre
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {<RenderOrgsTable orgs={orgs} forecasts={forecasts} confirmed={confirmed} allOrgPredictions={allOrgPredictions} />}
-        {<RenderUsersTable users={data} confirmed={confirmed} interval={interval} allUserPredictions={allUserPredictions} />}
+        {<RenderOrgsTable orgs={orgs} forecasts={forecasts} confirmed={confirmed} allOrgPredictions={allOrgPredictions} category={category} />}
+        {<RenderUsersTable users={data} confirmed={confirmed} interval={interval} allUserPredictions={allUserPredictions} category={category} />}
       </tbody>
     </table>
   )
@@ -54,7 +54,7 @@ function Table({ columns, data, confirmed, orgs, forecasts, interval, allUserPre
 
 var selectedID = ""; // var used to keep chart in place if same row was clicked
 // Display user's prediction when user's row is clicked on
-function createUserChart(user, confirmed, id, allUserPredictions) {
+function createUserChart(user, confirmed, id, allUserPredictions, category) {
   $('tr').removeClass('clicked');
   $("[id='" + id + "']").addClass('clicked');
   if (selectedID !== id) {
@@ -69,7 +69,8 @@ function createUserChart(user, confirmed, id, allUserPredictions) {
       userPrediction={allUserPredictions} 
       confirmed={confirmed} 
       aggregate={null} 
-      profilePage={false} 
+      profilePage={false}
+      category={category} 
     />, 
     document.getElementById('predictionChart')
   );
@@ -77,7 +78,7 @@ function createUserChart(user, confirmed, id, allUserPredictions) {
 
 
 // Display official forecaster's prediction when its row is clicked on
-function createOrgChart(org, confirmed, id, allOrgPredictions) {
+function createOrgChart(org, confirmed, id, allOrgPredictions, category) {
   var data = [];
   for (var i = 0; i < org['target_end_date'].length; i++) {
     var temp = {}
@@ -99,7 +100,8 @@ function createOrgChart(org, confirmed, id, allOrgPredictions) {
       userPrediction={allOrgPredictions} 
       confirmed={confirmed} 
       aggregate={null} 
-      profilePage={false} 
+      profilePage={false}
+      category={category} 
     />, 
     document.getElementById('predictionChart')
   );
@@ -107,15 +109,15 @@ function createOrgChart(org, confirmed, id, allOrgPredictions) {
 
 
 // Add rows with user data to the leaderboard table
-function RenderUsersTable({ users, confirmed, interval, allUserPredictions }) {
+function RenderUsersTable({ users, confirmed, interval, allUserPredictions, category }) {
   return users.map((user, index) => {
-    var score = user["mse_score_" + interval];
+    var score = user["mse_score_" + interval + "_" + category];
     // ignore null MSE values
     if (score == null || typeof(score) != "number") {
       return;
     }
     return (
-       <tr id={user.username} onClick={() => createUserChart(user, confirmed, user.username, allUserPredictions[user.username])}>
+       <tr id={user.username} onClick={() => createUserChart(user, confirmed, user.username, allUserPredictions[user.username], category)}>
           <td>{user.username}</td>
           <td>{parseFloat(score).toFixed(2)}</td>
        </tr>
@@ -125,14 +127,14 @@ function RenderUsersTable({ users, confirmed, interval, allUserPredictions }) {
 
 
 // Add rows with official forecast data to the leaderboard table
-function RenderOrgsTable({ orgs, forecasts, confirmed, allOrgPredictions }) {
+function RenderOrgsTable({ orgs, forecasts, confirmed, allOrgPredictions, category }) {
   return Object.entries(orgs).map( ([key, value]) => {
     // ignore null MSE values
     if (value == null) {
       return;
     }
     return (
-      <tr id={key} style={{backgroundColor: colors[key], color: 'black'}} onClick={() => createOrgChart(forecasts[key], confirmed, key, allOrgPredictions[key])}>
+      <tr id={key} style={{backgroundColor: colors[key], color: 'black'}} onClick={() => createOrgChart(forecasts[key], confirmed, key, allOrgPredictions[key], category)}>
           <td>{key}*</td>
           <td>{parseFloat(value).toFixed(2)}</td>
       </tr>
@@ -153,7 +155,8 @@ class Leaderboard extends React.Component {
       forecasts: null,
       interval: 'overall',
       predictionLength: 1,
-      dropDownTitle: 'overall',
+      dropDownTitleError: 'overall',
+      dropDownTitleCategory: 'US Daily Cases',
       aggregate: null,
       allUserPredictions: null,
       allOrgPredictions: null
@@ -164,13 +167,13 @@ class Leaderboard extends React.Component {
     fetch('/user-data').then(res => res.json()).then(data => {
       this.setState({ users: data });
     });
-    fetch('/us-mse-overall?category=us_daily_deaths').then(res => res.json()).then(data => {
+    fetch('/us-mse-overall?category=us_daily_cases').then(res => res.json()).then(data => {
       this.setState({ orgs: data });
     });
-    fetch('/all-user-prediction?category=us_daily_deaths').then(res => res.json()).then(data => {
+    fetch('/all-user-prediction?category=us_daily_cases').then(res => res.json()).then(data => {
       this.setState({ allUserPredictions: data });
     });
-    fetch('/all-org-prediction').then(res => res.json()).then(data => {
+    fetch('/all-org-prediction?category=us_daily_cases').then(res => res.json()).then(data => {
       this.setState({ allOrgPredictions: data });
     });
 
@@ -186,17 +189,14 @@ class Leaderboard extends React.Component {
       ]
     });
 
-    fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
+    fetch('/confirmed-wk-avg?category=us_daily_cases').then(res => res.json()).then(data => {
       this.setState({ confirmed: data });
     });
 
-    fetch('/us-inc-deaths-forecasts').then(res => res.json()).then(data => {
+    fetch('/forecasts?category=us_daily_cases').then(res => res.json()).then(data => {
       this.setState({ forecasts: data });
     });
 
-    fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
-      this.setState({ aggregate: data });
-    });
   }
 
 
@@ -224,17 +224,43 @@ class Leaderboard extends React.Component {
     }
   }
 
+
   handleSelect = (e) => {
-    this.setState({dropDownTitle: e});
     const score_map = {'overall': 'overall', '1-week-ahead': '1', '2-week-ahead': '2', '4-week-ahead': '4', '8-week-ahead': '8'};
-    this.setState({interval: score_map[e]});
-    fetch('/us-mse-' + e + '?category=us_daily_deaths').then(res => res.json()).then(data => {
-      this.setState({ orgs: data });
-    });
+    const category_map = {'US Daily Deaths': 'us_daily_deaths', 'US Daily Cases': 'us_daily_cases'};
+    
+    if (e == "US Daily Deaths" || e == "US Daily Cases") {
+      this.setState({dropDownTitleCategory: e});
+      fetch('/us-mse-' + this.state.dropDownTitleError + '?category=' + category_map[e]).then(res => res.json()).then(data => {
+        this.setState({ orgs: data });
+      });
+      fetch('/all-user-prediction?category=' + category_map[e]).then(res => res.json()).then(data => {
+        this.setState({ allUserPredictions: data });
+      });
+      fetch('/all-org-prediction?category=' + category_map[e]).then(res => res.json()).then(data => {
+        this.setState({ allOrgPredictions: data });
+      });
+      fetch('/confirmed-wk-avg?category=' + category_map[e]).then(res => res.json()).then(data => {
+        this.setState({ confirmed: data });
+      });
+      fetch('/forecasts?category=' + category_map[e]).then(res => res.json()).then(data => {
+        this.setState({ forecasts: data });
+      });
+      $('#predictionChart div').empty(); // reset predictionChart
+
+    } else {
+      this.setState({dropDownTitleError: e});
+      this.setState({interval: score_map[e]});
+      fetch('/us-mse-' + e + '?category=' + category_map[this.state.dropDownTitleCategory]).then(res => res.json()).then(data => {
+        this.setState({ orgs: data });
+      });
+    }
   }
 
 
   render() {
+    const category_map = {'US Daily Deaths': 'us_daily_deaths', 'US Daily Cases': 'us_daily_cases'};
+
     const tableStyle = {
       width: "48%",
       textAlign: "center",
@@ -255,7 +281,7 @@ class Leaderboard extends React.Component {
     if (!users || !columns || !confirmed || !orgs || !forecasts || !allUserPredictions || !allOrgPredictions) return 'Loading...';
 
     return (
-      <div>
+      <div >
         <br></br>
         <h2 style={{marginBottom: 0}}>Top Forecasts</h2>
         <small>* indicates an official forecaster as labelled by the CDC</small>
@@ -273,18 +299,33 @@ class Leaderboard extends React.Component {
           </div>
 
         <div>
-          <Dropdown onSelect={this.handleSelect}>
-            <Dropdown.Toggle variant="success" id="dropdown-basic">
-              {this.state.dropDownTitle}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item eventKey="overall">overall</Dropdown.Item>
-              <Dropdown.Item eventKey="1-week-ahead">1-week-ahead</Dropdown.Item>
-              <Dropdown.Item eventKey="2-week-ahead">2-week-ahead</Dropdown.Item>
-              <Dropdown.Item eventKey="4-week-ahead">4-week-ahead</Dropdown.Item>
-              <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+          <span style={{display: 'inline-block', marginRight: 5}}>
+            <Dropdown onSelect={this.handleSelect}>
+              <Dropdown.Toggle variant="success" id="dropdown-category">
+                {this.state.dropDownTitleCategory}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item eventKey="US Daily Deaths">US Daily Deaths</Dropdown.Item>
+                <Dropdown.Item eventKey="US Daily Cases">US Daily Cases</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </span>
+
+          <span style={{display: 'inline-block'}}>
+            <Dropdown onSelect={this.handleSelect}>
+              <Dropdown.Toggle variant="success" id="dropdown-error">
+                {this.state.dropDownTitleError}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item eventKey="overall">overall</Dropdown.Item>
+                <Dropdown.Item eventKey="1-week-ahead">1-week-ahead</Dropdown.Item>
+                <Dropdown.Item eventKey="2-week-ahead">2-week-ahead</Dropdown.Item>
+                <Dropdown.Item eventKey="4-week-ahead">4-week-ahead</Dropdown.Item>
+                <Dropdown.Item eventKey="8-week-ahead">8-week-ahead</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </span>
+          <br></br>
           <br></br>
         </div>
 
@@ -298,7 +339,8 @@ class Leaderboard extends React.Component {
             interval={interval} 
             allUserPredictions={allUserPredictions} 
             allOrgPredictions={allOrgPredictions}
-            style={tableStyle} />
+            style={tableStyle}
+            category={category_map[this.state.dropDownTitleCategory]} />
           <div id="predictionChart" className="text-center" style={chartStyle}><br></br>Click on a row to display all predictions from a user!</div>
         </div>
       </div>

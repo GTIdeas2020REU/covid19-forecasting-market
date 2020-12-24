@@ -28,13 +28,16 @@ def get_mse(confirmed, forecasts, interval):
             confirmed_values = confirmed_values[::-1][:interval]
             prediction_values = prediction_values[::-1][:interval]
 
+        if len(confirmed_values) == 0 or len(prediction_values) == 0:
+            continue
+
         mse = mean_squared_error(confirmed_values, prediction_values)
         result[model] = mse
 
     return result
 
 
-def org_mse(interval):
+def org_mse(interval, event):
     nowdate = datetime.now().date()
     startdate = datetime(2020, 2, 29, 0, 0).date()
     totdays = (nowdate - startdate).days
@@ -47,17 +50,16 @@ def org_mse(interval):
     file = open('model-links.csv', 'r')
     checkdates = [startdate + pd.Timedelta(days=interval*j) for j in range(int(totdays/interval))
                     if startdate + pd.Timedelta(days=interval*j) <= nowdate]
-    confirmed = json.loads(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
+    confirmed = json.loads(get_weekly_avg(get_us_new_deaths()))
     outcomes = pd.DataFrame(confirmed.items(), columns=['date', 'value'])
     outcomes = outcomes.set_index('date')
     performance = {}
     for line in file:
         df = pd.read_csv(line.strip())
-        model = orgs.pop()
         relevant_preds = df[
             (df['location'] == 'US') &
             (pd.to_datetime(df['target_end_date'], format='%Y-%m-%d').isin(checkdates)) &
-            (df['target'].str.contains("inc death")) &
+            (df['target'].str.contains(event)) &
             ((pd.to_datetime(df['target_end_date'], format='%Y-%m-%d') - pd.to_datetime(df['forecast_date'], format='%Y-%m-%d')).apply(lambda delt: delt.days) >= interval)
         ].sort_values('forecast_date').drop_duplicates('target_end_date',keep='last')
         
@@ -65,6 +67,7 @@ def org_mse(interval):
         if len(relevant_preds) == 0:
             performance[model] = None
             continue
+        model = orgs.pop()
         relevant_preds['value'] /= 7
         true_results = outcomes.loc[relevant_preds['target_end_date']]
         scores = (relevant_preds['value'].to_numpy() - true_results.to_numpy())**2
@@ -88,7 +91,7 @@ def get_user_mse(confirmed, user_prediction, interval):
         if interval != 'overall':
             user_pred_weekly = user_pred_daily
         else:
-            user_pred_weekly = json.loads(get_us_new_deaths_weekly_avg(json.dumps(user_pred_daily)))
+            user_pred_weekly = json.loads(get_weekly_avg(json.dumps(user_pred_daily)))
 
         confirmed_values = []
         prediction_values = []

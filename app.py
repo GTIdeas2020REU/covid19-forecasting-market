@@ -334,10 +334,15 @@ def user_all_prediction():
         user_predictions[username] = get_user_prediction(username, pred_category)
     return json.dumps(user_predictions)
 
-@app.route("/all-org-prediction")
+@app.route("/all-org-prediction", methods=['POST','GET'])
 def org_all_prediction():
-    org_predictions = all_org_forecasts_deaths
-    return json.dumps(org_predictions)
+    category = request.args.get('category')
+    if category == "us_daily_deaths":
+        return json.dumps(all_org_forecasts_deaths)
+    elif category == "us_daily_cases":
+        return json.dumps(all_org_forecasts_cases)
+    #org_predictions = all_org_forecasts_deaths
+    #return json.dumps(org_predictions)
 
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
@@ -348,6 +353,14 @@ def us_cum_deaths_forecasts():
 def us_inc_deaths_forecasts():
     return us_inc_forecasts_deaths
     #return data['us_inc_forecasts']
+
+@app.route("/forecasts", methods=['POST','GET'])
+def forecasts():
+    category = request.args.get('category')
+    if category == "us_daily_deaths":
+        return us_inc_forecasts_deaths
+    elif category == "us_daily_cases":
+        return us_inc_forecasts_cases
 
 @app.route("/us-cum-deaths-confirmed")
 def us_cum_deaths_confirmed():
@@ -362,6 +375,14 @@ def us_inc_deaths_confirmed():
 @app.route('/us-inc-deaths-confirmed-wk-avg')
 def us_inc_deaths_confirmed_wk_avg():
     return us_inc_confirmed_wk_avg_deaths
+
+@app.route('/confirmed-wk-avg', methods=['POST','GET'])
+def confirmed_wk_avg():
+    category = request.args.get('category')
+    if category == "us_daily_deaths":
+        return us_inc_confirmed_wk_avg_deaths
+    elif category == "us_daily_cases":
+        return us_inc_confirmed_wk_avg_cases
 
 @app.route('/us-agg-cum-deaths')
 def us_agg_cum_deaths():
@@ -405,7 +426,6 @@ def us_mse():
     # us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
     us_mse = None
     category = request.args.get('category')
-    print(category)
     if category == "us_daily_deaths":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
     elif category == "us_daily_cases":
@@ -428,6 +448,7 @@ def us_mse1():
 def us_mse2():
     #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 2)
     us_mse = None
+    category = request.args.get('category')
     if category == "us_daily_deaths":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 2)
     elif category == "us_daily_cases":
@@ -439,6 +460,7 @@ def us_mse2():
 def us_mse4():
     #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 4)
     us_mse = None
+    category = request.args.get('category')
     if category == "us_daily_deaths":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 4)
     elif category == "us_daily_cases":
@@ -450,6 +472,7 @@ def us_mse4():
 def us_mse8():
     #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 8)
     us_mse = None
+    category = request.args.get('category')
     if category == "us_daily_deaths":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 8)
     elif category == "us_daily_cases":
@@ -619,5 +642,5 @@ if __name__ == "__main__":
     app.apscheduler.add_job(func=save_daily_cases, trigger="interval", days=1, id='6')
     #scheduler.start()
 
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    # app.run(debug=True, use_reloader=False)
+    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False)

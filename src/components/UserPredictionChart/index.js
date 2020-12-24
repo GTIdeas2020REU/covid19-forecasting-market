@@ -34,13 +34,13 @@ class UserPredictionChart extends Component {
     }
 
     renderChart() {
-        const { forecast, orgs, userPrediction, confirmed, aggregate } = this.props;
+        const { forecast, orgs, userPrediction, confirmed, aggregate, category } = this.props;
         var predictionData = {};//where we will store formatted userPrediction
-        const category = this.state.category;
         var compiledData = [];
         //console.log(confirmed)
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-01-01");
-        const valueMax = 5000;
+        const maxValues = {'us_daily_deaths': 5000, 'us_daily_cases': 250000};
+        var valueMax = maxValues[category];
         var predEndDate = null;
         const predLength = 155;
         var mostRecentPred = [];
