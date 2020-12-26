@@ -7,13 +7,13 @@ from datetime import date, datetime, timedelta
 
 # Get forecast data for all models as linked in model-links.csv
 def get_forecasts():
-    file = open('orgs.csv', 'r')
+    file = open('backend/orgs.csv', 'r')
     orgs = []
     for line in file:
         orgs.append(line.strip())
     orgs = orgs[::-1]
 
-    file = open('model-links.csv', 'r')
+    file = open('backend/model-links.csv', 'r')
     models = dict()
     for line in file:
         df = pd.read_csv(line.strip())
@@ -30,13 +30,13 @@ def get_forecasts():
 
 # Get forecast data for all models as linked in model-links.csv
 def get_daily_forecasts(event):
-    file = open('orgs.csv', 'r')
+    file = open('backend/orgs.csv', 'r')
     orgs = []
     for line in file:
         orgs.append(line.strip())
     orgs = orgs[::-1]
 
-    file = open('model-links.csv', 'r')
+    file = open('backend/model-links.csv', 'r')
     models = dict()
     for line in file:
         df = pd.read_csv(line.strip())
@@ -54,13 +54,13 @@ def get_daily_forecasts(event):
 
 
 def get_all_forecasts(event):
-    file = open('orgs.csv', 'r')
+    file = open('backend/orgs.csv', 'r')
     orgs = []
     for line in file:
         orgs.append(line.strip())
     orgs = orgs[::-1]
 
-    file = open('model-links.csv', 'r')
+    file = open('backend/model-links.csv', 'r')
     all_forecasts = dict()
     for line in file:
         df = pd.read_csv(line.strip())
@@ -87,13 +87,13 @@ def get_all_forecasts(event):
 
 
 def get_daily_forecasts_cases():
-    file = open('orgs.csv', 'r')
+    file = open('backend/orgs.csv', 'r')
     orgs = []
     for line in file:
         orgs.append(line.strip())
     orgs = orgs[::-1]
 
-    file = open('model-links.csv', 'r')
+    file = open('backend/model-links.csv', 'r')
     models = dict()
     for line in file:
         df = pd.read_csv(line.strip())

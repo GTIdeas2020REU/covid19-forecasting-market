@@ -1,5 +1,5 @@
-from confirmed import get_weekly_avg, get_us_new_deaths
-from get_estimates import get_daily_forecasts
+from backend.confirmed import get_weekly_avg, get_us_new_deaths
+from backend.get_estimates import get_daily_forecasts
 
 import json
 import time
@@ -41,13 +41,13 @@ def org_mse(interval, event):
     nowdate = datetime.now().date()
     startdate = datetime(2020, 2, 29, 0, 0).date()
     totdays = (nowdate - startdate).days
-    file = open('orgs.csv', 'r')
+    file = open('backend/orgs.csv', 'r')
     orgs = []
     for line in file:
         orgs.append(line.strip())
     orgs = orgs[::-1]
 
-    file = open('model-links.csv', 'r')
+    file = open('backend/model-links.csv', 'r')
     checkdates = [startdate + pd.Timedelta(days=interval*j) for j in range(int(totdays/interval))
                     if startdate + pd.Timedelta(days=interval*j) <= nowdate]
     confirmed = json.loads(get_weekly_avg(get_us_new_deaths()))
