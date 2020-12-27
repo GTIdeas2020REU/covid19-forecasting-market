@@ -51,6 +51,7 @@ class UserPredictionChartContainer extends Component {
                     aggregate={aggregate}
                     userStatus={userStatus}
                     profilePage={true}
+                    category="us_daily_deaths"
                 />
             </div>
         );
