@@ -44,7 +44,6 @@ us_daily_cases_confirmed_new = get_new_cases_us()
 us_inc_confirmed_wk_avg_cases = get_weekly_avg(json.dumps(us_daily_cases_confirmed_new))
 all_org_forecasts_cases = get_all_forecasts(event="inc case")
 
-#org_errors = [org_mse(interval) for interval in [7, 14, 28, 56]]
 
 # Get aggregate data
 #us_aggregates = get_aggregates(forecast_data)
@@ -75,12 +74,7 @@ def load_us_inc_forecasts():
 def load_all_org_forecasts():
     all_org_forecasts_deaths = get_all_forecasts(event="inc death")
 
-def update_org_errors():
-    errors = []  # 0th index = 1, 1st = 2, 2nd = 4, 3rd = 8
-    for interval in [7, 14, 28, 56]:
-        errors.append(org_mse(interval))
-    org_errors = errors
-    
+
 def update_errors():
     prediction = mongo.db.predictions.find({"category": "us_daily_deaths"})
     totdays = 150
@@ -424,7 +418,6 @@ def us_daily_cases_forecast():
 
 @app.route('/us-mse-overall', methods=['POST','GET'])
 def us_mse():
-    # us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
     us_mse = None
     category = request.args.get('category')
     if category == "us_daily_deaths":
@@ -435,51 +428,72 @@ def us_mse():
 
 @app.route('/us-mse-1-week-ahead', methods=['POST','GET'])
 def us_mse1():
-    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 1)
     us_mse = None
+    errors = mongo.db.org_errors
     category = request.args.get('category')
     if category == "us_daily_deaths":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 1)
+        scores = errors.find({}, {"org": 1, "mse_score_1_us_daily_deaths": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_1_us_daily_deaths"]
     elif category == "us_daily_cases":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 1)
+        scores = errors.find({}, {"org": 1, "mse_score_1_us_daily_cases": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_1_us_daily_cases"]
     return us_mse
-    #return org_errors[0]
 
 @app.route('/us-mse-2-week-ahead', methods=['POST','GET'])
 def us_mse2():
-    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 2)
     us_mse = None
+    errors = mongo.db.org_errors
     category = request.args.get('category')
     if category == "us_daily_deaths":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 2)
+        scores = errors.find({}, {"org": 1, "mse_score_2_us_daily_deaths": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_2_us_daily_deaths"]
     elif category == "us_daily_cases":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 2)
+        scores = errors.find({}, {"org": 1, "mse_score_2_us_daily_cases": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_2_us_daily_cases"]
     return us_mse
-    #return org_errors[1]
 
 @app.route('/us-mse-4-week-ahead', methods=['POST','GET'])
 def us_mse4():
-    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 4)
     us_mse = None
+    errors = mongo.db.org_errors
     category = request.args.get('category')
     if category == "us_daily_deaths":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 4)
+        scores = errors.find({}, {"org": 1, "mse_score_4_us_daily_deaths": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_4_us_daily_deaths"]
     elif category == "us_daily_cases":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 4)
+        scores = errors.find({}, {"org": 1, "mse_score_4_us_daily_cases": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_4_us_daily_cases"]
     return us_mse
-    #return org_errors[2]
 
 @app.route('/us-mse-8-week-ahead', methods=['POST','GET'])
 def us_mse8():
-    #us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 8)
     us_mse = None
+    errors = mongo.db.org_errors
     category = request.args.get('category')
     if category == "us_daily_deaths":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 8)
+        scores = errors.find({}, {"org": 1, "mse_score_8_us_daily_deaths": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_8_us_daily_deaths"]
     elif category == "us_daily_cases":
-        us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 8)
+        scores = errors.find({}, {"org": 1, "mse_score_8_us_daily_cases": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_8_us_daily_cases"]
     return us_mse
-    #return org_errors[3]
+
 
 @app.route('/user-mse')
 def user_mse():
@@ -638,10 +652,9 @@ if __name__ == "__main__":
     app.apscheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1, id='1')
     app.apscheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1, id='2')
     app.apscheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1, id='3')
-    #scheduler.add_job(func=update_org_errors, trigger="interval", days=1)
     app.apscheduler.add_job(func=update_errors, trigger="interval", days=1, id='5')
     app.apscheduler.add_job(func=save_daily_cases, trigger="interval", days=1, id='6')
     #scheduler.start()
 
-    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    #app.run(debug=True, use_reloader=False)

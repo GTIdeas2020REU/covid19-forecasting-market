@@ -63,11 +63,11 @@ def org_mse(interval, event):
             ((pd.to_datetime(df['target_end_date'], format='%Y-%m-%d') - pd.to_datetime(df['forecast_date'], format='%Y-%m-%d')).apply(lambda delt: delt.days) >= interval)
         ].sort_values('forecast_date').drop_duplicates('target_end_date',keep='last')
         
+        model = orgs.pop()
         # If interval is not applicable to model
         if len(relevant_preds) == 0:
             performance[model] = None
             continue
-        model = orgs.pop()
         relevant_preds['value'] /= 7
         true_results = outcomes.loc[relevant_preds['target_end_date']]
         scores = (relevant_preds['value'].to_numpy() - true_results.to_numpy())**2
