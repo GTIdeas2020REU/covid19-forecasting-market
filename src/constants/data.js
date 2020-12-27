@@ -4,7 +4,7 @@ export const titles = {
 }
 
 export const forecastIdentifiers = {
-    'Columbia': 'columbia',
+    'Columbia University': 'columbia',
     'Georgia Tech': 'georgia-tech',
     'UCLA': 'ucla',
     'IHME': 'ihme',
