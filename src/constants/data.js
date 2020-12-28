@@ -8,5 +8,11 @@ export const forecastIdentifiers = {
     'Georgia Tech': 'georgia-tech',
     'UCLA': 'ucla',
     'IHME': 'ihme',
-    'Youyang Gu': 'youyang-gu'
+    'Youyang Gu': 'youyang-gu',
+    'LANL': 'lanl',
+    'University of Michigan': 'umich',
+    'USC': 'usc',
+    'University of Texas': "utexas",
+    'University of Virginia': 'uva',
+    'MIT': 'mit'
 }
