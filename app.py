@@ -35,37 +35,29 @@ app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/co
 mongo = PyMongo(app)
 
 
-# Get forecasts data when initially launching website
+
 #forecast_data = get_forecasts()
 
 # Get confirmed cases in US
 #us_data = get_us_confirmed()
 
-#us_inc_forecasts_deaths = get_daily_forecasts(event="inc death")
+# Get forecasts and confirmed data when initially launching website
 us_inc_forecasts_deaths = mongo.db.vars.find_one({"var": "us_inc_forecasts_deaths"})['data']
 us_inc_confirmed_deaths = get_us_new_deaths()
 us_inc_confirmed_wk_avg_deaths = get_weekly_avg(us_inc_confirmed_deaths)
-#all_org_forecasts_deaths = get_all_forecasts(event="inc death")
 all_org_forecasts_deaths = mongo.db.vars.find_one({"var": "all_org_forecasts_deaths"})['data']
 
-#us_inc_forecasts_cases = get_daily_forecasts_cases()
 us_inc_forecasts_cases = mongo.db.vars.find_one({"var": "us_inc_forecasts_cases"})['data']
 us_daily_cases_confirmed_new = get_new_cases_us()
 us_inc_confirmed_wk_avg_cases = get_weekly_avg(json.dumps(us_daily_cases_confirmed_new))
-#all_org_forecasts_cases = get_all_forecasts(event="inc case")
 all_org_forecasts_cases = mongo.db.vars.find_one({"var": "all_org_forecasts_cases"})['data']
 
 
-
 # Get aggregate data
-#us_aggregates = get_aggregates(forecast_data)
-#us_aggregates_daily = get_aggregates(us_inc_forecasts)
 us_aggregates = None
 us_aggregates_daily = None
 us_mse = None
 
-
-data = {}
 
 
 ''' Functions to update variables and database on daily basis '''
@@ -190,63 +182,15 @@ def save_daily_cases():
     print('success')
 
 
-def add_vote(id, pred_model):
-    vote = mongo.db.votes.find_one(
-        {"user_id": id})
-    # user already voted
-    if vote:
-        #print(vote)
-        # edit old_vote
-        mongo.db.votes.update_one({"user_id": id}, 
-        {'$set': 
-            { "prediction_model": pred_model, "date":str(date.today()) }
-        })
-        #vote['prediction_model'] = pred_model
-        #vote['date'] = str(date.today())
-    else: 
-        mongo.db.votes.insert_one({
-            'user_id': id,
-            'prediction_model': pred_model,
-            'date': str(date.today())
-        })
 
-def fetch_votes(pred_model):
-    #check if valid arg
-    return mongo.db.votes.count({'prediction_model':pred_model})
-
-def get_score(pred_model):
-    #(pred_model)
-    if pred_model == "Columbia":
-        #print('correct')
-        return 50
-    else:
-        #print('incorrect')
-        return 0
-
-def update_score(username, score):
-    mongo.db.users.update_one({"username": username}, 
-        {'$inc': 
-            { "score": score }
-        })
-    #print("score updated")
 def delete_user_prediction(username, category):
-    print(username)
-    print(category)
     curr_date = date.today().strftime("%Y-%m-%d")
-    print(mongo.db.predictions.find_one({"username": username, "category": category}))
     pred = mongo.db.predictions.delete_one({"username": username, "category": category, "date": curr_date})
-    print(pred.deleted_count)
-    print("deleted")
 
 def update_user_prediction(username, data, category, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
-    '''print(curr_date)
-    print('DATA:')
-    print(data)'''
     pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
-    #print(pred)
     if pred:
-        #print("already exists")
         mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
         {'$set': 
             { "prediction": data }
@@ -258,12 +202,7 @@ def get_user_prediction(username, category):
     user_prediction = {}
     prediction = mongo.db.predictions.find({"username": username, "category": category})
     for p in prediction:
-        #print("inside")
-        #(date, prediction)
-        #print(p)
-        #print(p['prediction'])
         user_prediction[p['date']] = p['prediction']
-    #user_prediction = exists['prediction']        
     return user_prediction
 
 def store_session(id, email, name, username):
@@ -304,25 +243,12 @@ def register(name, email, username, password):
 @app.before_first_request
 def make_session_permanent():
     session.permanent = True
-    ''' Get forecasts data when initially launching website6
-    data['us_cum_forecasts'] = get_forecasts()
-    print("cum forecasts")
-    # Get confirmed cases in US
-    data['us_cum_confirmed'] = get_us_confirmed()
-    print("cum confirmed")
-    data['us_inc_forecasts'] = get_daily_forecasts()
-    print("inc forecasts")
-    # Get new deaths in US
-    data['us_inc_confirmed'] = get_us_new_deaths()
-    print("inc confirmed")'''
 
 
 @app.route("/user-prediction", methods=['POST','GET'])
 def home():
     user_prediction = {}
     pred_category = request.args.get('category')
-    #print(pred_category)
-    #print("done")
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], pred_category)
     return json.dumps(user_prediction)
@@ -343,8 +269,6 @@ def org_all_prediction():
         return json.dumps(all_org_forecasts_deaths)
     elif category == "us_daily_cases":
         return json.dumps(all_org_forecasts_cases)
-    #org_predictions = all_org_forecasts_deaths
-    #return json.dumps(org_predictions)
 
 '''
 @app.route("/us-cum-deaths-forecasts")
@@ -356,7 +280,6 @@ def us_cum_deaths_forecasts():
 @app.route("/us-inc-deaths-forecasts")
 def us_inc_deaths_forecasts():
     return us_inc_forecasts_deaths
-    #return data['us_inc_forecasts']
 
 @app.route("/forecasts", methods=['POST','GET'])
 def forecasts():
@@ -376,7 +299,6 @@ def us_cum_deaths_confirmed():
 @app.route('/us-inc-deaths-confirmed')
 def us_inc_deaths_confirmed():
     return us_inc_confirmed_deaths
-    #return data['us_inc_confirmed']
 
 @app.route('/us-inc-deaths-confirmed-wk-avg')
 def us_inc_deaths_confirmed_wk_avg():
@@ -423,7 +345,6 @@ def us_daily_cases_confirmed():
 @app.route('/us-daily-cases-forecast')
 def us_daily_cases_forecast():
     return dumps(us_inc_forecasts_cases)
-    # return json.dumps(confirmed_cases)
 
 
 
@@ -522,7 +443,6 @@ def user_mse():
 def update():
     if request.method == 'POST':
         data = request.json
-        print(data)
         #replace username with user id
         if 'id' in session:
             update_user_prediction(session['username'], data['data'], data['category'])
@@ -534,10 +454,8 @@ def update():
 @app.route('/delete/', methods=["POST"])
 def delete():
     if request.method == 'POST':
-        print(request.json)
         if 'id' in session:
             delete_user_prediction(session['username'], request.json['category'])
-            print("prediction deleted!")
         else:
             print("session empty")
         return "Success"  
@@ -550,7 +468,6 @@ def login():
         data = request.json
         username = data['username']
         password = data['password']
-        #print(username, password)
         if authenticate(username, password):
             print("logged in")
             return "Success"
@@ -562,11 +479,9 @@ def login():
         if 'id' in session:
             print("True")
             return dumps({'status': True})
-            #return "Already logged in"
         else: 
             print("False")
             return dumps({'status': False})
-    #return 'None'
 
 @app.route('/signup/', methods=['POST'])
 def signup():
@@ -576,15 +491,11 @@ def signup():
         name = data['name']
         username = data['username']
         password = data['password']
-        print("here it is: ", name, username, password)
         if register(name, email, username, password):
-            print("registered")
             return 'Success'
         else:
-            print("Username is already taken")
             return 'Fail'
     else:
-        print("invalid method")
         return 'None'
 
 
@@ -596,7 +507,6 @@ def logout():
             session.pop('name')
             session.pop('username')
             session.pop('email')
-            print("logout was a sucess")
     return 'None'
 
 @app.route('/login-status/', methods=["GET"])
@@ -643,16 +553,6 @@ def addbio():
         user = mongo.db.users.find({'username': session['username']})
     user.insert({'bio':bio, 'location':location})
     #redirect('/user')
-
-'''
-@app.route("/total")
-def total():
-    results = {}
-    for model in forecast_data:
-        results[model] = fetch_votes(model)
-    return json.dumps(results)
-'''
-
 
 
 
