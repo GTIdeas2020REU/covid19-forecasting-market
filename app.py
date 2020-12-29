@@ -28,21 +28,33 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
+
+# set up pymongo
+#app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
+app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
+mongo = PyMongo(app)
+
+
 # Get forecasts data when initially launching website
-forecast_data = get_forecasts()
+#forecast_data = get_forecasts()
 
 # Get confirmed cases in US
-us_data = get_us_confirmed()
+#us_data = get_us_confirmed()
 
-us_inc_forecasts_deaths = get_daily_forecasts(event="inc death")
+#us_inc_forecasts_deaths = get_daily_forecasts(event="inc death")
+us_inc_forecasts_deaths = mongo.db.vars.find_one({"var": "us_inc_forecasts_deaths"})['data']
 us_inc_confirmed_deaths = get_us_new_deaths()
 us_inc_confirmed_wk_avg_deaths = get_weekly_avg(us_inc_confirmed_deaths)
-all_org_forecasts_deaths = get_all_forecasts(event="inc death")
+#all_org_forecasts_deaths = get_all_forecasts(event="inc death")
+all_org_forecasts_deaths = mongo.db.vars.find_one({"var": "all_org_forecasts_deaths"})['data']
 
-us_inc_forecasts_cases = get_daily_forecasts_cases()
+#us_inc_forecasts_cases = get_daily_forecasts_cases()
+us_inc_forecasts_cases = mongo.db.vars.find_one({"var": "us_inc_forecasts_cases"})['data']
 us_daily_cases_confirmed_new = get_new_cases_us()
 us_inc_confirmed_wk_avg_cases = get_weekly_avg(json.dumps(us_daily_cases_confirmed_new))
-all_org_forecasts_cases = get_all_forecasts(event="inc case")
+#all_org_forecasts_cases = get_all_forecasts(event="inc case")
+all_org_forecasts_cases = mongo.db.vars.find_one({"var": "all_org_forecasts_cases"})['data']
+
 
 
 # Get aggregate data
@@ -53,11 +65,6 @@ us_aggregates_daily = None
 us_mse = None
 
 
-
-# set up pymongo
-#app.config["MONGO_URI"] = "mongodb://localhost:27017/covid19-forecast"
-app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/covid19-forecast?retryWrites=true&w=majority"
-mongo = PyMongo(app)
 data = {}
 
 
@@ -339,10 +346,12 @@ def org_all_prediction():
     #org_predictions = all_org_forecasts_deaths
     #return json.dumps(org_predictions)
 
+'''
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
     return forecast_data
     #return data['us_cum_forecasts']
+'''
 
 @app.route("/us-inc-deaths-forecasts")
 def us_inc_deaths_forecasts():
@@ -357,10 +366,12 @@ def forecasts():
     elif category == "us_daily_cases":
         return us_inc_forecasts_cases
 
+'''
 @app.route("/us-cum-deaths-confirmed")
 def us_cum_deaths_confirmed():
     return us_data
     #return data['us_cum_confirmed']
+'''
 
 @app.route('/us-inc-deaths-confirmed')
 def us_inc_deaths_confirmed():
@@ -379,6 +390,7 @@ def confirmed_wk_avg():
     elif category == "us_daily_cases":
         return us_inc_confirmed_wk_avg_cases
 
+'''
 @app.route('/us-agg-cum-deaths')
 def us_agg_cum_deaths():
     user_prediction = {}
@@ -386,6 +398,7 @@ def us_agg_cum_deaths():
         user_prediction = get_user_prediction(session['username'], 'us_daily_deaths')
     us_aggregates = get_aggregates(forecast_data, user_prediction)
     return us_aggregates
+'''
 
 @app.route('/us-agg-inc-deaths')
 def us_agg_inc_deaths():
@@ -631,13 +644,14 @@ def addbio():
     user.insert({'bio':bio, 'location':location})
     #redirect('/user')
 
+'''
 @app.route("/total")
 def total():
     results = {}
     for model in forecast_data:
         results[model] = fetch_votes(model)
     return json.dumps(results)
-
+'''
 
 
 
@@ -650,11 +664,11 @@ if __name__ == "__main__":
     #scheduler = BackgroundScheduler()
     app.apscheduler.add_job(func=load_us_inc_confirmed, trigger="interval", days=1, id='0')
     app.apscheduler.add_job(func=load_us_inc_confirmed_wk_avg, trigger="interval", days=1, id='1')
-    app.apscheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1, id='2')
-    app.apscheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1, id='3')
-    app.apscheduler.add_job(func=update_errors, trigger="interval", days=1, id='5')
+    #app.apscheduler.add_job(func=load_us_inc_forecasts, trigger="interval", days=1, id='2')
+    #app.apscheduler.add_job(func=load_all_org_forecasts, trigger="interval", days=1, id='3')
+    #app.apscheduler.add_job(func=update_errors, trigger="interval", days=1, id='5')
     app.apscheduler.add_job(func=save_daily_cases, trigger="interval", days=1, id='6')
     #scheduler.start()
 
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    app.run(debug=True, use_reloader=False)
