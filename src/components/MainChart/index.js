@@ -86,7 +86,6 @@ class MainChart extends Component {
         const aggregate = compiled["aggregate"];
         const userPrediction = compiled["user_prediction"];
         const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
-        console.log(userPrediction)
         if (!loggedIn) {this.appendModal()}
         const orgs = []
         var predictionData = [];//where we will store formatted userPrediction
@@ -149,7 +148,6 @@ class MainChart extends Component {
 
         let aggregateData = reformatData(aggregate);
         aggregateData = aggregateData.filter(d => +d.date >= +today)
-        console.log(aggregateData)
 
         let forecastLabels = [];//display names ex) UCLA, Columbia
         let forecastIds = [];//ids ex) ucl, columbia, georgia-tech
@@ -737,7 +735,6 @@ class MainChart extends Component {
                      .attr("stroke", color(forecastIds[index]));
         })
         function brushed() {
-            console.log("sdf")
             if (d3.event.selection) {
                 let extent = d3.event.selection;
                 x.domain([focusX.invert(extent[0]), focusX.invert(extent[1])]);

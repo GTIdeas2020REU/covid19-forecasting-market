@@ -8,6 +8,7 @@ from datetime import timedelta, date, datetime
 from bson.json_util import dumps, loads
 import json
 import os
+import uuid
 
 from backend.get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
 from backend.confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg
@@ -167,19 +168,15 @@ def save_daily_cases():
     confirmed_cases = dict(zip(dates, confirmed))
     confirmed_doc = mongo.db.confirmed.find({'category': 'daily_cases'})
     if confirmed_doc:
-        print("data exists")
         mongo.db.confirmed.update_one({'category': 'daily_cases'}, 
             {'$set': 
                 { "data": confirmed_cases }
             })
-        print("data updated")
     else: 
         mongo.db.confirmed.insert_one({
             'category': 'daily_cases',
             'data': confirmed_cases
         })
-        print("data inserted")
-    print('success')
 
 
 
@@ -187,23 +184,38 @@ def delete_user_prediction(username, category):
     curr_date = date.today().strftime("%Y-%m-%d")
     pred = mongo.db.predictions.delete_one({"username": username, "category": category, "date": curr_date})
 
-def update_user_prediction(username, data, category, a=None, higher=False, index=None):
+def update_user_prediction(username, data, category, unregistered=False, a=None, higher=False, index=None):
     curr_date = date.today().strftime("%Y-%m-%d")
-    pred = mongo.db.predictions.find_one({"username": username, "category": category, "date": curr_date, })
+    pred_db = mongo.db.predictions
+    if unregistered:
+        pred_db = mongo.db.predictions_unregistered
+    pred = pred_db.find_one({"username": username, "category": category, "date": curr_date, })
     if pred:
-        mongo.db.predictions.update_one({"username": username, "category": category, "date": curr_date, }, 
+        pred_db.update_one({"username": username, "category": category, "date": curr_date, }, 
         {'$set': 
             { "prediction": data }
         })
     else:
-        mongo.db.predictions.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data })
+        pred_db.insert_one({"username": username, "category": category, "date": curr_date, "prediction": data })
 
-def get_user_prediction(username, category):
+def get_user_prediction(username, category, unregistered=False):
     user_prediction = {}
-    prediction = mongo.db.predictions.find({"username": username, "category": category})
+    pred_db = mongo.db.predictions
+    if unregistered:
+        pred_db = mongo.db.predictions_unregistered
+    prediction = pred_db.find({"username": username, "category": category})
     for p in prediction:
         user_prediction[p['date']] = p['prediction']
     return user_prediction
+
+def transfer_unregistered_user_predictions(temp_id, username):
+    categories = ['us_daily_cases', 'us_daily_deaths']
+    for category in categories:
+        temp_prediction = get_user_prediction(temp_id, category, True)
+        for p in temp_prediction:
+            update_user_prediction(username, temp_prediction[p], category)
+        #delete prediction
+        mongo.db.predictions_unregistered.delete_many({"username": temp_id, "category": category})
 
 def store_session(id, email, name, username):
     session['id'] = str(id)
@@ -251,6 +263,10 @@ def home():
     pred_category = request.args.get('category')
     if 'id' in session:
         user_prediction = get_user_prediction(session['username'], pred_category)
+        # if 'temp_id' in session:
+        #     user_prediction.update(get_user_prediction(session['temp_id'], pred_category, True))
+    elif 'temp_id' in session:
+        user_prediction = get_user_prediction(session['temp_id'], pred_category, True)
     return json.dumps(user_prediction)
 
 @app.route("/all-user-prediction", methods=['POST','GET'])
@@ -440,15 +456,18 @@ def user_mse():
 
 
 @app.route('/update/', methods=['GET', 'POST'])
-def update():
+def update_prediction():
     if request.method == 'POST':
         data = request.json
         #replace username with user id
         if 'id' in session:
             update_user_prediction(session['username'], data['data'], data['category'])
             return "Success"
-        else:
+        elif 'temp_id' not in session: #unregistered user
             print("session empty")
+            session['temp_id'] = str(uuid.uuid4())
+        update_user_prediction(session['temp_id'], data['data'], data['category'], True)
+        return 'Done'
     return 'None'
 
 @app.route('/delete/', methods=["POST"])
@@ -470,6 +489,11 @@ def login():
         password = data['password']
         if authenticate(username, password):
             print("logged in")
+            #store temp user predictions
+            if 'temp_id' in session:
+                transfer_unregistered_user_predictions(session['temp_id'], username)
+                print('all predictions transferred')
+                session.pop('temp_id')
             return "Success"
         else:
             print("not logged in")
@@ -492,21 +516,33 @@ def signup():
         username = data['username']
         password = data['password']
         if register(name, email, username, password):
+            #store temp user predictions
+            if 'temp_id' in session:
+                transfer_unregistered_user_predictions(session['temp_id'], username)
+                print('all predictions transferred')
+                session.pop('temp_id')
+            print("registered")
             return 'Success'
         else:
+            print("Username is already taken")
             return 'Fail'
     else:
+        print("invalid method")
         return 'None'
+
 
 
 @app.route("/logout/", methods=["POST"])
 def logout():
     if request.method == "POST":
+        if 'temp_id' in session:
+            session.pop('temp_id')
         if 'id' in session:
             session.pop('id')
             session.pop('name')
             session.pop('username')
             session.pop('email')
+            print("logout was a sucess")
     return 'None'
 
 @app.route('/login-status/', methods=["GET"])
