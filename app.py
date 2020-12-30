@@ -531,7 +531,11 @@ def leaderboard():
     usernames = list(mongo.db.predictions.distinct('username'))
     users = []
     for user in usernames:
-        users.append(list(mongo.db.users.find({"username": user}).limit(1))[0])
+        user_data = list(mongo.db.users.find({"username": user}).limit(1))[0]
+        user_data.pop('email')
+        user_data.pop('password')
+        user_data.pop('_id')
+        users.append(user_data)
     return dumps(users)
 
 
@@ -570,5 +574,5 @@ if __name__ == "__main__":
     app.apscheduler.add_job(func=save_daily_cases, trigger="interval", days=1, id='6')
     #scheduler.start()
 
-    #app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
+    #app.run(debug=True, use_reloader=False)
