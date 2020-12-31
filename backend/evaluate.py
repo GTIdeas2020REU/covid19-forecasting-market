@@ -1,5 +1,5 @@
-from backend.confirmed import get_weekly_avg, get_us_new_deaths
-from backend.get_estimates import get_daily_forecasts
+from backend.confirmed import get_weekly_avg, get_us_new_deaths, get_us_new_hospitalizations
+from backend.get_estimates import get_daily_forecasts, get_new_cases_us
 
 import json
 import time
@@ -50,7 +50,13 @@ def org_mse(interval, event):
     file = open('backend/model-links.csv', 'r')
     checkdates = [startdate + pd.Timedelta(days=interval*j) for j in range(int(totdays/interval))
                     if startdate + pd.Timedelta(days=interval*j) <= nowdate]
-    confirmed = json.loads(get_weekly_avg(get_us_new_deaths()))
+    if event == "inc death":
+        confirmed = json.loads(get_weekly_avg(get_us_new_deaths()))
+    elif event == "inc case":
+        confirmed = json.loads(get_weekly_avg(json.dumps(get_new_cases_us())))
+    elif event == "inc hosp":
+        confirmed = get_us_new_hospitalizations()
+
     outcomes = pd.DataFrame(confirmed.items(), columns=['date', 'value'])
     outcomes = outcomes.set_index('date')
     performance = {}
@@ -68,7 +74,8 @@ def org_mse(interval, event):
         if len(relevant_preds) == 0:
             performance[model] = None
             continue
-        relevant_preds['value'] /= 7
+        if event != 'inc hosp':
+            relevant_preds['value'] /= 7
         true_results = outcomes.loc[relevant_preds['target_end_date']]
         scores = (relevant_preds['value'].to_numpy() - true_results.to_numpy())**2
         performance[model] = scores.mean()

@@ -98,12 +98,30 @@ def get_daily_forecasts_cases():
     for line in file:
         df = pd.read_csv(line.strip())
 
-        #df = df.loc[(df['location'] == 'US') & (df['type'] == 'point') & (df['target'].str.contains("inc death")) & (df['target'].str.contains("wk"))]
         df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc case"))]
-        #mask = df['target'].str.contains('wk')
-        #df.loc[mask, 'value'] /= 7
         df.value = df.value.astype('float')
         df['value'] = df['value'].div(7)
+        df = df.sort_values(by=['forecast_date', 'target_end_date'])
+        df = df[['target_end_date', 'value']]
+        df = df.drop_duplicates(subset=['target_end_date'], keep='last')
+        models[orgs.pop()] = df.to_dict('list')
+    return models
+
+
+def get_daily_forecasts_hosps():
+    file = open('backend/orgs.csv', 'r')
+    orgs = []
+    for line in file:
+        orgs.append(line.strip())
+    orgs = orgs[::-1]
+
+    file = open('backend/model-links.csv', 'r')
+    models = dict()
+    for line in file:
+        df = pd.read_csv(line.strip())
+
+        df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc hosp"))]
+        df.value = df.value.astype('float')
         df = df.sort_values(by=['forecast_date', 'target_end_date'])
         df = df[['target_end_date', 'value']]
         df = df.drop_duplicates(subset=['target_end_date'], keep='last')

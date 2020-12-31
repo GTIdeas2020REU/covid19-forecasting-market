@@ -17,6 +17,16 @@ def get_us_new_deaths():
     df.reset_index(drop=True, inplace=True)
     return json.dumps(pd.Series(df.new_deaths.values,index=df.date).to_dict())
 
+def get_us_new_hospitalizations():
+    df = get_us_data()
+    df = df[['date', 'weekly_hosp_admissions']]
+    df = df[df['weekly_hosp_admissions'].notna()]
+    df['weekly_hosp_admissions'] = df['weekly_hosp_admissions'].div(7)
+    # Calibrate dates to work for evaluation
+    df['date'] = df['date'].apply(lambda x: (datetime.strptime(x, '%Y-%m-%d').date() - timedelta(days=1)).strftime('%Y-%m-%d'))
+    df.reset_index(drop=True, inplace=True)
+    return pd.Series(df.weekly_hosp_admissions.values,index=df.date).to_dict()
+
 
 # def get_us_new_deaths_weekly_avg(data):
 #     daily_deaths = json.loads(data)
@@ -58,9 +68,6 @@ def get_weekly_avg(data):
     result = dict(sorted(result.items()))
     return json.dumps(result)
         
-# get_us_new_deaths_weekly_avg(get_us_new_deaths())
-
-#print(get_us_new_deaths_weekly_avg(get_us_new_deaths()))
 
 # get confirmed cumulative deaths in the us
 def get_us_confirmed():
