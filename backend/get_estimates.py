@@ -73,6 +73,7 @@ def get_all_forecasts(event):
         all_forecasts[model] = {}
         for date, group in df:
             group = group[['target_end_date', 'value']]
+            group = group.sort_values(by=['target_end_date'])
             data = []
             # Each prediction made on a day
             for i in range(len(group)):
