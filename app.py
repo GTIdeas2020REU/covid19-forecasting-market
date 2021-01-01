@@ -10,8 +10,8 @@ import json
 import os
 import uuid
 
-from backend.get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us
-from backend.confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg
+from backend.get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us, get_daily_forecasts_hosps
+from backend.confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg, get_us_new_hospitalizations
 from backend.evaluate import get_mse, get_user_mse, org_mse
 from backend.gaussian import get_gaussian_for_all
 
@@ -52,6 +52,11 @@ us_inc_forecasts_cases = mongo.db.vars.find_one({"var": "us_inc_forecasts_cases"
 us_daily_cases_confirmed_new = get_new_cases_us()
 us_inc_confirmed_wk_avg_cases = get_weekly_avg(json.dumps(us_daily_cases_confirmed_new))
 all_org_forecasts_cases = mongo.db.vars.find_one({"var": "all_org_forecasts_cases"})['data']
+
+us_inc_forecasts_hosps = mongo.db.vars.find_one({"var": "us_inc_forecasts_hosps"})['data']
+us_daily_cases_confirmed_new = get_us_new_hospitalizations()
+us_inc_confirmed_wk_avg_hosps = get_us_new_hospitalizations()
+all_org_forecasts_hosps = mongo.db.vars.find_one({"var": "all_org_forecasts_hosps"})['data']
 
 
 # Get aggregate data
@@ -285,6 +290,8 @@ def org_all_prediction():
         return json.dumps(all_org_forecasts_deaths)
     elif category == "us_daily_cases":
         return json.dumps(all_org_forecasts_cases)
+    elif category == "us_daily_hosps":
+        return json.dumps(all_org_forecasts_hosps)
 
 '''
 @app.route("/us-cum-deaths-forecasts")
@@ -304,6 +311,8 @@ def forecasts():
         return us_inc_forecasts_deaths
     elif category == "us_daily_cases":
         return us_inc_forecasts_cases
+    elif category == "us_daily_hosps":
+        return us_inc_forecasts_hosps
 
 '''
 @app.route("/us-cum-deaths-confirmed")
@@ -327,6 +336,8 @@ def confirmed_wk_avg():
         return us_inc_confirmed_wk_avg_deaths
     elif category == "us_daily_cases":
         return us_inc_confirmed_wk_avg_cases
+    elif category == "us_daily_hosps":
+        return us_inc_confirmed_wk_avg_hosps
 
 '''
 @app.route('/us-agg-cum-deaths')
@@ -369,11 +380,14 @@ def us_daily_cases_forecast():
 @app.route('/us-mse-overall', methods=['POST','GET'])
 def us_mse():
     us_mse = None
+    errors = mongo.db.org_errors
     category = request.args.get('category')
     if category == "us_daily_deaths":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
     elif category == "us_daily_cases":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 'overall')
+    elif category == "us_daily_hosps":
+        us_mse = get_mse(us_inc_confirmed_wk_avg_hosps, us_inc_forecasts_hosps, 'overall')
     return us_mse
 
 @app.route('/us-mse-1-week-ahead', methods=['POST','GET'])
@@ -391,6 +405,11 @@ def us_mse1():
         us_mse = dict()
         for item in scores:
             us_mse[item["org"]] = item["mse_score_1_us_daily_cases"]
+    elif category == "us_daily_hosps":
+        scores = errors.find({}, {"org": 1, "mse_score_1_us_daily_hosps": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_1_us_daily_hosps"]
     return us_mse
 
 @app.route('/us-mse-2-week-ahead', methods=['POST','GET'])
@@ -408,6 +427,11 @@ def us_mse2():
         us_mse = dict()
         for item in scores:
             us_mse[item["org"]] = item["mse_score_2_us_daily_cases"]
+    elif category == "us_daily_hosps":
+        scores = errors.find({}, {"org": 1, "mse_score_2_us_daily_hosps": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_2_us_daily_hosps"]
     return us_mse
 
 @app.route('/us-mse-4-week-ahead', methods=['POST','GET'])
@@ -425,6 +449,11 @@ def us_mse4():
         us_mse = dict()
         for item in scores:
             us_mse[item["org"]] = item["mse_score_4_us_daily_cases"]
+    elif category == "us_daily_hosps":
+        scores = errors.find({}, {"org": 1, "mse_score_4_us_daily_hosps": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_4_us_daily_hosps"]
     return us_mse
 
 @app.route('/us-mse-8-week-ahead', methods=['POST','GET'])
@@ -442,6 +471,11 @@ def us_mse8():
         us_mse = dict()
         for item in scores:
             us_mse[item["org"]] = item["mse_score_8_us_daily_cases"]
+    elif category == "us_daily_hosps":
+        scores = errors.find({}, {"org": 1, "mse_score_8_us_daily_hosps": 1})
+        us_mse = dict()
+        for item in scores:
+            us_mse[item["org"]] = item["mse_score_8_us_daily_hosps"]
     return us_mse
 
 
@@ -611,4 +645,4 @@ if __name__ == "__main__":
     #scheduler.start()
 
     app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True)

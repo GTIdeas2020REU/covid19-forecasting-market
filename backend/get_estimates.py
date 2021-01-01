@@ -78,7 +78,10 @@ def get_all_forecasts(event):
             for i in range(len(group)):
                 temp = {}
                 temp['date'] = group['target_end_date'].iloc[i]
-                temp['value'] = float(group['value'].iloc[i])/7
+                if event != "inc hosp":
+                    temp['value'] = float(group['value'].iloc[i])/7
+                else:
+                    temp['value'] = float(group['value'].iloc[i])
                 temp['defined'] = True
                 data.append(temp)
             all_forecasts[model][date] = data

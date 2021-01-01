@@ -39,7 +39,7 @@ class UserPredictionChart extends Component {
         var compiledData = [];
         //console.log(confirmed)
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-01-01");
-        const maxValues = {'us_daily_deaths': 5000, 'us_daily_cases': 250000};
+        const maxValues = {'us_daily_deaths': 5000, 'us_daily_cases': 250000, 'us_daily_hosps': 30000};
         var valueMax = maxValues[category];
         var predEndDate = null;
         const predLength = 155;

@@ -22,7 +22,7 @@ def get_mse(confirmed, forecasts, interval):
                 confirmed_values.append(confirmed[d])
                 prediction_values.append(model_values[model_dates.index(d)])
             except:
-                break
+                continue
 
         if interval != 'overall':
             confirmed_values = confirmed_values[::-1][:interval]
