@@ -110,6 +110,7 @@ function createOrgChart(org, confirmed, id, allOrgPredictions, category) {
 
 // Add rows with user data to the leaderboard table
 function RenderUsersTable({ users, confirmed, interval, allUserPredictions, category }) {
+  console.log(users);
   return users.map((user, index) => {
     var score = user["mse_score_" + interval + "_" + category];
     // ignore null MSE values
@@ -227,9 +228,9 @@ class Leaderboard extends React.Component {
 
   handleSelect = (e) => {
     const score_map = {'overall': 'overall', '1-week-ahead': '1', '2-week-ahead': '2', '4-week-ahead': '4', '8-week-ahead': '8'};
-    const category_map = {'US Daily Deaths': 'us_daily_deaths', 'US Daily Cases': 'us_daily_cases'};
+    const category_map = {'US Daily Deaths': 'us_daily_deaths', 'US Daily Cases': 'us_daily_cases', 'US Daily Hospitalizations': 'us_daily_hosps'};
     
-    if (e == "US Daily Deaths" || e == "US Daily Cases") {
+    if (e == "US Daily Deaths" || e == "US Daily Cases" || e == "US Daily Hospitalizations") {
       this.setState({dropDownTitleCategory: e});
       fetch('/us-mse-' + this.state.dropDownTitleError + '?category=' + category_map[e]).then(res => res.json()).then(data => {
         this.setState({ orgs: data });
@@ -259,7 +260,7 @@ class Leaderboard extends React.Component {
 
 
   render() {
-    const category_map = {'US Daily Deaths': 'us_daily_deaths', 'US Daily Cases': 'us_daily_cases'};
+    const category_map = {'US Daily Deaths': 'us_daily_deaths', 'US Daily Cases': 'us_daily_cases', 'US Daily Hospitalizations': 'us_daily_hosps'};
 
     const tableStyle = {
       width: "48%",
@@ -307,6 +308,7 @@ class Leaderboard extends React.Component {
               <Dropdown.Menu>
                 <Dropdown.Item eventKey="US Daily Deaths">US Daily Deaths</Dropdown.Item>
                 <Dropdown.Item eventKey="US Daily Cases">US Daily Cases</Dropdown.Item>
+                <Dropdown.Item eventKey="US Daily Hospitalizations">US Daily Hospitalizations</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </span>
