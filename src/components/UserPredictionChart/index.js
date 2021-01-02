@@ -94,7 +94,8 @@ class UserPredictionChart extends Component {
             .attr("y", height + 2*margin.bottom)
             .style("text-anchor", "middle")
             .text("Date");
-            
+        
+        const yAxisTitle = {'us_daily_deaths': "Daily Deaths", 'us_daily_cases': "Daily Cases", 'us_daily_hosps': "Daily Hospitalizations"};
         //Create Y axis label
         svg.append("text")
             .attr("transform", "rotate(-90)")
@@ -102,7 +103,7 @@ class UserPredictionChart extends Component {
             .attr("x", 0 - (height/2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Daily Deaths");
+            .text(yAxisTitle[category]);
 
         var x = d3
                     .scaleTime()
