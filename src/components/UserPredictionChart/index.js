@@ -39,7 +39,7 @@ class UserPredictionChart extends Component {
         var compiledData = [];
         //console.log(confirmed)
         const confirmedStartDate = d3.timeParse("%Y-%m-%d")("2020-01-01");
-        const maxValues = {'us_daily_deaths': 5000, 'us_daily_cases': 250000, 'us_daily_hosps': 30000};
+        const maxValues = {'us_daily_deaths': 5000, 'us_daily_cases': 400000, 'us_daily_hosps': 30000};
         var valueMax = maxValues[category];
         var predEndDate = null;
         const predLength = 155;
@@ -122,7 +122,8 @@ class UserPredictionChart extends Component {
                         .call(d3.axisLeft(y));
         
         //DRAW LEGEND//
-        const legendString = ["Daily Confirmed Deaths", "User Prediction"];
+        const confirmedLegend = {'us_daily_deaths': "Daily Confirmed Deaths", 'us_daily_cases': "Daily Confirmed Cases", 'us_daily_hosps': "Daily Confirmed Hospitalizations"};
+        const legendString = [confirmedLegend[category], "User Prediction"];
         const color = d3
                         .scaleOrdinal()
                         .domain(legendString)
@@ -135,7 +136,7 @@ class UserPredictionChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("circle")
-                    .attr('cx', width*4/5 - 15)
+                    .attr('cx', width*4/5 - 45)
                     .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .attr("r", 6)
                     //.attr("width", size)
@@ -146,7 +147,7 @@ class UserPredictionChart extends Component {
                 .data(legendString)
                 .enter()
                 .append("text")
-                    .attr("x", width*4/5)
+                    .attr("x", width*4/5 - 30)
                     .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
                     .style("fill", function(d){ return color(d)})
                     .text(function(d){ return d})
