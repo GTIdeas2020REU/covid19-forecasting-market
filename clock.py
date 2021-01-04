@@ -398,16 +398,18 @@ def update_vars():
         variables.insert_one({"var": "all_org_forecasts_hosps", "data": all_org_forecasts_hosps })
 
 
-'''
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=update_new_death_user_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_new_death_org_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_new_case_user_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_new_case_org_errors, trigger="interval", days=1)
+scheduler.add_job(func=update_new_hosp_org_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_vars, trigger="interval", days=1)
 scheduler.start()
-'''
 
+
+'''
 start = time.time()
 update_new_death_user_errors()
 update_new_case_user_errors()
@@ -417,4 +419,4 @@ update_new_hosp_org_errors()
 update_vars()
 elapse = time.time()
 print(elapse-start)
-
+'''
