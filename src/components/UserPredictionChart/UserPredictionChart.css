@@ -1,4 +1,4 @@
-#confirmed{
+/* #confirmed{
     stroke-width: 0.5;
     stroke-width : 1.5;
     stroke-linejoin: round;
@@ -14,3 +14,24 @@
     stroke-dasharray: 3, 3;
     fill: none;
 }
+p {
+    margin-bottom: 8px;
+}
+.info {
+    margin-bottom: 35px;
+} */
+.profile-chart {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+}
+
+/* .bold {
+    font-weight: bold;
+}
+.second-column {
+    padding: 10px;
+}
+
+.third-column {
+    position: relative;
+} */

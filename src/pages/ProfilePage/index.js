@@ -1,11 +1,17 @@
 import React from 'react';
+import { Dropdown } from 'react-bootstrap';
 import UserPredictionChartContainer from '../../containers/UserPredictionChartContainer';
+import {US_INC_DEATH_USER, US_INC_CASE_USER, US_INC_HOSP_USER, titles} from '../../constants/data'
+import ChartContainer from '../../containers/ChartContainer';
+import './ProfilePage.css'
 
 class ProfilePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: null, loginStatus: true
+      user: null, 
+      loginStatus: true,
+      dropDownSelection: "us_daily_cases"
     }
   }
 
@@ -60,7 +66,9 @@ class ProfilePage extends React.Component {
     
   }
 
-  
+  onClick = (e) => {
+    this.setState({dropDownSelection: e})
+}
 
   renderUser() {
     if (!this.state.loginStatus) {
@@ -68,17 +76,40 @@ class ProfilePage extends React.Component {
       
       window.location.href ='/';
     }
-    console.log('beforelg')
-    console.log(this.loginStatus)
+    let selection = this.state.dropDownSelection;
+        const renderChartContainer = () => {
+          if(selection == "us_daily_deaths") {
+              return <ChartContainer key='123' data={US_INC_DEATH_USER}/>
+          }
+          else if (selection == "us_daily_cases") {
+              return <ChartContainer key='321' data={US_INC_CASE_USER}/>
+          }
+          else if (selection == "us_daily_hosps") {
+            return <ChartContainer key='312' data={US_INC_HOSP_USER}/>
+        }
+    }
     return (
       
       <div>
         <h3>My Predictions</h3>
-        <UserPredictionChartContainer/>
+        <Dropdown>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+                {titles[this.state.dropDownSelection][0]}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item eventKey="us_daily_cases" onSelect={this.onClick}>{titles["us_daily_cases"][0]}</Dropdown.Item>
+              <Dropdown.Item eventKey="us_daily_deaths" onSelect={this.onClick}>{titles["us_daily_deaths"][0]}</Dropdown.Item>
+              <Dropdown.Item eventKey="us_daily_hosps" onSelect={this.onClick}>{titles["us_daily_hosps"][0]}</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
+        <div className="profile-chart-container">
+          <div className="left"></div>
+          {renderChartContainer()}
+          <div className="right"></div>
+        </div>
+        {/* <UserPredictionChartContainer/> */}
 
         <form className='form-group' onSubmit={this.handleLogout.bind(this)}>
-          
-            
           <input type="submit" value="Logout"/>
         </form>
       </div>

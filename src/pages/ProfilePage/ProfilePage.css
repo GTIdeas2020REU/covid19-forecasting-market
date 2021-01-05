@@ -1,0 +1,5 @@
+.profile-chart-container {
+    padding: 20px 100px 0 50px;
+    display: grid;
+    grid-template-columns: 1fr 10fr 1fr;
+}

@@ -418,3 +418,9 @@ export const createFocusContext = (svg, width, height, marginBottom, confirmedDa
                   .call(brush)
                   .call(brush.move, defaultSelection);  
 }
+
+export async function fetchData(url) {
+  let data = await fetch(url);
+  let dataJSON = await data.json()
+  return dataJSON;
+}

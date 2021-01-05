@@ -16,7 +16,7 @@ class UserPredictionChartContainer extends Component {
     }
 
     componentDidMount() {
-        fetch('/us-inc-deaths-forecasts').then(res => res.json()).then(data => {
+        fetch('/forecasts?category=us_daily_deaths').then(res => res.json()).then(data => {
             const [results, orgs] = organizeData(data);
             this.setState({ forecast: results, orgs });
         });
@@ -25,11 +25,11 @@ class UserPredictionChartContainer extends Component {
             console.log("USER PREDICTION");
             console.log(data);
         });
-        fetch('/us-inc-deaths-confirmed-wk-avg').then(res => res.json()).then(data => {
+        fetch('/confirmed-wk-avg?category=us_daily_deaths').then(res => res.json()).then(data => {
             //const result = JSON.parse(data);
             this.setState({ confirmed: data });
         });
-        fetch('/us-agg-inc-deaths').then(res => res.json()).then(data => {
+        fetch('/aggregate?category=us_daily_deaths').then(res => res.json()).then(data => {
             this.setState({ aggregate: data });
         });
         fetch('/login-status/').then(res => res.json()).then(data => {

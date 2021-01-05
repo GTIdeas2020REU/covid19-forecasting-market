@@ -1,56 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import InteractiveChartContainer from '../../containers/InteractiveChartContainer';
-import MainChartContainer from '../../components/MainChartContainer';
 import ChartContainer from '../../containers/ChartContainer';
+import {US_INC_DEATH_MAIN, US_INC_CASE_MAIN} from '../../constants/data'
 
 import './HomePage.css';
 
-const data = [
-    {
-      "name": "confirmed",
-      "data": "/us-inc-deaths-confirmed-wk-avg"
-    },
-    {
-      "name": "forecast",
-      "data": "/us-inc-deaths-forecasts"
-    },
-    {
-      "name": "aggregate",
-      "data": "/us-agg-inc-deaths"
-    },
-    {
-      "name": "user_prediction",
-      "data": "/user-prediction?category=us_daily_deaths"
-    },
-    {
-      "name": "mse",
-      "data": "/us-mse-overall?category=us_daily_deaths"
-    },
-  ]
-
-  const CaseData = [
-    {
-      "name": "confirmed",
-      "data": "/us-daily-cases-confirmed"
-    },
-    {
-      "name": "forecast",
-      "data": "/us-daily-cases-forecast"
-    },
-    {
-      "name": "aggregate",
-      "data": "/us-agg-inc-cases"
-    },
-    {
-      "name": "user_prediction",
-      "data": "/user-prediction?category=us_daily_cases"
-    },
-    {
-      "name": "mse",
-      "data": "/us-mse-overall?category=us_daily_deaths"
-    },
-  ]
 class HomePage extends Component {
     constructor(props) {
         super(props);
@@ -66,12 +20,10 @@ class HomePage extends Component {
         console.log(category)
         const renderChartContainer = () => {
             if(category == "US Daily Deaths") {
-                return <ChartContainer key='123' compiledData={data} category="us_daily_deaths"/>
-
+                return <ChartContainer key='123' data={US_INC_DEATH_MAIN}/>
             }
             else {
-                console.log("daily cases")
-                return <ChartContainer key='321' compiledData={CaseData} category="us_daily_cases"/>
+                return <ChartContainer key='321' data={US_INC_CASE_MAIN}/>
             }
         }
         return(
@@ -82,8 +34,8 @@ class HomePage extends Component {
                         {this.state.category}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <Dropdown.Item eventKey="US Daily Deaths" onSelect={this.onClick}>US Daily Deaths</Dropdown.Item>
-                        <Dropdown.Item eventKey="US Daily Reported Cases" onSelect={this.onClick}>US Daily Reported Cases</Dropdown.Item>
+                      <Dropdown.Item eventKey="US Daily Reported Cases" onSelect={this.onClick}>US Daily Reported Cases</Dropdown.Item>
+                      <Dropdown.Item eventKey="US Daily Deaths" onSelect={this.onClick}>US Daily Deaths</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
                 <br/>

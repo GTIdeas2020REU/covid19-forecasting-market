@@ -73,12 +73,16 @@ def get_all_forecasts(event):
         all_forecasts[model] = {}
         for date, group in df:
             group = group[['target_end_date', 'value']]
+            group = group.sort_values(by=['target_end_date'])
             data = []
             # Each prediction made on a day
             for i in range(len(group)):
                 temp = {}
                 temp['date'] = group['target_end_date'].iloc[i]
-                temp['value'] = float(group['value'].iloc[i])/7
+                if event != "inc hosp":
+                    temp['value'] = float(group['value'].iloc[i])/7
+                else:
+                    temp['value'] = float(group['value'].iloc[i])                
                 temp['defined'] = True
                 data.append(temp)
             all_forecasts[model][date] = data
@@ -246,3 +250,15 @@ def get_new_cases_us():
     df = df.set_index('date')
     return df.to_dict()['United States']
 
+def clean_forecast_data(forecast):
+    orgs = forecast.keys()
+    forecast_cleaned = []
+    for org in orgs:
+        data_raw = forecast[org]
+        dates = data_raw.get('target_end_date')
+        values = data_raw.get('value')
+        data_cleaned = {}
+        for i, date in enumerate(dates):
+            data_cleaned[date] = values[i]
+        forecast_cleaned.append({'name': org, 'data': data_cleaned})
+    return forecast_cleaned

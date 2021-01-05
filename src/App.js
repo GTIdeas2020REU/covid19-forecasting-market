@@ -12,6 +12,8 @@ import * as ROUTES from "./constants/routes";
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import AboutPage from './pages/AboutPage';
+import TopForecastsPage from './pages/TopForecastsPage';
+
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
 import InteractiveChartContainer from './containers/InteractiveChartContainer';
@@ -23,7 +25,6 @@ import Mapportal from './components/Mapportal';
 import Login from './components/LogIn';
 import SignUp from './components/SignUp';
 import HomePage from './pages/HomePage';
-import MainChartContainer from './components/MainChartContainer';
 
 
 class App extends React.Component {
@@ -44,8 +45,7 @@ class App extends React.Component {
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
             {/* <Route exact path="/temp" render={(props) => <ChartContainer compiledData={data} category="us_daily_deaths"/>}/> */}
-            <Route exact path="/new-home" component={HomePage}/>
-            <Route exact path="/dev" component={MainChartContainer}/>
+            <Route exact path="/new" component={TopForecastsPage}/>
 
           </Switch>
         </div>

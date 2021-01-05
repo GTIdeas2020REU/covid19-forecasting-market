@@ -88,20 +88,20 @@ class MainChart extends Component {
         const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
         if (!loggedIn) {this.appendModal()}
         const orgs = []
-        var predictionData = [];//where we will store formatted userPrediction
+        let predictionData = [];//where we will store formatted userPrediction
         let forecastData = [];//formatted forecastData
         const savePrediction = this.savePrediction;
-        var compiledData = [];
+        let compiledData = [];
 
         //set up margin, width, height of chart
         const legendWidth = 230;
         const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
         const focusHeight = 100;
         const titleHeight = 20;
-        var margin = {top: 20, right: 30, bottom: 30, left: 80},
+        let margin = {top: 20, right: 30, bottom: 30, left: 80},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
-        var svg = d3.select(".main-chart")
+        let svg = d3.select(".main-chart")
                         .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom + focusHeight + 100}`)
                     .append("g")
                         .attr("transform", `translate(${margin.left}, ${margin.top + 20} )`)
@@ -234,7 +234,7 @@ class MainChart extends Component {
                         .scaleOrdinal()
                         .domain(compiledIds)
                         .range(d3.schemeTableau10);
-
+        console.log(color('confirmed'), color("prediction"))
          //draw legend
         let legend = d3.select(".legend-container")
                             .attr("viewBox", "0 0 400 500")
