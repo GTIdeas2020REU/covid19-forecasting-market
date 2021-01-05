@@ -11,12 +11,10 @@ class UserPredictionChart extends Component {
             rawData: null
         };
         this.chartRef = React.createRef();
-        console.log("hgellow")
     }
 
     componentDidMount() {
         this.setState({rawData: this.props.rawData});
-        console.log("mounted")
         if (this.props.profilePage) {
             const userStatus = this.props.userStatus;
             if (userStatus['logged in']) {
@@ -26,7 +24,6 @@ class UserPredictionChart extends Component {
                 this.chartRef.current.innerHTML = "Please log in"
             }
         } else {
-            console.log("display chart")
             this.renderNewChart();
         }
     }
@@ -91,7 +88,7 @@ class UserPredictionChart extends Component {
             .attr("y", h + margin.bottom + 50)
             .style("text-anchor", "middle")
             .text("Date");
-            
+        
         //Create Y axis label
         svg.append("text")
             .attr("transform", "rotate(-90)")
@@ -112,7 +109,6 @@ class UserPredictionChart extends Component {
         let predEndDate = d3.timeDay.offset(predStartDate, predLength)
         
         let mostRecentPred = [];
-        console.log(userPrediction)
         if(Object.keys(userPrediction).length > 0) {
             Object.keys(userPrediction).forEach(p => {
                 predictionData[p] = reformatPredData(userPrediction[p])
@@ -217,7 +213,6 @@ class UserPredictionChart extends Component {
                                 .attr("id", "prediction")
                                 .attr("class", "line")
         if (Object.keys(userPrediction).length != 0) {
-            //console.log("yes prediction")
             predCurve.datum(mostRecentPred.filter(predLine.defined()))
                     .attr("d", predLine)
                     .attr("stroke",  color[1])
@@ -404,7 +399,6 @@ class UserPredictionChart extends Component {
         d3.selectAll(".legend-text")
 
         const legendRectWidth = document.querySelector(".legend-container").getBoundingClientRect().width * 10;
-        console.log(document.querySelector(".legend-container").getBoundingClientRect().width);
         const legendRectHeight = 45; //height of each entry rectangle in legend
 
         legend.selectAll("rectangles")

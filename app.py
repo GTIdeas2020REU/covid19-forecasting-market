@@ -292,6 +292,7 @@ def org_all_prediction():
         return json.dumps(all_org_forecasts_cases)
     elif category == "us_daily_hosps":
         return json.dumps(all_org_forecasts_hosps)
+        
 '''
 @app.route("/us-cum-deaths-forecasts")
 def us_cum_deaths_forecasts():
@@ -671,4 +672,4 @@ if __name__ == "__main__":
     #scheduler.start()
 
     app.run(debug=True, use_reloader=False, host='0.0.0.0', port=os.environ.get('PORT', 80), ssl_context='adhoc')
-    #app.run(debug=True, use_reloader=False)
+    #app.run(debug=True)

@@ -82,11 +82,11 @@ def get_all_forecasts(event):
                 if event != "inc hosp":
                     temp['value'] = float(group['value'].iloc[i])/7
                 else:
-                    temp['value'] = float(group['value'].iloc[i])                
+                    temp['value'] = float(group['value'].iloc[i])
                 temp['defined'] = True
                 data.append(temp)
             all_forecasts[model][date] = data
-    
+        print(all_forecasts)
     return all_forecasts
 
 

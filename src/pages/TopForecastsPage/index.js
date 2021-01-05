@@ -21,7 +21,6 @@ class TopForecastsPage extends Component {
         this.setState({category: e});
         let endPoints = this.state.endPoints;
         endPoints.update(e, "")
-        console.log(e, this.state.interval, endPoints)
         await this.updateRawData(e, this.state.interval, endPoints);
     }
 
@@ -29,7 +28,6 @@ class TopForecastsPage extends Component {
         this.setState({interval: e})
         let endPoints = this.state.endPoints;
         endPoints.update("", e)
-        console.log(e, this.state.interval, endPoints)
         await this.updateRawData(this.state.category, e, endPoints);
     }
 

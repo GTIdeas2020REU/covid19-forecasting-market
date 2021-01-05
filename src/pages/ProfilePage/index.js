@@ -28,7 +28,6 @@ class ProfilePage extends React.Component {
 				'Content-Type': 'application/json'
 			}
 		});
-		console.log("logged out")			
   }
   
   
@@ -47,7 +46,6 @@ class ProfilePage extends React.Component {
         .then((response) => response.json())
         .then((data) => {
           this.setState({loginStatus: data['logged in']});
-          console.log(data['logged in']);
           if (data['logged in']){
               window.alert("LogOut fail, try again")
           }
@@ -58,10 +56,8 @@ class ProfilePage extends React.Component {
   }
   
   async handleLogout(event) {
-    console.log("logging out button");
     event.preventDefault();
     await this.saveLogout();
-    console.log(this.loginStatus)
     await this.updateLoginState();
     
   }

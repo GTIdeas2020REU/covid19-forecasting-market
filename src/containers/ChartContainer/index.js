@@ -18,7 +18,6 @@ class ChartContainer extends React.Component {
 
   async componentDidMount() {
     const { data } = this.props;
-    console.log(data);
     let compiledData = {};
     compiledData["confirmed"] = await fetchData(data.confirmed)
     compiledData["forecast"] = await fetchData(data.forecast)

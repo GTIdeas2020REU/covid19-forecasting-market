@@ -112,7 +112,6 @@ class LeaderboardTemp extends Component {
 
     renderOrgChart = (org) => {
         const chartRawData = {"confirmed": this.state.rawData.confirmed, "user_prediction": this.state.rawData.allForecasts[org]};
-        console.log(this.state.rawData.allForecasts[org])
         this.setState({selectedRow: org, chartRawData});
     }
 

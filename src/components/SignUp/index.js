@@ -46,7 +46,6 @@ class SignUp extends React.Component{
           .then((response) => response.json())
           .then((data) => {
             this.setState({loginStatus: data['logged in']});
-            console.log(data['logged in']);
             if (!data['logged in']){
                 window.alert("That username is already taken.")
             }

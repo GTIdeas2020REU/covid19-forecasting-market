@@ -34,8 +34,6 @@ class Login extends React.Component{
         fetch('/login/',{ method: 'GET'})
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-          console.log('here2')
           this.setState({loginStatus: data['status']});
           resolve(data);
         });
@@ -50,11 +48,9 @@ class Login extends React.Component{
           .then((response) => response.json())
           .then((data) => {
             this.setState({loginStatus: data['logged in']});
-            console.log(data['logged in']);
             if (!data['logged in']){
                 window.alert("Wrong username and/or password")
             }
-            console.log('heretoo')
             resolve(data['logged in']);
           });
         }, 200)
@@ -73,7 +69,6 @@ class Login extends React.Component{
     }
     
     async handleSubmit(event) {
-      console.log("submitting");
       event.preventDefault();
       await this.saveLogin(this.state.username, this.state.password);
       /*await this.wasSucess().then(status => {

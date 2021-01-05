@@ -234,7 +234,6 @@ class MainChart extends Component {
                         .scaleOrdinal()
                         .domain(compiledIds)
                         .range(d3.schemeTableau10);
-        console.log(color('confirmed'), color("prediction"))
          //draw legend
         let legend = d3.select(".legend-container")
                             .attr("viewBox", "0 0 400 500")

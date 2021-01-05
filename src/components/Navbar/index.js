@@ -24,15 +24,12 @@ class Navbar extends React.Component {
 	}*/
 
 	componentDidMount() {
-		console.log("nav bar loading");
 		this.isLoggedIn();
 		this.setState({'active': 'home'});
 	}
 
 	changeTab = (tabID) => {
 		this.setState({'active': tabID});
-		console.log("ACTIVE TAB");
-		console.log(this.state.active);
 	}
 
 	async saveLogout() {
@@ -43,7 +40,6 @@ class Navbar extends React.Component {
 			}
 		});
 		window.location.href ='/';
-		console.log("logged out")			
 	}
 
 	isLoggedIn = () => {

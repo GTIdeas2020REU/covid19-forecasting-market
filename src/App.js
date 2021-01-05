@@ -38,14 +38,15 @@ class App extends React.Component {
             <Route exact path={ROUTES.US_NATIONAL_INC} component={newDeathsContainer} /> */}
             <Route exact path={ROUTES.LANDING} component={HomePage}/>
             <Route exact path={ROUTES.MAP_PORTAL} component={Mapportal}/>
-            <Route exact path={ROUTES.LEADERBOARD} component={LeaderboardPage} />
+            {/* <Route exact path={ROUTES.LEADERBOARD} component={LeaderboardPage} /> */}
+            <Route exact path={ROUTES.LEADERBOARD} component={TopForecastsPage} />
             {/* <Route exact path={ROUTES.MARKET} component={MarketChart} /> */}
             <Route exact path={ROUTES.PROFILE} component={ProfilePage} />
             <Route exact path={ROUTES.SIGN_IN} component={Login} />
             <Route exact path={ROUTES.SIGN_UP} component={SignUp} />
             <Route exact path={ROUTES.ABOUT} component={AboutPage} />
             {/* <Route exact path="/temp" render={(props) => <ChartContainer compiledData={data} category="us_daily_deaths"/>}/> */}
-            <Route exact path="/new" component={TopForecastsPage}/>
+            {/* <Route exact path="/new" component={TopForecastsPage}/> */}
 
           </Switch>
         </div>

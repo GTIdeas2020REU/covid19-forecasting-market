@@ -282,7 +282,6 @@ export const createDefaultPrediction = (predStartDate, predEndDate) => {
 
 export const cleanPrediction = (data, predStartDate, predEndDate, confirmedLastVal) => {
   if (+data[0].date !== +predStartDate) {
-    console.log("needs to be reformatted")
     data = reformatPredData(data);
     var currDate = d3.timeDay.offset(getLastDate(data), 1);
     data = data.concat(createDefaultPrediction(currDate, predEndDate));
@@ -363,7 +362,6 @@ export const createFocusContext = (svg, width, height, marginBottom, confirmedDa
                               .attr("d", focusPredLine)
                               .attr("class", "context-curve")
                               .attr("stroke", color(labels[0]))
-  console.log(labels);
   focus.selectAll(".forecast-small")
         .data(forecastData)
         .enter()

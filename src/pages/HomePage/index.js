@@ -17,7 +17,6 @@ class HomePage extends Component {
     render() {
       
         let category = this.state.category;
-        console.log(category)
         const renderChartContainer = () => {
             if(category == "US Daily Deaths") {
                 return <ChartContainer key='123' data={US_INC_DEATH_MAIN}/>
