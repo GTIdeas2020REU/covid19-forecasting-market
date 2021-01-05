@@ -174,7 +174,7 @@ def update_new_death_user_errors():
         temp['date'] = latest_user_preds
         mse = get_user_mse(confirmed, temp, 'overall')
         if mse != None:
-            users.update_one{"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": list(mse.values())[0]}})
+            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": list(mse.values())[0]}})
         else:
             users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": None}})
         users.update_one({"username": user}, {'$set': {"prediction_us_daily_deaths": latest_user_preds}})
