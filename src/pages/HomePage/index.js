@@ -38,7 +38,7 @@ class HomePage extends Component {
                     <Dropdown.Menu>
                       <Dropdown.Item eventKey="us_daily_cases" onSelect={this.onClick}>{titles["us_daily_cases"][0]}</Dropdown.Item>
                       <Dropdown.Item eventKey="us_daily_deaths" onSelect={this.onClick}>{titles["us_daily_deaths"][0]}</Dropdown.Item>
-                      <Dropdown.Item eventKey="us_daily_hosps" onSelect={this.onClick}>{titles["us_daily_hosps"][0]}</Dropdown.Item>
+                      {/* <Dropdown.Item eventKey="us_daily_hosps" onSelect={this.onClick}>{titles["us_daily_hosps"][0]}</Dropdown.Item> */}
                     </Dropdown.Menu>
                 </Dropdown>
                 <br/>
