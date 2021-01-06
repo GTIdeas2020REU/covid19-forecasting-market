@@ -81,6 +81,7 @@ export class RawData {
 
 export const US_INC_DEATH_MAIN = new Data("us_daily_deaths", "main");
 export const US_INC_CASE_MAIN = new Data("us_daily_cases", "main");
+export const US_INC_HOSP_MAIN = new Data("us_daily_hosps", "main");
 export const US_INC_DEATH_USER = new Data("us_daily_deaths", "user");
 export const US_INC_CASE_USER = new Data("us_daily_cases", "user");
 export const US_INC_HOSP_USER = new Data("us_daily_hosps", "user");

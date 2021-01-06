@@ -214,7 +214,7 @@ def get_user_prediction(username, category, unregistered=False):
     return user_prediction
 
 def transfer_unregistered_user_predictions(temp_id, username):
-    categories = ['us_daily_cases', 'us_daily_deaths']
+    categories = ['us_daily_cases', 'us_daily_deaths', 'us_daily_hosps']
     for category in categories:
         temp_prediction = get_user_prediction(temp_id, category, True)
         for p in temp_prediction:
@@ -372,6 +372,8 @@ def aggregate():
         forecast_data = us_inc_forecasts_deaths
     elif category == "us_daily_cases":
         forecast_data = us_inc_forecasts_cases
+    elif category == "us_daily_hosps":
+        forecast_data = us_inc_forecasts_hosps
     return get_aggregates(forecast_data, user_prediction)
     
 
