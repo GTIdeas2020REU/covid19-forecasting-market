@@ -1,8 +1,6 @@
 import React from 'react';
-import ParentChart from '../../components/ParentChart';
 import MainChart from '../../components/MainChart';
-import { cleanForecastData, organizeData, fetchData} from '../../utils/data';
-import { Spinner } from 'react-bootstrap';
+import { fetchData } from '../../utils/data';
 import UserPredictionChart from '../../components/UserPredictionChart';
 
 class ChartContainer extends React.Component {
@@ -29,10 +27,10 @@ class ChartContainer extends React.Component {
 
   render() {
     const {compiledData, loggedIn, category, chartType} = this.state;
-    if (!compiledData || loggedIn == null || category == "" || chartType == "") return "Loading..."
+    if (!compiledData || loggedIn === null || category === "" || chartType === "") return "Loading..."
     return (
       <div>
-        {chartType == "main" 
+        {chartType === "main" 
           ? <MainChart compiled={compiledData} loggedIn={loggedIn} category={category}/>
           : <UserPredictionChart rawData={compiledData} loggedIn={loggedIn} category={category}/>
         }

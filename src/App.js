@@ -10,15 +10,10 @@ import './App.css';
 import * as ROUTES from "./constants/routes";
 
 import Navbar from './components/Navbar';
-import LandingPage from './pages/LandingPage';
 import AboutPage from './pages/AboutPage';
 import TopForecastsPage from './pages/TopForecastsPage';
 
-import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
-import InteractiveChartContainer from './containers/InteractiveChartContainer';
-import UserPredictionChartContainer from './containers/UserPredictionChartContainer';
-import ChartContainer from './containers/ChartContainer';
 // import newDeathsContainer from './containers/newDeathsContainer';
 import Mapportal from './components/Mapportal';
 

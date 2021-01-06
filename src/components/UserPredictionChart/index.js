@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
 import './UserPredictionChart.css';
-import { clamp, sortDictByDate, sortStringDates, createDefaultPrediction, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
+import { sortDictByDate, sortStringDates, reformatData, reformatPredData, getLastDate } from '../../utils/data';
 import { titles } from '../../constants/data';
 class UserPredictionChart extends Component {
     constructor(props) {
@@ -35,7 +35,7 @@ class UserPredictionChart extends Component {
                 this.renderNewChart();
             }
         }
-        if (this.props.rawData != this.state.rawData) {
+        if (this.props.rawData !== this.state.rawData) {
             this.setState({rawData: this.props.rawData});
             document.querySelector(".main-chart").innerHTML = "";
             document.querySelector(".legend-container").innerHTML = "";
@@ -43,7 +43,7 @@ class UserPredictionChart extends Component {
         }
     }
     renderNewChart() {
-        const {rawData, loggedIn, category} = this.props;
+        const {rawData, category} = this.props;
         const title = titles[category][0];
         const subtitle = titles[category][1];
         const confirmed = rawData["confirmed"];
@@ -55,10 +55,6 @@ class UserPredictionChart extends Component {
         let compiledData = [];
 
         //set up margin, width, height of chart
-        const legendWidth = 230;
-        const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
-        const focusHeight = 100;
-        const titleHeight = 20;
         let margin = {top: 20, right: 30, bottom: 30, left: 80},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
@@ -101,11 +97,8 @@ class UserPredictionChart extends Component {
         //format confirmedData, forecastData, and predictionData into a list of js objects, convert date from string to js date object
         let confirmedData = reformatData(confirmed);
         const confirmedStartDate = confirmedData[0].date;
-        const confirmedLastDate = getLastDate(confirmedData);
-        const confirmedLastVal = getLastValue(confirmedData);
         const predStartDate = today; //last date of confirmedData
         const predLength = 155;
-        const absMaxDate = d3.timeYear.offset(today, 2);
         let predEndDate = d3.timeDay.offset(predStartDate, predLength)
         
         let mostRecentPred = [];
@@ -135,16 +128,16 @@ class UserPredictionChart extends Component {
                     .domain([confirmedStartDate, predEndDate])
                     .range([0, width])
                     .nice();
-        var xAxis = svg
+        svg
                         .append("g")
                         .attr("transform", "translate(0," + height + ")")
                         .call(d3.axisBottom(x));
-        var y = d3
+        let y = d3
                     .scaleLinear()
                     .domain([0, yAxisMax * 1.05])
                     .range([height, 0])
                     .nice();
-        var yAxis = svg
+        svg
                         .append("g")
                         .call(d3.axisLeft(y));
         
@@ -175,15 +168,15 @@ class UserPredictionChart extends Component {
                     .style("text-anchor", "end")
 
         //SET UP CLIP PATH//
-        var mainClip = svg
-                            .append("defs")
-                            .append("svg:clipPath")
-                                .attr("id", "main-clip")
-                                .append("svg:rect")
-                                    .attr("width", width )
-                                    .attr("height", height )
-                                    .attr("x", 0)
-                                    .attr("y", 0);
+        svg
+            .append("defs")
+            .append("svg:clipPath")
+                .attr("id", "main-clip")
+                .append("svg:rect")
+                    .attr("width", width )
+                    .attr("height", height )
+                    .attr("x", 0)
+                    .attr("y", 0);
         const mainArea = svg.append("g")
                             .attr("clip-path", "url(#main-clip)");
         
@@ -200,19 +193,18 @@ class UserPredictionChart extends Component {
                             .x(function(d) { return x(d.date) })
                             .y(function(d) { return y(d.value) })
         //DRAW CURVES//
-        var confirmedCurve = mainArea
-                                    .append("path")
-                                    .attr("id", "confirmed")
-                                    .attr("class", "line")
-                                    .datum(confirmedData)
-                                    .attr("d", line)
-                                    .attr("stroke", color[0])
+        mainArea.append("path")
+                .attr("id", "confirmed")
+                .attr("class", "line")
+                .datum(confirmedData)
+                .attr("d", line)
+                .attr("stroke", color[0])
 
-        var predCurve = mainArea
+        let predCurve = mainArea
                                 .append("path")
                                 .attr("id", "prediction")
                                 .attr("class", "line")
-        if (Object.keys(userPrediction).length != 0) {
+        if (Object.keys(userPrediction).length !== 0) {
             predCurve.datum(mostRecentPred.filter(predLine.defined()))
                     .attr("d", predLine)
                     .attr("stroke",  color[1])
@@ -303,7 +295,7 @@ class UserPredictionChart extends Component {
                                     }
                                     if (+d3.timeDay.floor(date) === +data.date || +d3.timeDay.ceil(date) === +data.date) {
                                         if (data.defined != 0) {
-                                            var element = d3.select(this)
+                                            let element = d3.select(this)
                                             element
                                                     .select('#value')
                                                     .style("display", "block")
@@ -322,7 +314,7 @@ class UserPredictionChart extends Component {
                                             return "translate(0,0)";
                                         }
                                     }
-                                    var element = d3.select(this)
+                                    let element = d3.select(this)
                                     element                
                                         .selectAll("text")
                                             .style("display", "none")
@@ -788,7 +780,6 @@ class UserPredictionChart extends Component {
     // }
     //comment
     render() {
-        const title = titles[this.props.category][0];
         return (
             <div>
                 <div className="profile-chart">

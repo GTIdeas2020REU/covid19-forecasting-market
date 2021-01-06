@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3'
 import './MainChart.css'
-import { clamp, createDefaultPrediction, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
-import { elementType } from 'prop-types';
-import { addDays, formatDate } from '../../utils/date';
-import { timeDay } from 'd3';
+import { clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
 import { titles, forecastIdentifiers } from '../../constants/data';
 
 class MainChart extends Component {
@@ -87,17 +84,13 @@ class MainChart extends Component {
         const userPrediction = compiled["user_prediction"];
         const today = d3.timeParse("%Y-%m-%d")(new Date().toISOString().substring(0,10));
         if (!loggedIn) {this.appendModal()}
-        const orgs = []
         let predictionData = [];//where we will store formatted userPrediction
         let forecastData = [];//formatted forecastData
         const savePrediction = this.savePrediction;
         let compiledData = [];
 
         //set up margin, width, height of chart
-        const legendWidth = 230;
-        const toolTipHeight = 50; //to make sure there's room for the tooltip when the value is 0
         const focusHeight = 100;
-        const titleHeight = 20;
         let margin = {top: 20, right: 30, bottom: 30, left: 80},
             width = 800 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
@@ -470,12 +463,10 @@ class MainChart extends Component {
                         let value = clamp(0, y.domain()[1], y.invert(pos[1]));
                         if (+getLastDate(predictionData) < +date) {//append new date
                             let currDate = d3.timeDay.offset(getLastDate(predictionData), 1);
-                            let currValue = 0;
                             let defined = 0;
-                            if (predictionData.length == 1) {
+                            if (predictionData.length === 1) {
                                 predictionData[0].value = value;
                                 predictionData[0].defined = true;
-                                currValue = value;
                                 defined = true;
                             }
                             while (+currDate < +date) {

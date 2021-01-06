@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import ChartContainer from '../../containers/ChartContainer';
 import {US_INC_DEATH_MAIN, US_INC_CASE_MAIN} from '../../constants/data'
@@ -18,7 +18,7 @@ class HomePage extends Component {
       
         let category = this.state.category;
         const renderChartContainer = () => {
-            if(category == "US Daily Deaths") {
+            if(category === "US Daily Deaths") {
                 return <ChartContainer key='123' data={US_INC_DEATH_MAIN}/>
             }
             else {

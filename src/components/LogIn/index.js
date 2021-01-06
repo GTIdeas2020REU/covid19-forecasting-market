@@ -1,8 +1,5 @@
 import React from 'react';
-import { useHistory } from "react-router-dom";
-import ReactDOM from 'react-dom';
 import './Login.css';
-import { Redirect } from "react-router";
 
 
 class Login extends React.Component{

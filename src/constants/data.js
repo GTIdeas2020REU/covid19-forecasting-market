@@ -44,8 +44,8 @@ export class Data {
         this.allUserPredictions = `/all-user-prediction?category=${category}`
     }
     update(category, interval) {
-        category = category == "" ? this.category : category;
-        interval = interval == "" ? this.interval : interval;
+        category = category === "" ? this.category : category;
+        interval = interval === "" ? this.interval : interval;
         this.interval = interval;
         this.category = category;
         this.confirmed = `/confirmed-wk-avg?category=${category}`;

@@ -22,7 +22,6 @@ class AboutPage extends Component {
             <div>
                 <br></br>
                 <h1 style={h1style}>About</h1>
-                <h3></h3>
                 <p style={pstyle}> 
                     This site aims to show various past data readings of coronavirus data, as well as future predictions from various sources. 
                     Different forecasts relating to the COVID-19 pandemic are displayed, and users can make their own predictions about the future trajectory of 

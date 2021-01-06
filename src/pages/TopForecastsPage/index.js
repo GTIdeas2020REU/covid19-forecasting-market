@@ -1,6 +1,5 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { fetchData } from '../../utils/data';
 import { titles, Data, RawData } from '../../constants/data';
 import LeaderboardTemp from '../../components/LeaderboardTemp';
 import './TopForecastsPage.css';

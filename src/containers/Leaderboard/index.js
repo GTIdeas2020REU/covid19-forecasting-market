@@ -4,7 +4,6 @@ import { useTable } from 'react-table';
 import $ from 'jquery';
 import ReactDOM from 'react-dom';
 
-import LeaderboardChart from '../../components/LeaderboardChart';
 import UserPredictionChart from '../../components/UserPredictionChart';
 import colors from '../../constants/colors';
 import './Leaderboard.css';

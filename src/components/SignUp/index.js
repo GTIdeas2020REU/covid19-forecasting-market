@@ -1,6 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { Redirect } from "react-router";
 import '../LogIn/Login.css';
 
 class SignUp extends React.Component{

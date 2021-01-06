@@ -70,37 +70,37 @@ export const formatValue = (value) => {
     currency: "USD"
   });
 }
-export const callout = (g, value) => {
-  if (!value) return g.style("display", "none");
+// export const callout = (g, value) => {
+//   if (!value) return g.style("display", "none");
 
-  g
-      .style("display", null)
-      .style("pointer-events", "none")
-      .style("font", "10px sans-serif");
+//   g
+//       .style("display", null)
+//       .style("pointer-events", "none")
+//       .style("font", "10px sans-serif");
 
-  const path = g.selectAll("path")
-    .data([null])
-    .join("path")
-      .attr("fill", "white")
-      .attr("stroke", "black");
+//   const path = g.selectAll("path")
+//     .data([null])
+//     .join("path")
+//       .attr("fill", "white")
+//       .attr("stroke", "black");
 
-  const text = g.selectAll("text")
-    .data([null])
-    .join("text")
-    .call(text => text
-      .selectAll("tspan")
-      .data((value + "").split(/\n/))
-      .join("tspan")
-        .attr("x", 0)
-        .attr("y", (d, i) => `${i * 1.1}em`)
-        .style("font-weight", (_, i) => i ? null : "bold")
-        .text(d => d));
+//   const text = g.selectAll("text")
+//     .data([null])
+//     .join("text")
+//     .call(text => text
+//       .selectAll("tspan")
+//       .data((value + "").split(/\n/))
+//       .join("tspan")
+//         .attr("x", 0)
+//         .attr("y", (d, i) => `${i * 1.1}em`)
+//         .style("font-weight", (_, i) => i ? null : "bold")
+//         .text(d => d));
 
-  const {x, y, width: w, height: h} = text.node().getBBox();
+//   const {x, y, width: w, height: h} = text.node().getBBox();
 
-  text.attr("transform", `translate(${-w / 2},${15 - y})`);
-  path.attr("d", `M${-w / 2 - 10},5H-5l5,-5l5,5H${w / 2 + 10}v${h + 20}h-${w + 20}z`);
-}
+//   text.attr("transform", `translate(${-w / 2},${15 - y})`);
+//   path.attr("d", `M${-w / 2 - 10},5H-5l5,-5l5,5H${w / 2 + 10}v${h + 20}h-${w + 20}z`);
+// }
 
 export const sortDictByDate = (data) => {
   var sortedDict = {};
@@ -140,38 +140,6 @@ export const reformatPredData = (data) => {
       })
   );
 }
-//returns y coordinate at given x 
-/*export const findYatX = (x, path) => {
-  if (x > path.getTotalLength()) {return null}
-  const getXY = (len) => {
-      var point = path.getPointAtLength(len);
-      return [point.x, point.y];
-  }
-  var start = 0;
-  var end = path.getTotalLength();
-  var result = 0;
-  while (start < end) { 
-    var mid = (start + end) / 2;
-    var currPoint = getXY(mid);
-    var currPointX = currPoint[0];
-    if (x < currPointX) {
-      end = mid - 0.01; //does it have to be 0.01?
-    }
-    else if (x > currPointX) {
-      start = mid + 0.01;
-    }
-    else {
-      console.log(currPointX);
-      result = currPoint[1];
-      break;
-    }
-  }
-  if (result == 0) {
-    console.log(start, end);
-    return getXY(start)[1];
-  }
-  return result;
-}*/
 
 export const findYatX = (x, path, startX) => {
   const getXY = (len) => {
@@ -269,8 +237,6 @@ export const color = (names) => {
 export const createDefaultPrediction = (predStartDate, predEndDate) => {
   var defaultData = [];
   var currDate = predStartDate;
-  //var defined = true;
-  //var value = confirmedData[confirmedData.length - 1].value;
   
   //create defaultPredictionData
   while(+currDate <= +predEndDate) {
@@ -292,7 +258,6 @@ export const cleanPrediction = (data, predStartDate, predEndDate, confirmedLastV
   return data;
 }
 
-
 export const savePrediction = (data, category) => {
   fetch('/update/',{
     method: 'POST',
@@ -301,120 +266,6 @@ export const savePrediction = (data, category) => {
     },
     body: JSON.stringify({"data": data, "category": category}),
   });
-}
-
-export const createFocusContext = (svg, width, height, marginBottom, confirmedData, aggregateData, forecastData, predictionData, labels, x, y, xAxis, line, predLine, color) => {
-  const focusHeight = 100;
-  const focusMargin = 50;
-  var focus = svg
-                  .append("g")
-                      .attr("viewBox", [0, 0, width, focusHeight])
-                      .attr("transform", `translate(0,${height + focusMargin} )`)
-                      //.attr("width", width + 100)
-                      //.attr("height", height)
-                      .style("display", "block")
-
-  var focusX = d3
-                  .scaleTime()
-                  .domain(x.domain())
-                  .range([0, width]);
-  const focusY = d3
-                  .scaleLinear()
-                  .domain(y.domain())
-                  .range([focusHeight - focusMargin, 0])
-                  .nice();
-  
-  var focusXAxis = focus
-                        .append("g")
-                        .attr("transform", `translate(0,${focusHeight - marginBottom})`)
-                        .call(d3.axisBottom(focusX));
-  const brush = d3.brushX()
-                  .extent([[0, 0], [width, focusHeight - marginBottom]])
-                  .on("brush", brushed)
-                  .on("end", brushended);
-
-  const defaultSelection = [x(d3.timeMonth.offset(x.domain()[1], -8)), x.range()[1]];
-
-  const focusLine = d3.line()
-                      .curve(d3.curveCatmullRom)
-                      .x(function(d) {return x(d.date)})
-                      .y(function (d) {return focusY(d.value)})
-  
-  const focusPredLine = d3.line()
-                          .curve(d3.curveBasis)
-                          .defined(d => d.defined)
-                          .x(function(d) { return x(d.date) })
-                          .y(function(d) { return focusY(d.value) })        
-  focus.append("path")
-      .datum(confirmedData)
-      .attr("d", focusLine)
-      .attr("class", "context-curve")
-      .attr("stroke", color(labels[1]))
-  
-  focus.append("path")
-      .datum(aggregateData)
-      .attr("d", focusLine)
-      .attr("class", "context-curve")
-      .attr("stroke", color(labels[2]))
-
-  var contextPredCurve = focus.append("path")
-                              .datum(predictionData)
-                              .attr("d", focusPredLine)
-                              .attr("class", "context-curve")
-                              .attr("stroke", color(labels[0]))
-  focus.selectAll(".forecast-small")
-        .data(forecastData)
-        .enter()
-        .append("path")
-            .attr("d", line)
-            .attr("class", "context-curve")
-            .style("stroke", (f, index) => color(labels[3 + index]))
-            .style("stroke-width", "2px");
-
-  function brushed() {
-      if (d3.event.selection) {
-          var extent = d3.event.selection;
-          x.domain([ focusX.invert(extent[0]), focusX.invert(extent[1]) ]);
-          xAxis.call(d3.axisBottom(x))
-          var newX = x(getLastDate(confirmedData));
-          newX = newX < 0 ? 0 : newX;
-          d3
-              .select("#prediction-clip")
-              .select("rect")
-                  .attr("width", width - newX)
-                  .attr("x", newX);
-          d3
-                  .select("#confirmed-clip")
-                  .select("rect")
-                      .attr("width", newX)
-
-          svg
-              .selectAll(".line")
-              .attr('d', line)
-
-          svg
-              .select("#your-line")
-              .attr("d", predLine)
-          
-          svg
-              .select("#draw-guess")
-              .attr("x", newX + (width - newX) / 2);
-          svg
-              .select("#pointer")
-              .selectAll("circle")
-                  .attr("cx", newX);
-      }
-  }
-  
-  function brushended() {
-      if (!d3.event.selection) {
-          gb.call(brush.move, defaultSelection);
-      }
-
-  }
-  const gb = focus
-                  .call(brush)
-                  .call(brush.move, defaultSelection);  
 }
 
 export async function fetchData(url) {

@@ -1,4 +1,4 @@
-import React, { Component, useRef } from 'react';
+import React, { Component } from 'react';
 import './LeaderboardTemp.css';
 import { useTable } from 'react-table';
 import $ from 'jquery';
@@ -79,7 +79,7 @@ class LeaderboardTemp extends Component {
     }
     componentDidUpdate() {
         let { rawData } = this.props;
-        if (rawData != this.state.rawData) {
+        if (rawData !== this.state.rawData) {
             this.setState({rawData, chartRawData: null})
         }
 

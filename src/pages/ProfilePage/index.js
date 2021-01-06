@@ -1,6 +1,5 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
-import UserPredictionChartContainer from '../../containers/UserPredictionChartContainer';
 import {US_INC_DEATH_USER, US_INC_CASE_USER, US_INC_HOSP_USER, titles} from '../../constants/data'
 import ChartContainer from '../../containers/ChartContainer';
 import './ProfilePage.css'
@@ -74,13 +73,13 @@ class ProfilePage extends React.Component {
     }
     let selection = this.state.dropDownSelection;
         const renderChartContainer = () => {
-          if(selection == "us_daily_deaths") {
+          if(selection === "us_daily_deaths") {
               return <ChartContainer key='123' data={US_INC_DEATH_USER}/>
           }
-          else if (selection == "us_daily_cases") {
+          else if (selection === "us_daily_cases") {
               return <ChartContainer key='321' data={US_INC_CASE_USER}/>
           }
-          else if (selection == "us_daily_hosps") {
+          else if (selection === "us_daily_hosps") {
             return <ChartContainer key='312' data={US_INC_HOSP_USER}/>
         }
     }
@@ -128,7 +127,6 @@ class ProfilePage extends React.Component {
   }
 
   render() {
-    const { user } = this.state;
     //if (!user) return 'Loading...';
 
     return (
