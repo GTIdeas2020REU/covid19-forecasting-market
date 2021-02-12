@@ -28,6 +28,8 @@ export const intervals = {
     '8-week-ahead': '8'
 };
 
+export const clientId =
+  '402236147588-0nqb97ecrkeo6hulb2f1t2886lqj5b9i.apps.googleusercontent.com';
 
 export class Data {
     constructor(category, chartType, interval="overall") {

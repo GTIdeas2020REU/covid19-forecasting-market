@@ -255,6 +255,25 @@ def register(name, email, username, password):
     new_user = mongo.db.users.find_one({'username': username})
     store_session((new_user['_id']), new_user['email'], new_user['name'], new_user['username'])
     return True
+    
+def google_login(username, name, email):
+    user = mongo.db.users.find_one(
+        {"username": username})
+    if not user:
+        password = str(uuid.uuid4())
+        hashed = pbkdf2_sha256.hash(password)
+        mongo.db.users.insert_one({
+            'name': name,
+            'email': email,
+            'username': username,
+            'password': hashed,
+            'score': 0
+        })
+        user = mongo.db.users.find_one({'username': username})
+    store_session((user['_id']), user['email'], user['name'], user['username'])
+    print("google login successful")
+
+
 
 
 @app.before_first_request
@@ -543,25 +562,38 @@ def delete():
         return "Success"  
     return "None"
     
+#          body: JSON.stringify({"username": username, "name": name, "email": email}),
 
 @app.route('/login/', methods=['POST','GET'])
 def login():
     if (request.method == 'POST'):
+        login_type = request.args.get('type')
         data = request.json
-        username = data['username']
-        password = data['password']
-        if authenticate(username, password):
-            print("logged in")
-            #store temp user predictions
+        if login_type == 'google':
+            username = data.get('username')
+            name = data.get('name')
+            email = data.get('email')
+            google_login(username, name, email)
             if 'temp_id' in session:
                 transfer_unregistered_user_predictions(session['temp_id'], username)
                 print('all predictions transferred')
                 session.pop('temp_id')
+            print('google login done')
+            print(session)
             return "Success"
-        else:
-            print("not logged in")
-            flash("Invalid username or password. Please try again", "error")
-            return "Fail"
+        elif login_type == 'normal':
+            username = data['username']
+            password = data['password']
+            if authenticate(username, password):
+                #store temp user predictions
+                if 'temp_id' in session:
+                    transfer_unregistered_user_predictions(session['temp_id'], username)
+                    print('all predictions transferred')
+                    session.pop('temp_id')
+                return "Success"
+            else:
+                flash("Invalid username or password. Please try again", "error")
+                return "Fail"
     else:
         if 'id' in session:
             print("True")

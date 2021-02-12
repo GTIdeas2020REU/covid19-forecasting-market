@@ -1,5 +1,7 @@
 import React from 'react';
 import './Login.css';
+import { GoogleLogin } from 'react-google-login';
+import { clientId } from '../../constants/data';
 
 
 class Login extends React.Component{
@@ -9,12 +11,12 @@ class Login extends React.Component{
     }  
       
     componentDidMount(){
-      //this.isLoggedIn();
+      // console.log("", this.state.loginStatus);
     }
 
     saveLogin(username, password) {
       return new Promise((resolve, reject) => {
-        fetch('/login/',{
+        fetch('/login/?type=normal',{
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -23,7 +25,20 @@ class Login extends React.Component{
         });
         resolve();
       })
-        
+    }
+
+    saveGoogleLogin(username, name, email) {
+      console.log(username, name, email)
+      return new Promise((resolve, reject) => {
+        fetch('/login/?type=google',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({"username": username, "name": name, "email": email}),
+        });
+        resolve();
+      })
     }
 
     wasSucess = () => {
@@ -74,6 +89,19 @@ class Login extends React.Component{
       await this.updateLoginState();
     }
 
+    async onSuccess(res) {
+      let name = res.profileObj.name
+      let email = res.profileObj.email
+      let username = email.slice(0, email.indexOf("@"));
+      await this.saveGoogleLogin(username, name, email);
+      await this.updateLoginState();
+    };
+  
+    onFailure = (res) => {
+      alert(
+        `Failed to login.`
+      );
+    };
 
     render() {
       if (this.state.loginStatus) {
@@ -81,30 +109,42 @@ class Login extends React.Component{
         window.location.href ='/';
       }
       return (
-        <form onSubmit={this.handleSubmit.bind(this)} className='form-group'>
-          <h1>Sign In</h1>
-          <label className='spanStyle'><b>Username</b></label>
-          <br></br>
-          <input
-            type="text"
-            value={this.state.username}
-            onChange={this.handleChange.bind(this)}
-            name='username'
-          />
-          <br></br>
-          <span className='spanStyle'><b>Password</b></span>
-          <br></br>
-          <input
-            type="password"
-            value={this.state.password}
-            onChange={this.handleChange.bind(this)}
-            name='password'
-            required
-          />
-          <br></br>
-            
-          <input type="submit" value="Submit" />
-        </form>
+        <div>
+          <form onSubmit={this.handleSubmit.bind(this)} className='form-group'>
+            <h1>Sign In</h1>
+            <label className='spanStyle'><b>Username</b></label>
+            <br></br>
+            <input
+              type="text"
+              value={this.state.username}
+              onChange={this.handleChange.bind(this)}
+              name='username'
+            />
+            <br></br>
+            <span className='spanStyle'><b>Password</b></span>
+            <br></br>
+            <input
+              type="password"
+              value={this.state.password}
+              onChange={this.handleChange.bind(this)}
+              name='password'
+              required
+            />
+            <br></br>
+              
+            <input type="submit" value="Submit" />
+          </form>
+
+          <GoogleLogin
+            clientId={clientId}
+            buttonText="Sign in with Google"
+            onSuccess={this.onSuccess.bind(this)}
+            onFailure={this.onFailure.bind(this)}
+            cookiePolicy={'single_host_origin'}
+            style={{ marginTop: '100px' }}
+            // isSignedIn={true}
+          /> 
+      </div>
       );
     }
 }

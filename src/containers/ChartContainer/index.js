@@ -21,7 +21,6 @@ class ChartContainer extends React.Component {
     compiledData["forecast"] = await fetchData(data.forecast)
     compiledData["aggregate"] = await fetchData(data.aggregate)
     compiledData["user_prediction"] = await fetchData(data.userPrediction)
-    console.log(compiledData);
     let logInStatus = await fetchData('/login-status/')
     this.setState({compiledData: compiledData, category: data.category, loggedIn: logInStatus['logged in'], chartType: data.chartType});
   }
