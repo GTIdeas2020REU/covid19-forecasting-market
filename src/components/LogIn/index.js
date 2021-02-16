@@ -28,7 +28,6 @@ class Login extends React.Component{
     }
 
     saveGoogleLogin(username, name, email) {
-      console.log(username, name, email)
       return new Promise((resolve, reject) => {
         fetch('/login/?type=google',{
           method: 'POST',
@@ -98,9 +97,10 @@ class Login extends React.Component{
     };
   
     onFailure = (res) => {
-      alert(
-        `Failed to login.`
-      );
+      console.log("login failed")
+      // alert(
+      //   `Failed to login.`
+      // );
     };
 
     render() {
