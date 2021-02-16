@@ -36,6 +36,7 @@ app.config['MONGO_URI'] = "mongodb+srv://test:test@cluster0-3qghj.mongodb.net/co
 mongo = PyMongo(app)
 
 
+# Random comment
 
 #forecast_data = get_forecasts()
 
