@@ -7,3 +7,15 @@
 .leaderboard-table, .leaderboard-chart{
     margin: 0 10px 0 10px;
 }
+
+.main-body {
+    cursor: pointer;
+}
+
+tr:hover {
+    background-color:black;
+}
+
+.chart-username {
+    font-weight: bold;
+}

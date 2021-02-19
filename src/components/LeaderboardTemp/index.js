@@ -31,7 +31,7 @@ const Table = ({ columns, data, renderUserChart, renderOrgChart, rawData }) => {
             </tr>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()}>
+        <tbody {...getTableBodyProps()} className="main-body">
             {<RenderUserRows rawData={rawData} renderUserChart={renderUserChart}/>}
             {<RenderOrgRows rawData={rawData} renderOrgChart={renderOrgChart}/>}
         </tbody>
@@ -128,6 +128,7 @@ class LeaderboardTemp extends Component {
                     <Table columns={tableColumns} data={this.state.rawData.allUserMSE} renderUserChart={this.renderUserChart} renderOrgChart={this.renderOrgChart} rawData={this.state.rawData} />
                 </div>
                 <div className="leaderboard-chart">
+                    {this.state.selectedRow != "" && <h3 className="chart-username">{this.state.selectedRow}</h3> }
                     {this.state.chartRawData != null 
                     ? <UserPredictionChart rawData={this.state.chartRawData} loggedIn={false} category={this.state.rawData.category} />
                     : <div>Click on a row to display all predictions from a user!</div>}

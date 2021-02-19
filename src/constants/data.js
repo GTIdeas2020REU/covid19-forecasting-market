@@ -1,8 +1,8 @@
 import { fetchData } from "../utils/data";
 
 export const titles = {
-    "us_daily_cases": ["US Daily Reported Cases", "Daily Reported Cases in the US"],
-    "us_daily_deaths": ["US Daily Deaths", "Daily Deaths in the US"],
+    "us_daily_cases": ["US Daily COVID-19 Reported Cases", "Daily COVID-19 Reported Cases in the US"],
+    "us_daily_deaths": ["US Daily COVID-19 Deaths", "Daily COVID-19 Deaths in the US"],
     "us_daily_hosps": ["US Daily COVID-19 Hopitalizations", "Daily COVID-19 Hospitalizations in the US"]
 }
 

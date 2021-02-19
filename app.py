@@ -14,7 +14,7 @@ from backend.get_estimates import get_forecasts, get_all_forecasts, get_accuracy
 from backend.confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg, get_us_new_hospitalizations
 from backend.evaluate import get_mse, get_user_mse, org_mse
 from backend.gaussian import get_gaussian_for_all
-
+from clock import update_vars
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_apscheduler import APScheduler
 import atexit
@@ -282,8 +282,13 @@ def make_session_permanent():
     session.permanent = True
 
 
-@app.route("/user-prediction", methods=['POST','GET'])
+@app.route("/", methods=['POST','GET'])
 def home():
+    return render_template("home.html")
+
+
+@app.route("/user-prediction", methods=['POST','GET'])
+def user_prediction():
     user_prediction = {}
     pred_category = request.args.get('category')
     if 'id' in session:
@@ -333,6 +338,7 @@ def forecasts():
         return us_inc_forecasts_cases
     elif category == "us_daily_hosps":
         return us_inc_forecasts_hosps
+    return "invalid request"
 
 
 @app.route("/forecast-cleaned", methods=['POST','GET'])

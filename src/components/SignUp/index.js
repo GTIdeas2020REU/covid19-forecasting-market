@@ -1,5 +1,7 @@
 import React from 'react';
 import '../LogIn/Login.css';
+import { GoogleLogin } from 'react-google-login';
+import { clientId } from '../../constants/data';
 
 class SignUp extends React.Component{
     constructor(props) {
@@ -15,6 +17,19 @@ class SignUp extends React.Component{
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({"name": nam, "email": email, "username": username, "password": password}),
+        });
+        resolve();
+      })
+    }
+    
+    saveGoogleLogin(username, name, email) {
+      return new Promise((resolve, reject) => {
+        fetch('/login/?type=google',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({"username": username, "name": name, "email": email}),
         });
         resolve();
       })
@@ -58,6 +73,18 @@ class SignUp extends React.Component{
       await this.saveLogin(this.state.nam, this.state.email, this.state.username, this.state.password);
       await this.updateLoginState();
     }
+
+    async onSuccess(res) {
+      let name = res.profileObj.name
+      let email = res.profileObj.email
+      let username = email.slice(0, email.indexOf("@"));
+      await this.saveGoogleLogin(username, name, email);
+      await this.updateLoginState();
+    };
+  
+    onFailure = (res) => {
+      console.log("login failed")
+    };
     
     render() {
       if (this.state.loginStatus) {
@@ -65,7 +92,8 @@ class SignUp extends React.Component{
         window.location.href ='/';
       }
       return (
-        <form onSubmit={this.handleSubmit.bind(this)}>
+        <div>
+          <form onSubmit={this.handleSubmit.bind(this)}>
           <h1>Sign Up</h1>
           <span className='signupSpan'><b>Name</b></span>
           <br></br>
@@ -109,6 +137,16 @@ class SignUp extends React.Component{
           <br></br>
           <input type="submit" value="Submit" />
         </form>
+          <GoogleLogin
+            clientId={clientId}
+            buttonText="Sign in with Google"
+            onSuccess={this.onSuccess.bind(this)}
+            onFailure={this.onFailure.bind(this)}
+            cookiePolicy={'single_host_origin'}
+            style={{ marginTop: '100px' }}
+            // isSignedIn={true}
+          /> 
+        </div>
       );
     }
 }
