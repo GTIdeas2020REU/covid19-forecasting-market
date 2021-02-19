@@ -81,6 +81,7 @@ class LeaderboardTemp extends Component {
         let { rawData } = this.props;
         if (rawData !== this.state.rawData) {
             this.setState({rawData, chartRawData: null})
+            this.setState({selectedRow: ""})
         }
 
         if ($('#Score').asc === undefined) {
