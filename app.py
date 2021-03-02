@@ -14,7 +14,6 @@ from backend.get_estimates import get_forecasts, get_all_forecasts, get_accuracy
 from backend.confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg, get_us_new_hospitalizations
 from backend.evaluate import get_mse, get_user_mse, org_mse
 from backend.gaussian import get_gaussian_for_all
-from clock import update_vars
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_apscheduler import APScheduler
 import atexit
