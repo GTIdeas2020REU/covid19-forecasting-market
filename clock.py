@@ -18,6 +18,7 @@ mydb = client['covid19-forecast']
 def update_new_death_org_errors():
     errors = []  # 0th index = 1, 1st = 2, 2nd = 4, 3rd = 8
     errors = mydb.org_errors
+    
     for interval in [1, 2, 4, 8]:
         org_errors = org_mse(7*interval, "inc death")
         orgs = list(org_errors.keys())
@@ -30,6 +31,7 @@ def update_new_death_org_errors():
                 })
             else:
                 errors.insert_one({"org": org, "mse_score_" + str(interval) + "_us_daily_deaths": org_errors[org] })
+    
 
     us_mse = get_mse(json.loads(get_weekly_avg(get_us_new_deaths())), get_daily_forecasts(event="inc death"), 'overall')
     orgs = list(us_mse.keys())
@@ -409,14 +411,19 @@ scheduler.add_job(func=update_vars, trigger="interval", days=1)
 scheduler.start()
 
 
+
 '''
 start = time.time()
-update_new_death_user_errors()
-update_new_case_user_errors()
+#update_new_death_user_errors()
+#update_new_case_user_errors()
 update_new_death_org_errors()
+print("DEATHS DONE")
 update_new_case_org_errors()
+print("CASES DONE")
 update_new_hosp_org_errors()
+print("HOSPS DONE")
 update_vars()
 elapse = time.time()
 print(elapse-start)
 '''
+

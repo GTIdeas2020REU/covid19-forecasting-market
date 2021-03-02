@@ -3,15 +3,18 @@ from backend.get_estimates import get_daily_forecasts, get_new_cases_us
 
 import json
 import time
+import math
 import pymongo
 from sklearn.metrics import mean_squared_error
 import pandas as pd
+import numpy as np
 from datetime import datetime,timedelta
 
 def get_mse(confirmed, forecasts, interval):
     result = dict()
 
     for model in forecasts.keys():
+        n = len(set(forecasts[model]['forecast_date']))
         model_dates = forecasts[model]['target_end_date']
         model_values = forecasts[model]['value']
 
@@ -31,8 +34,20 @@ def get_mse(confirmed, forecasts, interval):
         if len(confirmed_values) == 0 or len(prediction_values) == 0:
             continue
 
-        mse = mean_squared_error(confirmed_values, prediction_values)
-        result[model] = mse
+        #mse = mean_squared_error(confirmed_values, prediction_values)
+        #result[model] = mse
+
+        relevant_preds = np.array(prediction_values, dtype=np.float32)
+        true_results = np.array(confirmed_values, dtype=np.float32)
+
+        #true_results = outcomes.loc[relevant_preds['target_end_date']]
+        Z = relevant_preds - true_results
+        avgScore = np.sum(Z**2) / (n + 1)
+        mu_star = np.sum(Z) / n
+        c = 1000000
+        sigma_star = math.sqrt(c**2 + np.sum(np.square(Z - mu_star))) / math.sqrt(n)
+        #performance[model] = avgScore
+        result[model] = avgScore - sigma_star / (math.sqrt(n+1))
 
     return result
 
@@ -74,11 +89,20 @@ def org_mse(interval, event):
         if len(relevant_preds) == 0:
             performance[model] = None
             continue
+        
         if event != 'inc hosp':
             relevant_preds['value'] /= 7
+        
+        n = len(df['forecast_date'].unique())
         true_results = outcomes.loc[relevant_preds['target_end_date']]
-        scores = (relevant_preds['value'].to_numpy() - true_results.to_numpy())**2
-        performance[model] = scores.mean()
+        Z = relevant_preds['value'].to_numpy() - true_results.to_numpy()
+        avgScore = np.sum(Z**2) / (n + 1)
+        mu_star = np.sum(Z) / n
+        c = 1000000
+        sigma_star = math.sqrt(c**2 + np.sum(np.square(Z - mu_star))) / math.sqrt(n)
+        #performance[model] = avgScore
+        performance[model] = avgScore - sigma_star / (math.sqrt(n+1))
+    #print(performance)
     return performance
 
 

@@ -47,7 +47,7 @@ def get_daily_forecasts(event):
         df.value = df.value.astype('float')
         df['value'] = df['value'].div(7)
         df = df.sort_values(by=['forecast_date', 'target_end_date'])
-        df = df[['target_end_date', 'value']]
+        df = df[['forecast_date', 'target_end_date', 'value']]
         df = df.drop_duplicates(subset=['target_end_date'], keep='last')
         models[orgs.pop()] = df.to_dict('list')
     return models
@@ -72,13 +72,14 @@ def get_all_forecasts(event):
         model = orgs.pop()
         all_forecasts[model] = {}
         for date, group in df:
-            group = group[['target_end_date', 'value']]
+            group = group[['target_end_date', 'value', 'forecast_date']]
             group = group.sort_values(by=['target_end_date'])
             data = []
             # Each prediction made on a day
             for i in range(len(group)):
                 temp = {}
                 temp['date'] = group['target_end_date'].iloc[i]
+                temp['forecast_date'] = group['forecast_date'].iloc[i]
                 if event != "inc hosp":
                     temp['value'] = float(group['value'].iloc[i])/7
                 else:
@@ -86,7 +87,7 @@ def get_all_forecasts(event):
                 temp['defined'] = True
                 data.append(temp)
             all_forecasts[model][date] = data
-        print(all_forecasts)
+        #print(all_forecasts)
     return all_forecasts
 
 
@@ -106,7 +107,7 @@ def get_daily_forecasts_cases():
         df.value = df.value.astype('float')
         df['value'] = df['value'].div(7)
         df = df.sort_values(by=['forecast_date', 'target_end_date'])
-        df = df[['target_end_date', 'value']]
+        df = df[['forecast_date', 'target_end_date', 'value']]
         df = df.drop_duplicates(subset=['target_end_date'], keep='last')
         models[orgs.pop()] = df.to_dict('list')
     return models
@@ -127,7 +128,7 @@ def get_daily_forecasts_hosps():
         df = df.loc[(df['location'] == 'US') & (df['target'].str.contains("inc hosp"))]
         df.value = df.value.astype('float')
         df = df.sort_values(by=['forecast_date', 'target_end_date'])
-        df = df[['target_end_date', 'value']]
+        df = df[['forecast_date', 'target_end_date', 'value']]
         df = df.drop_duplicates(subset=['target_end_date'], keep='last')
         models[orgs.pop()] = df.to_dict('list')
     return models
