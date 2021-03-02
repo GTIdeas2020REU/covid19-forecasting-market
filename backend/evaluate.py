@@ -34,19 +34,14 @@ def get_mse(confirmed, forecasts, interval):
         if len(confirmed_values) == 0 or len(prediction_values) == 0:
             continue
 
-        #mse = mean_squared_error(confirmed_values, prediction_values)
-        #result[model] = mse
-
         relevant_preds = np.array(prediction_values, dtype=np.float32)
         true_results = np.array(confirmed_values, dtype=np.float32)
 
-        #true_results = outcomes.loc[relevant_preds['target_end_date']]
         Z = relevant_preds - true_results
         avgScore = np.sum(Z**2) / (n + 1)
         mu_star = np.sum(Z) / n
         c = 1000000
         sigma_star = math.sqrt(c**2 + np.sum(np.square(Z - mu_star))) / math.sqrt(n)
-        #performance[model] = avgScore
         result[model] = avgScore - sigma_star / (math.sqrt(n+1))
 
     return result
@@ -100,13 +95,12 @@ def org_mse(interval, event):
         mu_star = np.sum(Z) / n
         c = 1000000
         sigma_star = math.sqrt(c**2 + np.sum(np.square(Z - mu_star))) / math.sqrt(n)
-        #performance[model] = avgScore
         performance[model] = avgScore - sigma_star / (math.sqrt(n+1))
-    #print(performance)
+    
     return performance
 
 
-def get_user_mse(confirmed, user_prediction, interval):
+def get_user_mse(confirmed, user_prediction, interval, n):
     user_dates = []
     user_values = []
     result = dict()
@@ -136,10 +130,18 @@ def get_user_mse(confirmed, user_prediction, interval):
             except:
                 break
 
-        if confirmed_values == []:
+        if len(confirmed_values) == 0 or len(prediction_values) == 0:
             continue
-        mse = mean_squared_error(confirmed_values, prediction_values)
-        result[date] = mse
+
+        relevant_preds = np.array(prediction_values, dtype=np.float32)
+        true_results = np.array(confirmed_values, dtype=np.float32)
+
+        Z = relevant_preds - true_results
+        avgScore = np.sum(Z**2) / (n + 1)
+        mu_star = np.sum(Z) / n
+        c = 1000000
+        sigma_star = math.sqrt(c**2 + np.sum(np.square(Z - mu_star))) / math.sqrt(n)
+        result[date] = avgScore - sigma_star / (math.sqrt(n+1))
 
     if result == {}:
         return None

@@ -127,6 +127,7 @@ def update_new_death_user_errors():
             predictions = mydb.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
             dates_to_check = checkdates.copy()
             latest_user_preds = []
+            n = len(list(predictions))
 
             # Loop through all the user's predictions
             for pred in predictions:
@@ -145,7 +146,7 @@ def update_new_death_user_errors():
 
             temp = dict()
             temp['date'] = latest_user_preds
-            mse = get_user_mse(confirmed, temp, interval)
+            mse = get_user_mse(confirmed, temp, interval, n)
             if mse != None:
                 users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_deaths": list(mse.values())[0]}})
             else:
@@ -158,6 +159,7 @@ def update_new_death_user_errors():
         predictions = mydb.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
         dates_to_check = checkdates.copy()
         latest_user_preds = []
+        n = len(list(predictions))
 
         # Loop through all the user's predictions
         for pred in predictions:
@@ -171,10 +173,13 @@ def update_new_death_user_errors():
                     latest_user_preds.append(p)
             if len(dates_to_check) == 0:
                 break
+        
+        if len(latest_user_preds) <= 7:
+            continue
 
         temp = dict()
         temp['date'] = latest_user_preds
-        mse = get_user_mse(confirmed, temp, 'overall')
+        mse = get_user_mse(confirmed, temp, 'overall', n)
         if mse != None:
             users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": list(mse.values())[0]}})
         else:
@@ -199,6 +204,7 @@ def update_new_case_user_errors():
             predictions = mydb.predictions.find({"username": user, "category": "us_daily_cases"}).sort([('date',-1)])
             dates_to_check = checkdates.copy()
             latest_user_preds = []
+            n = len(list(predictions))
 
             # Loop through all the user's predictions
             for pred in predictions:
@@ -217,12 +223,12 @@ def update_new_case_user_errors():
 
             temp = dict()
             temp['date'] = latest_user_preds
-            mse = get_user_mse(confirmed, temp, interval)
+            mse = get_user_mse(confirmed, temp, interval, n)
             if mse != None:
                 users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_cases": list(mse.values())[0]}})
             else:
                 users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_cases": None}})
-
+    
 
     for user in usernames:
         checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
@@ -230,6 +236,7 @@ def update_new_case_user_errors():
         predictions = mydb.predictions.find({"username": user, "category": "us_daily_cases"}).sort([('date',-1)])
         dates_to_check = checkdates.copy()
         latest_user_preds = []
+        n = len(list(predictions))
 
         # Loop through all the user's predictions
         for pred in predictions:
@@ -248,7 +255,7 @@ def update_new_case_user_errors():
             continue
         temp = dict()
         temp['date'] = latest_user_preds
-        mse = get_user_mse(confirmed, temp, 'overall')
+        mse = get_user_mse(confirmed, temp, 'overall', n)
         if mse != None:
             users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_cases": list(mse.values())[0]}})
         else:
@@ -401,6 +408,7 @@ def update_vars():
 
 
 
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=update_new_death_user_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_new_death_org_errors, trigger="interval", days=1)
@@ -414,12 +422,8 @@ scheduler.start()
 
 '''
 start = time.time()
-#update_new_death_user_errors()
-#update_new_case_user_errors()
 update_new_death_org_errors()
-print("DEATHS DONE")
 update_new_case_org_errors()
-print("CASES DONE")
 update_new_hosp_org_errors()
 print("HOSPS DONE")
 update_vars()
