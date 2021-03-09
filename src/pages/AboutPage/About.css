@@ -35,12 +35,15 @@ input[type=text], select {
   
   .form-contact{
     border-radius: 5px;
-    padding: 20px;
-    width: 900px;
+    text-align: center;
+    padding-left: 350px;
+  
+    width: 1000px;
   }
 
   .btn{
-      margin-bottom: 40px;
+      margin-bottom: 90px;
+      margin-left: 350px;
   }
   
   .spanStyle{

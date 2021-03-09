@@ -94,8 +94,8 @@ reply_to: "question",
                  
                
                 
-        <Form className='form-contact'>
-  							<Form.Group controlId="formBasicName" className='form-contact'>
+        <Form className='form-contact signupSpan'>
+  							<Form.Group controlId="formBasicName" className='signupSpan form-contact'>
     							<Form.Label>Name</Form.Label>
     							<Form.Control 
                   value={this.state.name}
@@ -104,7 +104,7 @@ reply_to: "question",
                   onChange={this.handleNameChange.bind(this)}
                   />
   							</Form.Group>
-  							<Form.Group controlId="formBasicEmail" className='form-contact'>
+  							<Form.Group controlId="formBasicEmail" className='signupSpan form-contact'>
     							<Form.Label>Email address</Form.Label>
     							<Form.Control 
                   value={this.state.email}
@@ -113,7 +113,7 @@ reply_to: "question",
                   placeholder="Enter email" 
                   />
   							</Form.Group>
-  							<Form.Group controlId="ControlTextarea1" className='form-contact'>
+  							<Form.Group controlId="ControlTextarea1" className='form-contact signupSpan'>
     							<Form.Label>Message</Form.Label>
     							<Form.Control 
                   value={this.state.message}
