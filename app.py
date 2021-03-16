@@ -437,10 +437,16 @@ def us_mse():
     category = request.args.get('category')
     if category == "us_daily_deaths":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_deaths), us_inc_forecasts_deaths, 'overall')
+        for key in us_mse:
+            us_mse[key] /= 100000
     elif category == "us_daily_cases":
         us_mse = get_mse(json.loads(us_inc_confirmed_wk_avg_cases), us_inc_forecasts_cases, 'overall')
+        for key in us_mse:
+            us_mse[key] /= 1000000000
     elif category == "us_daily_hosps":
         us_mse = get_mse(us_inc_confirmed_wk_avg_hosps, us_inc_forecasts_hosps, 'overall')
+        for key in us_mse:
+            us_mse[key] /= 100000
     return us_mse
 
 
@@ -453,17 +459,17 @@ def us_mse1():
         scores = errors.find({}, {"org": 1, "mse_score_1_us_daily_deaths": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_1_us_daily_deaths"]
+            us_mse[item["org"]] = item["mse_score_1_us_daily_deaths"] / 10000000
     elif category == "us_daily_cases":
         scores = errors.find({}, {"org": 1, "mse_score_1_us_daily_cases": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_1_us_daily_cases"]
+            us_mse[item["org"]] = item["mse_score_1_us_daily_cases"] / 100000000000
     elif category == "us_daily_hosps":
         scores = errors.find({}, {"org": 1, "mse_score_1_us_daily_hosps": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_1_us_daily_hosps"]
+            us_mse[item["org"]] = item["mse_score_1_us_daily_hosps"] / 10000000
     return us_mse
 
 @app.route('/us-mse-2-week-ahead', methods=['POST','GET'])
@@ -475,17 +481,17 @@ def us_mse2():
         scores = errors.find({}, {"org": 1, "mse_score_2_us_daily_deaths": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_2_us_daily_deaths"]
+            us_mse[item["org"]] = item["mse_score_2_us_daily_deaths"] / 10000000
     elif category == "us_daily_cases":
         scores = errors.find({}, {"org": 1, "mse_score_2_us_daily_cases": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_2_us_daily_cases"]
+            us_mse[item["org"]] = item["mse_score_2_us_daily_cases"] / 100000000000
     elif category == "us_daily_hosps":
         scores = errors.find({}, {"org": 1, "mse_score_2_us_daily_hosps": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_2_us_daily_hosps"]
+            us_mse[item["org"]] = item["mse_score_2_us_daily_hosps"] / 10000000
     return us_mse
 
 @app.route('/us-mse-4-week-ahead', methods=['POST','GET'])
@@ -497,17 +503,17 @@ def us_mse4():
         scores = errors.find({}, {"org": 1, "mse_score_4_us_daily_deaths": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_4_us_daily_deaths"]
+            us_mse[item["org"]] = item["mse_score_4_us_daily_deaths"] / 10000000
     elif category == "us_daily_cases":
         scores = errors.find({}, {"org": 1, "mse_score_4_us_daily_cases": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_4_us_daily_cases"]
+            us_mse[item["org"]] = item["mse_score_4_us_daily_cases"] / 100000000000
     elif category == "us_daily_hosps":
         scores = errors.find({}, {"org": 1, "mse_score_4_us_daily_hosps": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_4_us_daily_hosps"]
+            us_mse[item["org"]] = item["mse_score_4_us_daily_hosps"] / 10000000
     return us_mse
 
 @app.route('/us-mse-8-week-ahead', methods=['POST','GET'])
@@ -519,17 +525,17 @@ def us_mse8():
         scores = errors.find({}, {"org": 1, "mse_score_8_us_daily_deaths": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_8_us_daily_deaths"]
+            us_mse[item["org"]] = item["mse_score_8_us_daily_deaths"] / 10000000
     elif category == "us_daily_cases":
         scores = errors.find({}, {"org": 1, "mse_score_8_us_daily_cases": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_8_us_daily_cases"]
+            us_mse[item["org"]] = item["mse_score_8_us_daily_cases"] / 100000000000
     elif category == "us_daily_hosps":
         scores = errors.find({}, {"org": 1, "mse_score_8_us_daily_hosps": 1})
         us_mse = dict()
         for item in scores:
-            us_mse[item["org"]] = item["mse_score_8_us_daily_hosps"]
+            us_mse[item["org"]] = item["mse_score_8_us_daily_hosps"] / 10000000
     return us_mse
 
 

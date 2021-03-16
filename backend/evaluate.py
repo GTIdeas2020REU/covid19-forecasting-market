@@ -88,7 +88,7 @@ def org_mse(interval, event):
         if event != 'inc hosp':
             relevant_preds['value'] /= 7
         
-        n = len(df['forecast_date'].unique())
+        n = len(relevant_preds['forecast_date'].unique())
         true_results = outcomes.loc[relevant_preds['target_end_date']]
         Z = relevant_preds['value'].to_numpy() - true_results.to_numpy()
         avgScore = np.sum(Z**2) / (n + 1)

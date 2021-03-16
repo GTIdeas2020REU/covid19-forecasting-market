@@ -124,10 +124,10 @@ def update_new_death_user_errors():
         checkdates = [(nowdate - pd.Timedelta(days=7*interval*j)).strftime('%Y-%m-%d') for j in range(int(totdays/7*interval))
                         if nowdate - pd.Timedelta(days=7*interval*j) >= startdate]
         for user in usernames:
-            predictions = mydb.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+            predictions = list(mydb.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)]))
             dates_to_check = checkdates.copy()
             latest_user_preds = []
-            n = len(list(predictions))
+            n = len(predictions)
 
             # Loop through all the user's predictions
             for pred in predictions:
@@ -148,7 +148,7 @@ def update_new_death_user_errors():
             temp['date'] = latest_user_preds
             mse = get_user_mse(confirmed, temp, interval, n)
             if mse != None:
-                users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_deaths": list(mse.values())[0]}})
+                users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_deaths": list(mse.values())[0] / 10000000}})
             else:
                 users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_deaths": None}})
 
@@ -156,10 +156,10 @@ def update_new_death_user_errors():
     for user in usernames:
         checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
                         if nowdate - pd.Timedelta(days=j) >= startdate]
-        predictions = mydb.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)])
+        predictions = list(mydb.predictions.find({"username": user, "category": "us_daily_deaths"}).sort([('date',-1)]))
         dates_to_check = checkdates.copy()
         latest_user_preds = []
-        n = len(list(predictions))
+        n = len(predictions)
 
         # Loop through all the user's predictions
         for pred in predictions:
@@ -181,7 +181,7 @@ def update_new_death_user_errors():
         temp['date'] = latest_user_preds
         mse = get_user_mse(confirmed, temp, 'overall', n)
         if mse != None:
-            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": list(mse.values())[0]}})
+            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": list(mse.values())[0] / 10000000}})
         else:
             users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_deaths": None}})
         users.update_one({"username": user}, {'$set': {"prediction_us_daily_deaths": latest_user_preds}})
@@ -201,10 +201,10 @@ def update_new_case_user_errors():
         checkdates = [(nowdate - pd.Timedelta(days=7*interval*j)).strftime('%Y-%m-%d') for j in range(int(totdays/7*interval))
                         if nowdate - pd.Timedelta(days=7*interval*j) >= startdate]
         for user in usernames:
-            predictions = mydb.predictions.find({"username": user, "category": "us_daily_cases"}).sort([('date',-1)])
+            predictions = list(mydb.predictions.find({"username": user, "category": "us_daily_cases"}).sort([('date',-1)]))
             dates_to_check = checkdates.copy()
             latest_user_preds = []
-            n = len(list(predictions))
+            n = len(predictions)
 
             # Loop through all the user's predictions
             for pred in predictions:
@@ -225,7 +225,7 @@ def update_new_case_user_errors():
             temp['date'] = latest_user_preds
             mse = get_user_mse(confirmed, temp, interval, n)
             if mse != None:
-                users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_cases": list(mse.values())[0]}})
+                users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_cases": list(mse.values())[0] / 100000000000}})
             else:
                 users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_cases": None}})
     
@@ -233,10 +233,10 @@ def update_new_case_user_errors():
     for user in usernames:
         checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
                         if nowdate - pd.Timedelta(days=j) >= startdate]
-        predictions = mydb.predictions.find({"username": user, "category": "us_daily_cases"}).sort([('date',-1)])
+        predictions = list(mydb.predictions.find({"username": user, "category": "us_daily_cases"}).sort([('date',-1)]))
         dates_to_check = checkdates.copy()
         latest_user_preds = []
-        n = len(list(predictions))
+        n = len(predictions)
 
         # Loop through all the user's predictions
         for pred in predictions:
@@ -257,7 +257,7 @@ def update_new_case_user_errors():
         temp['date'] = latest_user_preds
         mse = get_user_mse(confirmed, temp, 'overall', n)
         if mse != None:
-            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_cases": list(mse.values())[0]}})
+            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_cases": list(mse.values())[0] / 100000000000}})
         else:
             users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_cases": None}})
         users.update_one({"username": user}, {'$set': {"prediction_us_daily_cases": latest_user_preds}})
@@ -276,7 +276,7 @@ def update_new_hosp_user_errors():
         checkdates = [(nowdate - pd.Timedelta(days=7*interval*j)).strftime('%Y-%m-%d') for j in range(int(totdays/7*interval))
                         if nowdate - pd.Timedelta(days=7*interval*j) >= startdate]
         for user in usernames:
-            predictions = mydb.predictions.find({"username": user, "category": "us_daily_hosps"}).sort([('date',-1)])
+            predictions = list(mydb.predictions.find({"username": user, "category": "us_daily_hosps"}).sort([('date',-1)]))
             dates_to_check = checkdates.copy()
             latest_user_preds = []
 
@@ -299,7 +299,7 @@ def update_new_hosp_user_errors():
             temp['date'] = latest_user_preds
             mse = get_user_mse(confirmed, temp, interval)
             if mse != None:
-                users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_hosps": list(mse.values())[0]}})
+                users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_hosps": list(mse.values())[0] / 10000000}})
             else:
                 users.update_one({"username": user}, {'$set': {"mse_score_" + str(interval) + "_us_daily_hosps": None}})
 
@@ -307,7 +307,7 @@ def update_new_hosp_user_errors():
     for user in usernames:
         checkdates = [(nowdate - pd.Timedelta(days=j)).strftime('%Y-%m-%d') for j in range(int(totdays))
                         if nowdate - pd.Timedelta(days=j) >= startdate]
-        predictions = mydb.predictions.find({"username": user, "category": "us_daily_hosps"}).sort([('date',-1)])
+        predictions = list(mydb.predictions.find({"username": user, "category": "us_daily_hosps"}).sort([('date',-1)]))
         dates_to_check = checkdates.copy()
         latest_user_preds = []
 
@@ -330,7 +330,7 @@ def update_new_hosp_user_errors():
         temp['date'] = latest_user_preds
         mse = get_user_mse(confirmed, temp, 'overall')
         if mse != None:
-            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_hosps": list(mse.values())[0]}})
+            users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_hosps": list(mse.values())[0] / 10000000}})
         else:
             users.update_one({"username": user}, {'$set': {"mse_score_overall_us_daily_hosps": None}})
         users.update_one({"username": user}, {'$set': {"prediction_us_daily_hosps": latest_user_preds}})
@@ -417,17 +417,4 @@ scheduler.add_job(func=update_new_case_org_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_new_hosp_org_errors, trigger="interval", days=1)
 scheduler.add_job(func=update_vars, trigger="interval", days=1)
 scheduler.start()
-
-
-
-'''
-start = time.time()
-update_new_death_org_errors()
-update_new_case_org_errors()
-update_new_hosp_org_errors()
-print("HOSPS DONE")
-update_vars()
-elapse = time.time()
-print(elapse-start)
-'''
 
