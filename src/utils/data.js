@@ -70,37 +70,6 @@ export const formatValue = (value) => {
     currency: "USD"
   });
 }
-// export const callout = (g, value) => {
-//   if (!value) return g.style("display", "none");
-
-//   g
-//       .style("display", null)
-//       .style("pointer-events", "none")
-//       .style("font", "10px sans-serif");
-
-//   const path = g.selectAll("path")
-//     .data([null])
-//     .join("path")
-//       .attr("fill", "white")
-//       .attr("stroke", "black");
-
-//   const text = g.selectAll("text")
-//     .data([null])
-//     .join("text")
-//     .call(text => text
-//       .selectAll("tspan")
-//       .data((value + "").split(/\n/))
-//       .join("tspan")
-//         .attr("x", 0)
-//         .attr("y", (d, i) => `${i * 1.1}em`)
-//         .style("font-weight", (_, i) => i ? null : "bold")
-//         .text(d => d));
-
-//   const {x, y, width: w, height: h} = text.node().getBBox();
-
-//   text.attr("transform", `translate(${-w / 2},${15 - y})`);
-//   path.attr("d", `M${-w / 2 - 10},5H-5l5,-5l5,5H${w / 2 + 10}v${h + 20}h-${w + 20}z`);
-// }
 
 export const sortDictByDate = (data) => {
   var sortedDict = {};
@@ -272,4 +241,19 @@ export async function fetchData(url) {
   let data = await fetch(url);
   let dataJSON = await data.json()
   return dataJSON;
+}
+
+//resets the prediction data inbetween startdate and endDate (exclusive) by setting the defined value to 0
+export const resetPredictionData = (startDate, endDate, predictionData) => {
+  if (+startDate == +endDate) return predictionData;
+  const start = +startDate < +endDate ? startDate : endDate;
+  const end = +startDate < +endDate ? endDate : startDate;
+  let currIndex = d3.timeDay.count(predictionData[0].date, start) + 1; //starts a day after startDate since it's exclusive
+  if (currIndex >= predictionData.length) return predictionData;
+  while (+predictionData[currIndex].date < +end) {
+    predictionData[currIndex].defined = 0;
+    predictionData[currIndex].value = 0;
+    currIndex++;
+  }
+  return predictionData;
 }

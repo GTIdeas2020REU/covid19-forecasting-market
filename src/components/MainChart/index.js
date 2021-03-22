@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3'
 import './MainChart.css'
-import { clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
+import { resetPredictionData, clamp, getAllDataPoints, getDataPointsFromPath, reformatData, reformatPredData, getMostRecentPrediction, getLastDate, getLastValue } from '../../utils/data';
 import { titles, forecastIdentifiers } from '../../constants/data';
 
 class MainChart extends Component {
@@ -443,9 +443,15 @@ class MainChart extends Component {
             svg.select("#drawing-instruction")
                .style("opacity", "1");
         }
-
+        let dragStartPoint = null;
+        let dragStartDate = null;
         var drag = d3.drag()
-                     .on("drag", function() {
+                    .on("start", function() {
+                        dragStartPoint = d3.mouse(this)
+                        dragStartDate = d3.timeDay.round(x.invert(dragStartPoint[0]));
+                        console.log("start date: ", dragStartDate);
+                    })
+                    .on("drag", function() {
                         //hide "draw your guess" text
                         svg.select("#drawing-instruction")
                            .style("opacity", "0");
@@ -456,12 +462,13 @@ class MainChart extends Component {
                             .style("opacity", "0");
                         d3.select(".tooltip-box")
                             .style("display", "none")
+                        
                         let pos = d3.mouse(this);
-                        //var date = clamp(predStartDate, x.domain()[1], x.invert(pos[0]));
                         let date = d3.timeDay.round(x.invert(pos[0]))
                         date = +date <= +x.domain()[1] ? date : x.domain()[1];
                         let value = clamp(0, y.domain()[1], y.invert(pos[1]));
-                        if (+getLastDate(predictionData) < +date) {//append new date
+
+                        if (+getLastDate(predictionData) < +date) {//if date doesn't exist in predictionData append new date
                             let currDate = d3.timeDay.offset(getLastDate(predictionData), 1);
                             let defined = 0;
                             if (predictionData.length === 1) {
@@ -474,16 +481,17 @@ class MainChart extends Component {
                                 currDate = d3.timeDay.offset(currDate, 1);
                             }
                             predictionData.push({"date": date, "value": value, "defined": true});
+                            dragStartDate = date;
                         }
-                        else {
-                            predictionData.forEach(function(d){//data point already exists
-                                if (+d.date === +date){
-                                    d.value = value;
-                                    d.defined = true
-                                }
-                            });
+                        else {//data point already exists -> update data point
+                            let dataIndex = d3.timeDay.count(predictionData[0].date, date)
+                            predictionData[dataIndex].value = value;
+                            predictionData[dataIndex].defined = true;
+                            if (+dragStartDate != +date) { //reset prediction data inbetween startDate and current date
+                                predictionData = resetPredictionData(dragStartDate, date, predictionData);
+                                dragStartDate = date;
+                            }
                         }
-                        // compiledData[2].data = predictionData;//update compiledData everytime predictionData is updated
                         filteredData = predictionData.filter(predLine.defined())
                         predictionLine.datum(filteredData)
                                       .attr('d', predLine)
