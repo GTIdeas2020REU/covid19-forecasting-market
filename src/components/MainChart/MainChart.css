@@ -265,11 +265,6 @@ font-weight: bold;
     top: 100px;
 }
 
-.privacy {
-    font-size: 13px;
-    margin-top: 40px;
-}
-
 .y-axis-drag, .x-axis-drag {
     cursor: -webkit-grab;
     cursor: grab;
