@@ -263,3 +263,8 @@ def clean_forecast_data(forecast):
             data_cleaned[date] = values[i]
         forecast_cleaned.append({'name': org, 'data': data_cleaned})
     return forecast_cleaned
+
+def scale_mse(mse, scale):
+    if mse is None:
+        return None
+    return mse / scale
