@@ -17,7 +17,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask_apscheduler import APScheduler
 import atexit
 from backend.registration import generate_password, get_valid_special_users
-from random_username.generate import generate_username
 
 
 app = Flask(__name__, static_folder='build', static_url_path='')
