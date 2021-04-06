@@ -82,15 +82,18 @@ class Login extends React.Component{
           fetch('/login-status/')
           .then((response) => response.json())
           .then((data) => {
-            this.setState({loginStatus: data['logged in']});
-            if (!data['logged in']){
+            this.setState({loginStatus: data['logged in']}, function() {
+              if (!data['logged in']){
                 window.alert("Wrong username and/or password")
+              }
             }
+            );
             resolve(data['logged in']);
           });
         }, 200)
       })
 		}
+
 
     handleChange(event) {
       let name = event.target.name;
@@ -108,6 +111,7 @@ class Login extends React.Component{
       await this.saveLogin(this.state.username, this.state.password);
       await this.updateLoginState();
     }
+
     async SigninTokenUser() {
       await this.saveLogin(this.state.username, this.state.password);
       await this.updateLoginState();
