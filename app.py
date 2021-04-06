@@ -16,7 +16,7 @@ from backend.gaussian import get_gaussian_for_all
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_apscheduler import APScheduler
 import atexit
-from backend.registration import generate_password, get_valid_special_users
+from backend.registration import get_valid_special_users
 
 
 app = Flask(__name__, static_folder='build', static_url_path='')
