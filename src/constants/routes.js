@@ -9,3 +9,4 @@ export const LEADERBOARD = '/leaderboard';
 export const US_NATIONAL_CUM = '/us-national-cumulative';
 export const US_NATIONAL_INC = '/us-national-incident';
 export const US_STATE = '/us-state';
+export const SPECIAL_SIGN_IN = '/special-signin/:token?';

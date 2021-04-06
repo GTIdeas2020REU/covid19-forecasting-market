@@ -2,6 +2,7 @@ import React from 'react';
 import './Login.css';
 import { GoogleLogin } from 'react-google-login';
 import { clientId } from '../../constants/data';
+import { fetchData, requestOptions } from '../../utils/data';
 
 
 class Login extends React.Component{
@@ -11,7 +12,30 @@ class Login extends React.Component{
     }  
       
     componentDidMount(){
-      // console.log("", this.state.loginStatus);
+      if (this.props.special) {
+        console.log('token: ', this.props.match.params.token)
+        const token = this.props.match.params.token;
+        this.validateToken(token)
+      }
+      else {console.log('no token')}
+    }
+
+    async validateToken(token) {
+      console.log('validating token...')
+      let data = await fetch("/token", requestOptions({"token": token}))
+      let response = await data.json();
+      if(response['valid']) {
+        const username = response['username'];
+        const password = response['password'];
+        this.setState({username, password});
+        console.log('token validated')
+        await this.SigninTokenUser()
+        console.log('LOGGED IN')
+      }
+      else {
+        console.log('invalid token')
+      }
+      console.log('validation complete')
     }
 
     saveLogin(username, password) {
@@ -82,9 +106,10 @@ class Login extends React.Component{
     async handleSubmit(event) {
       event.preventDefault();
       await this.saveLogin(this.state.username, this.state.password);
-      /*await this.wasSucess().then(status => {
-        console.log(status);
-      });*/
+      await this.updateLoginState();
+    }
+    async SigninTokenUser() {
+      await this.saveLogin(this.state.username, this.state.password);
       await this.updateLoginState();
     }
 

@@ -9,7 +9,6 @@ from bson.json_util import dumps, loads
 import json
 import os
 import uuid
-
 from backend.get_estimates import get_forecasts, get_all_forecasts, get_accuracy_for_all_models, get_daily_forecasts_cases, get_daily_confirmed_df, get_daily_forecasts, get_aggregates, get_new_cases_us, get_daily_forecasts_hosps, clean_forecast_data
 from backend.confirmed import get_us_new_deaths, get_us_confirmed, get_weekly_avg, get_us_new_hospitalizations
 from backend.evaluate import get_mse, get_user_mse, org_mse
@@ -17,6 +16,8 @@ from backend.gaussian import get_gaussian_for_all
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_apscheduler import APScheduler
 import atexit
+from backend.registration import generate_password, get_valid_special_users
+from random_username.generate import generate_username
 
 
 app = Flask(__name__, static_folder='build', static_url_path='')
@@ -242,6 +243,7 @@ def register(name, email, username, password):
         {"username": username})
     # user already exists
     if user:
+        print('REGISTER: user has already been registered')
         return False
     # add new user
     hashed = pbkdf2_sha256.hash(password)
@@ -273,7 +275,55 @@ def google_login(username, name, email):
     store_session((user['_id']), user['email'], user['name'], user['username'])
     print("google login successful")
 
+def add_special_user(token, name, username, email):
+    mongo.db.special_users.insert_one({
+        'token': token,
+        'name': name,
+        'username': username,
+        'password': email
+    })
+    
+def signup_special_user(username, email):
+    success = register(username, email, username, email)
+    return success
 
+def create_special_users():
+    users = get_valid_special_users()
+    for user in users:
+        name = user.get('name')
+        email = user.get('email')
+        print(name, email)
+        special_user = mongo.db.special_users.find_one({"name": name})
+        if not special_user:
+            print('user doesnt exist')
+            token = str(uuid.uuid4())
+            username = 'user' + token[:4]
+            user['username'] = username
+            user['token'] = token
+            add_special_user(token, name, username, email)
+            res = signup_special_user(username, email)
+            if res:
+                print('special user successfully registered')
+        else:
+            print('special user already exists')
+            user['username'] = float('nan')
+            user['token'] = float('nan')
+    print('DONE')
+    print(users)
+    df = pd.DataFrame.from_dict(users)
+    df.to_csv('completed.csv')
+    return True
+
+def validate_token(token):
+    print('validating token')
+    user = mongo.db.special_users.find_one({"token": token})
+    account = {}
+    if user:
+        account = {'valid': True, 'username': user['username'], 'password': user['password']}
+    else:
+        account = {'valid': False}
+    print('validation complete')
+    return account
 
 
 @app.before_first_request
@@ -665,6 +715,31 @@ def user_status():
     else:
         return dumps({'logged in': False})
 
+@app.route('/special-login', methods=["GET"])
+def special_login():
+    password = generate_password()
+    username = generate_username(1)[0]
+    return dumps({
+        'username': username,
+        'password': password
+    })
+
+
+@app.route('/token', methods=["POST"])
+def token():
+    token = request.json.get('token')
+    account = validate_token(token)
+    print(account)
+    return dumps(account)
+
+@app.route('/create-s-users', methods=['POST','GET'])
+def create_s_users():
+    print('create initiated')
+    res = create_special_users()
+    if res:
+        return 'all special users added'
+    else:
+        return 'ERROR'
 
 
 '''-----User score route-----'''

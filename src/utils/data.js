@@ -257,3 +257,13 @@ export const resetPredictionData = (startDate, endDate, predictionData) => {
   }
   return predictionData;
 }
+
+export const requestOptions = (data) => {
+  return {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  }
+}

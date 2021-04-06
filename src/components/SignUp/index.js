@@ -1,44 +1,44 @@
 import React from 'react';
-import '../LogIn/Login.css';
+import './SignUp.css';
 import { GoogleLogin } from 'react-google-login';
 import { clientId } from '../../constants/data';
+import { fetchData, requestOptions } from '../../utils/data';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEyeSlash, faEye } from '@fortawesome/free-solid-svg-icons'
 
 class SignUp extends React.Component{
     constructor(props) {
        super(props)
-      this.state = { nam:'', email: '', username: '', password: '', loginStatus: false }
+      this.state = { 
+        name:'', 
+        email: '', 
+        username: '', 
+        password: '', 
+        loginStatus: false,
+        showPassword: "password",
+        icon: faEye
+      }
     }
 
-    saveLogin(nam, email, username, password) {
+    saveLogin(name, email, username, password) {
       return new Promise((resolve, reject) => {
-        fetch('/signup/',{
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({"name": nam, "email": email, "username": username, "password": password}),
-        });
+        fetch('/signup/',requestOptions({"name": name, "email": email, "username": username, "password": password}));
         resolve();
       })
     }
-    
+
+    // {"name": name, "email": email, "username": username, "password": password}
     saveGoogleLogin(username, name, email) {
       return new Promise((resolve, reject) => {
-        fetch('/login/?type=google',{
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({"username": username, "name": name, "email": email}),
-        });
+        fetch('/login/?type=google', requestOptions({"username": username, "name": name, "email": email}));
         resolve();
       })
     }
 
     handleChange(event) {
       let name = event.target.name;
-      if (name === 'nam'){
-        this.setState({ nam: event.target.value});
+      if (name === 'name'){
+        this.setState({ name: event.target.value});
       }
       if (name === 'email'){
         this.setState({ email: event.target.value});
@@ -49,7 +49,6 @@ class SignUp extends React.Component{
       if (name === 'password'){
         this.setState({ password: event.target.value});
       }
-
     }
 
     updateLoginState = () => {
@@ -70,8 +69,26 @@ class SignUp extends React.Component{
     
     async handleSubmit(event) {
       event.preventDefault();
-      await this.saveLogin(this.state.nam, this.state.email, this.state.username, this.state.password);
+      await this.saveLogin(this.state.name, this.state.email, this.state.username, this.state.password);
       await this.updateLoginState();
+    }
+
+    async validateToken(token) {
+      console.log('validating token...')
+      let data = await fetch("/token", requestOptions({"token": token}))
+      let response = await data.json();
+      if(response['valid']) {
+        const name = response['name'];
+        const email = response['email'];
+        let username = "";
+        if (email.includes("@")) {
+          console.log("valid email")
+          username = email.split("@")[0]
+        }
+        this.setState({name, email, username});
+        console.log('token validated')
+      }
+      console.log('validation complete')
     }
 
     async onSuccess(res) {
@@ -85,6 +102,27 @@ class SignUp extends React.Component{
     onFailure = (res) => {
       console.log("login failed")
     };
+
+    async fetchTempLogin() {
+      const accountInfo = await fetchData('/special-login');
+      this.setState({username: accountInfo["username"], password: accountInfo["password"]});
+    }
+    
+    componentDidMount() {
+      if (this.props.special) {
+        this.validateToken(this.props.match.params.token)
+        // this.fetchTempLogin();
+      }
+      else {console.log('no token')}
+    }
+
+    togglePassword() {
+      if (this.state.showPassword == "password") {
+        this.setState({showPassword: "text", icon: faEyeSlash})
+      } else {
+        this.setState({showPassword: "password", icon: faEye})
+      }
+    }
     
     render() {
       if (this.state.loginStatus) {
@@ -99,9 +137,9 @@ class SignUp extends React.Component{
           <br></br>
           <input 
             type="text"
-            value={this.state.nam}
+            value={this.state.name}
             onChange={this.handleChange.bind(this)}
-            name='nam'
+            name='name'
             required
           />
           <br></br>
@@ -127,13 +165,17 @@ class SignUp extends React.Component{
           <br></br>
           <span style={{paddingRight:'285px'}}><b>Password</b></span>
           <br></br>
-          <input 
-            type="password"
-            value={this.state.password}
-            onChange={this.handleChange.bind(this)}
-            name='password'
-            required
-          />
+          <div className="password-container">
+            <input 
+              id="password-input"
+              type={this.state.showPassword}
+              value={this.state.password}
+              onChange={this.handleChange.bind(this)}
+              name='password'
+              required
+            />
+            <FontAwesomeIcon onClick={this.togglePassword.bind(this)} id="eye-icon" icon={this.state.icon} />
+          </div>
           <br></br>
           <input type="submit" value="Submit" />
         </form>
