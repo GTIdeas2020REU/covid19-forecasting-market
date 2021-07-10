@@ -394,7 +394,9 @@ class MainChart extends Component {
         //get complete dataset from curves
         const forecastPaths = document.querySelectorAll(".forecast");
         const aggregatePath = document.querySelector("#aggregate");
-        aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, getLastDate(aggregateData))
+        if (aggregateData.length > 0) {
+            aggregateData = getAllDataPoints(aggregatePath, x, y, aggregateData[0].date, getLastDate(aggregateData))
+        }
         compiledData.push({
             name: compiledIds[0],
             data: confirmedData
@@ -449,7 +451,6 @@ class MainChart extends Component {
                     .on("start", function() {
                         dragStartPoint = d3.mouse(this)
                         dragStartDate = d3.timeDay.round(x.invert(dragStartPoint[0]));
-                        console.log("start date: ", dragStartDate);
                     })
                     .on("drag", function() {
                         //hide "draw your guess" text
